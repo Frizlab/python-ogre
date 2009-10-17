@@ -146,7 +146,7 @@ if not _ConfigSet:
     ##
     print "\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % (_SystemType)
     sys.exit(-1)
-
+    
 # Let the user override the number of cores.
 if hasattr(Config, "NUMBER_OF_CORES") and Config.NUMBER_OF_CORES:
     NUMBER_OF_CORES = Config.NUMBER_OF_CORES
@@ -248,16 +248,14 @@ class pymodule(module):
     # Extra directories to search for include files.
     include_dirs = []
 
-    # ????
-    CheckIncludes = []
-    
     # dlls that need to live in the package directory
     moduleLibs = []
 
-    # Extra flags to compile with
+    # Extra flags passed to gccxml compiler when generating XML code base
     cflags = ''
 
     # FIXME: Why is these uppercase while cflags above is lowercase?
+    # flags passed to SCON's when  compiling
     LINKFLAGS = ''
     CCFLAGS = ''
 
@@ -269,9 +267,9 @@ class pymodule(module):
 ##
 ####################################################
 class gccxml(module):
-    source_version = "20090123"
+    source_version = "20091016"
     source = [
-        [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 23Jan2009 gccxml", os.getcwd()]
+        [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 16Oct2009 gccxml", os.getcwd()]
     ]
 
     if isLinux() or isMac():
@@ -494,15 +492,15 @@ class scons(module):
 
 class boost(module):
     """Boost module, also included bjam."""
-    version = "1.40"
+    version = "1.41r56875"
     ModuleName = ""
 
     if isWindows():
         PATH_LIB_THREAD = Config.PATH_LIB_Thread_STATIC
         PATH_LIB_DATETIME = Config.PATH_LIB_date_time_STATIC
         base = 'boost_1_40_0'
-        lib = 'boost_python-vc90-mt-1_40'
-        versionBase = '1_40' ## the version used on the library name
+        lib = 'boost_python-vc90-mt-1_41'
+        versionBase = '1_41' ## the version used on the library name
     else:
         base = 'boost_1_40_0'
         versionBase = '1_40' ## the version used on the library name
@@ -779,7 +777,6 @@ class ois(pymodule):
         Config.PATH_LIB_OIS,
     ]
     ModuleName = 'OIS'
-    CheckIncludes = ['boost/python.hpp', 'OIS.h']
     if os.sys.platform == 'darwin':
         LINKFLAGS = '-framework OIS '
 
@@ -819,7 +816,6 @@ class ogrerefapp(pymodule):
     ]
 
     ModuleName = 'OgreRefApp'
-    CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'OgreReferenceAppLayer.h', 'ode/ode.h']
 
 class ogrenewt(pymodule):
     version = "r2429"
@@ -872,7 +868,7 @@ class ogrenewt(pymodule):
             Config.PATH_Newton,
             Config.PATH_INCLUDE_Ogre,
             Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
-            os.path.join(Config.PATH_OgreAddons, 'ogrenewt', 'OgreNewt_Main', 'inc')
+            Config.PATH_INCLUDE_OgreNewt
         ]
         lib_dirs = [
             boost.PATH_LIB,
@@ -884,8 +880,73 @@ class ogrenewt(pymodule):
         LINKFLAGS = ' -framework OIS '
 
     ModuleName = 'OgreNewt'
-    CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'OgreNewt.h', 'Newton.h']
+    
+class ogrenewt2(pymodule):
+    version = "2.10"
+    parent = "ogre/physics"
+    base = 'ogreaddons/ogrenewt2'
+    if isWindows():
+        libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
+    elif isLinux():
+        libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
+    else:
+        libs = ['Newton32', boost.lib, 'OgreMain']
 
+    source = [
+        [svn, " co https://svn.ogre3d.org/svnroot/ogreaddons/branches/ogrenewt/newton20 " + base, os.getcwd()]
+    ]
+    baseDir = os.path.join(os.getcwd(), base)
+    buildCmds = [
+     #   [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
+     #   [0, rm + " -rf ./OgreNewt_Main/inc/boost", baseDir],
+     #   [0, 'cp SConscript OgreNewt_Main', baseDir],
+     #   [0, "scons prefix=%s boost=%s/include/boost-1_37 build" % (PREFIX, PREFIX), baseDir], ##WARNING -- boost include dir name is different than  build name (dash not underscore)
+     #   [0, "scons prefix=%s boost=%s/include/boost-1_37 install" % (PREFIX, PREFIX), baseDir],
+    ]
+
+    if isWindows():
+        buildCmds = [
+     #       [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
+            [0, "echo   Now use MSVC to compile OgreNewt -- OgreNewt_vc71.sln", baseDir]
+        ]
+        CCFLAGS = ' -DWIN32 -D_OGRENEWT_DYNAMIC -DOIS_NONCLIENT_BUILD '
+
+
+    include_dirs = [
+        boost.PATH,
+        Config.PATH_Newton2,
+        Config.PATH_INCLUDE_Ogre,
+        Config.PATH_INCLUDE_OgreNewt2,
+        Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
+    ]
+    lib_dirs = [
+        boost.PATH_LIB,
+        Config.PATH_LIB_Newton2,
+        Config.PATH_LIB_OgreNewt2,
+        Config.PATH_LIB_Ogre_OgreMain,
+    ]
+    moduleLibs=[os.path.join(Config.PATH_Newton2,'x32','dll_vs9','newton'),
+                os.path.join(Config.PATH_LIB_OgreNewt2, 'OgreNewt')
+                ]
+    if isMac():
+        include_dirs = [
+            boost.PATH,
+            Config.PATH_Newton2,
+            Config.PATH_INCLUDE_Ogre,
+            Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
+            Config.PATH_INCLUDE_OgreNewt2
+        ]
+        lib_dirs = [
+            boost.PATH_LIB,
+            Config.PATH_LIB_Newton2,
+            Config.PATH_LIB_Ogre_OgreMain,
+        ]
+
+    if isMac():
+        LINKFLAGS = ' -framework OIS '
+
+    ModuleName = 'ogrenewt2'
+    
 class cegui(pymodule):
     parent = "ogre/gui"
     version = "0.6.2b"
@@ -974,7 +1035,6 @@ class cegui(pymodule):
     if isMac():
         LINKFLAGS = ' -framework CEGUI -framework OgreCEGUIRenderer '
 
-    CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'CEGUI.h', 'OgreCEGUIRenderer.h']
 
 
 class ode(pymodule):
@@ -998,7 +1058,6 @@ class ode(pymodule):
     ]
 
     ModuleName = 'ODE'
-    CheckIncludes = ['boost/python.hpp', 'ode/ode.h']
     baseDir = os.path.join(os.getcwd(), "ode-0.10.1")
     if not isWindows():
         source = [
@@ -1039,7 +1098,6 @@ class opcode(pymodule):
     ]
     CCFLAGS = ' -DBAN_OPCODE_AUTOLINK -DICE_NO_DLL '
     ModuleName = 'Opcode'
-    CheckIncludes = ['boost/python.hpp', 'Opcode.h']
 
 class caelum(pymodule):
     version = "r451"
@@ -1054,7 +1112,6 @@ class caelum(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
     ]
-    CheckIncludes = []
     if isLinux():
         libs = [boost.lib, 'OgreMain' ]
     else:
@@ -1105,10 +1162,12 @@ class ogreode(pymodule):
         libs.append('ode')
     else:
         libs.append('ode_single')
-    CheckIncludes = ['boost/python.hpp', 'Ogre.h', 'ode/ode.h', 'ode/odecpp.h', 'OgreOde_Core.h', 'OgreOde_Loader.h',
-                    'Ogreode_Prefab.h']
 
     ModuleName = 'OgreOde'
+    moduleLibs = [os.path.join(Config.PATH_LIB_OgreOde,'OgreOde_Core'),
+                    os.path.join(Config.PATH_LIB_OgreOdePrefab,'OgreOde_Prefab'),
+                    os.path.join(Config.PATH_LIB_OgreOdeLoader,'OgreOde_Loader')
+                    ]
 
 class quickgui(pymodule):
     version = "9.09"
@@ -1131,7 +1190,6 @@ class quickgui(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain
     ]
-    CheckIncludes = []
     libs = [ boost.lib, 'OgreMain' ]
     ModuleName = "QuickGUI"
 
@@ -1159,7 +1217,6 @@ class navi(pymodule):
         Config.PATH_LIB_navi,
         os.path.join(Config.PATH_navi, '..', 'Dependencies', 'win32', 'awesomium', 'lib', 'release')
     ]
-    CheckIncludes = []
     libs = [  boost.lib, 'Navi_DLL', 'OgreMain', 'Awesomium', 'user32',
             'kernel32.lib', 'gdi32.lib', 'winspool.lib', 'comdlg32.lib', 'advapi32.lib',
             'shell32.lib', 'ole32.lib', 'oleaut32.lib', 'uuid.lib' ]
@@ -1183,7 +1240,6 @@ class betagui(pymodule):
         Config.PATH_LIB_betagui,
         Config.PATH_LIB_OIS
     ]
-    CheckIncludes = []
     if Config.SDK:
         libs = [  boost.lib, 'OgreMain', 'OIS' ]
     else:
@@ -1207,7 +1263,6 @@ class ogreforests(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain
     ]
-    CheckIncludes = []
     libs = [  boost.lib, 'OgreMain' ]
     ModuleName = "ogreforests"
 
@@ -1237,7 +1292,6 @@ class particleuniverse(pymodule):
         Config.PATH_LIB_Ogre_OgreMain,
         Config.PATH_LIB_particleuniverse
     ]
-    CheckIncludes = []
     libs = [  boost.lib, 'OgreMain', 'ParticleUniverse' ]
     ModuleName = "particleuniverse"
 
@@ -1268,7 +1322,6 @@ class nxogre(pymodule):
         Config.PATH_LIB_PhysX
     ]
 
-    CheckIncludes = []
     if os.name == 'nt':
         libs = [boost.lib, 'NxCharacter', 'NxCooking', 'PhysXLoader', 'OgreMain', 'NxOgre' ]
     else:
@@ -1315,9 +1368,10 @@ class ogrevideo(pymodule):
         Config.PATH_LIB_Theora,
         Config.PATH_LIB_OPENAL
     ]
-    CheckIncludes = []
     libs = [boost.lib, 'Plugin_TheoraVideoSystem', 'OgreMain', 'openal32' ]
-
+    moduleLibs = [ os.path.join(Config.PATH_OPENAL, 'redist', 'OpenAL32'),
+                os.path.join(Config.PATH_OPENAL, 'redist', 'wrap_oal')
+                ]
     ModuleName = "ogrevideo"
 
 class plib(pymodule):
@@ -1333,7 +1387,6 @@ class plib(pymodule):
         boost.PATH_LIB,
     ]
     ModuleName = "plib"
-    CheckIncludes = []
 
     if os.name == "nt":
         libs = [ boost.lib, 'winmm', 'User32', 'wsock32', 'opengl32.lib', 'glu32.lib' ]
@@ -1359,7 +1412,6 @@ class physx(pymodule):
         Config.PATH_LIB_Ogre_OgreMain,
         Config.PATH_LIB_PhysX
     ]
-    CheckIncludes = []
 
     if isWindows():
         libs = [boost.lib, 'NxCharacter', 'NxCooking', 'PhysXLoader' ]
@@ -1387,6 +1439,10 @@ class physx(pymodule):
         ]
 
     ModuleName = "PhysX"
+    moduleLibs = [os.path.join(Config.PATH_LIB_PhysX,'../../../bin/win32','NxCharacter'),
+                    os.path.join(Config.PATH_LIB_PhysX,'../../../bin/win32','NxCooking'),
+                    os.path.join(Config.PATH_LIB_PhysX,'../../../bin/win32','PhysXLoader')
+                    ]
 
 class ogreal(pymodule):
     version = "r130"
@@ -1436,6 +1492,9 @@ class ogreal(pymodule):
             [0, "unzip -q -o  " + os.path.join(downloadPath, "libvorbis-1.2.0.zip"), ''],
             [0, "ren libvorbis-1.2.0 vorbis", ''],
         ]
+        moduleLibs=[os.path.join(Config.PATH_OPENAL, 'redist','OpenAL32'),
+                    os.path.join(Config.PATH_OPENAL, 'redist','wrap_oal')
+                    ]
     else:
         lib_dirs = [
             boost.PATH_LIB,
@@ -1464,7 +1523,6 @@ class ogreal(pymodule):
             'openal'
         ]  ##  'OgreAL' -- going to compile OgreAL ourselves
     ModuleName = 'OgreAL'
-    CheckIncludes = ['OgreAL.h']
 
 
 class ogrevideoffmpeg(pymodule):
@@ -1485,7 +1543,6 @@ class ogrevideoffmpeg(pymodule):
         Config.PATH_LIB_ogrevideoffmpeg,
         Config.PATH_LIB_ffmpeg
     ]
-    CheckIncludes = []
     if os.name == 'nt':
         libs = [boost.lib, 'OgreMain', 'libavformat', 'libavcodec', 'libavutil',
             'libavdevice', 'libswscale', 'liba52', 'libmingwex', 'libfaac', 'libfaad',
@@ -1495,7 +1552,14 @@ class ogrevideoffmpeg(pymodule):
     else:
         libs = [boost.lib, 'OgreMain', 'avformat', 'avcodec', 'avutil', 'z', 'GL', 'GLU', 'Xxf86vm', 'Xext', 'X11' ]
     ModuleName = "ogrevideoffmpeg"
-
+    moduleLibs = [ os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','avcodec-52' ),
+                os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','avdevice-52' ),
+                os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','avformat-52' ),
+                os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','avutil-49' ),
+                os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','libogg-0' ),
+                os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','swscale-0' )
+                ]
+                
 class ogredshow(pymodule):
     active = False
     version = "0.1"
@@ -1515,7 +1579,6 @@ class ogredshow(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
     ]
-    CheckIncludes = []
     libs = [boost.lib, 'OgreMain', 'Strmiids', 'ole32']
     ModuleName = "ogredshow"
 
@@ -1537,7 +1600,6 @@ class et(pymodule):  ## editable terrain
         Config.PATH_et
     ]
     ModuleName = 'et'
-    CheckIncludes = ['boost/python.hpp']
 
 class bullet(pymodule):
     version = "2.74"
@@ -1578,7 +1640,6 @@ class bullet(pymodule):
         ]
 
     ModuleName = 'bullet'
-    CheckIncludes = ['boost/python.hpp']
     CCFLAGS = ' /D "NDEBUG" /D "_CONSOLE"  /D "WIN32" /D "_MBCS" /fp:fast /Gy /GF '
 
 class ogrebulletc(pymodule):
@@ -1612,7 +1673,6 @@ class ogrebulletc(pymodule):
     else:
         CCFLAGS = ' -D_PRECOMP -fno-inline '
     ModuleName = 'OgreBulletC'
-    CheckIncludes = ['boost/python.hpp', 'Ogre.h']
 
 
 class ogrebulletd(pymodule):
@@ -1649,7 +1709,6 @@ class ogrebulletd(pymodule):
     else:
         CCFLAGS = ' -D_PRECOMP -fno-inline '
     ModuleName = 'OgreBulletD'
-    CheckIncludes = ['boost/python.hpp', 'Ogre.h']
     descText = "Ogre Bullet Dynamics (physics) implementation"
 
 class noise(pymodule):
@@ -1664,7 +1723,6 @@ class noise(pymodule):
     lib_dirs = [
         boost.PATH_LIB
     ]
-    CheckIncludes = []
     libs = [boost.lib]
     ModuleName = "noise"
     descText = "Generate 'noise'"
@@ -1682,7 +1740,6 @@ class watermesh(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain
     ]
-    CheckIncludes = []
     libs = [boost.lib, 'OgreMain']
     ModuleName = "watermesh"
     descText = "C++ code from Ogre Water demo -- use Hydrax instead"
@@ -1700,7 +1757,6 @@ class ofusion(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
     ]
-    CheckIncludes = []
     libs = [boost.lib, 'OgreMain' ]
     ModuleName = "ofusion"
     descText = "Import Ogre 'Scenes' from 3dMax using the ofusion exporter"
@@ -1718,7 +1774,6 @@ class cadunetree(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
     ]
-    CheckIncludes = []
     libs = [  boost.lib, 'OgreMain' ]
     ModuleName = "cadunetree"
     descText = "Generate realistic trees"
@@ -1737,7 +1792,6 @@ class ogrepcz(pymodule):
         Config.PATH_LIB_Ogre_OgreMain,
         Config.PATH_LIB_pcz
     ]
-    CheckIncludes = []
     libs = [boost.lib, 'Plugin_PCZSceneManager', 'OgreMain' ]
     ModuleName = "ogrepcz"
     descText = "Portal SceneManager - seamlessly move from interior to exterior scene management"
@@ -1756,7 +1810,6 @@ class opensteer(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_opensteer
     ]
-    CheckIncludes = []
     libs = [  boost.lib, 'opensteer' ]
     ModuleName = "opensteer"
 
@@ -1773,7 +1826,6 @@ class hydrax(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
     ]
-    CheckIncludes = []
     libs = [  boost.lib, 'OgreMain' ]
     ModuleName = "hydrax"
     descText = "Fantastic water/ocean effects"
@@ -1802,7 +1854,6 @@ class hikari(pymodule):
         Config.PATH_LIB_Ogre_OgreMain,
         Config.PATH_LIB_hikari
     ]
-    CheckIncludes = []
     libs = [  boost.lib, 'OgreMain', 'comsuppw', 'Gdi32' ] ##, 'hikari' ]
     ModuleName = "hikari"
     descText = "Use Flash controls within Ogre"
@@ -1829,7 +1880,6 @@ class mygui(pymodule):
         Config.PATH_LIB_Ogre_OgreMain,
         Config.PATH_LIB_mygui,
     ]
-    CheckIncludes = []
     libs = [  boost.lib, 'OgreMain', 'MyGUI' ] ##, 'hikari' ]
     ModuleName = "mygui"
     descText = "MyGUI Interface System"
@@ -1853,7 +1903,6 @@ class canvas(pymodule):
         include_dirs.append (os.path.join(Config.PATH_THIRDPARTY, 'freetype', 'include'))
         lib_dirs.append (os.path.join(Config.PATH_THIRDPARTY, 'freetype', 'lib'))
         
-    CheckIncludes = []
     libs = [boost.lib, 'OgreMain', 'freetype235']
     ModuleName = "canvas"
     descText = "Canvas GUI System"
@@ -1874,7 +1923,6 @@ class raknet(pymodule):
         Config.PATH_LIB_Ogre_Dependencies,
         Config.PATH_LIB_raknet,
     ]
-    CheckIncludes = []
     libs = [boost.lib, 'OgreMain', 'RakNetLibStatic', 'Ws2_32' ]
     ModuleName = "raknet"
     descText = "RakNet MultiPlayer Gaming System"
@@ -1895,7 +1943,6 @@ class doctester(pymodule):
     lib_dirs = [
         boost.PATH_LIB
     ]
-    CheckIncludes = []
     libs = [  boost.lib, 'OgreMain']
     ModuleName = "doctester"
     descText = "A test environment for documentation stringa"
@@ -1914,7 +1961,6 @@ class plsm2(pymodule):
         Config.PATH_LIB_plsm2
     ]
     CCFLAGS = ' -D_PLSM_OCTREE -DNDEBUG -D_WINDOWS -D__PYTHONOGRE_BUILD_CODE -DPLUGIN_PAGINGLANDSCAPE2_EXPORTS'
-    CheckIncludes = []
     libs = [  boost.lib, 'Plugin_OctreeSceneManager', 'OgreMain' ]
     ModuleName = "plsm2"
     descText = "Paging Landscape SceneManager"
@@ -1933,7 +1979,6 @@ class ogreoctreesm(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
     ]
-    CheckIncludes = []
     libs = [boost.lib, 'Plugin_OctreeSceneManager', 'OgreMain' ]
     ModuleName = "ogreoctreesm"
     descText = "Octree Zone Namangement - Expose all functions in OctreeZone incase required"
@@ -1952,10 +1997,32 @@ class ogreoctreezone(pymodule):
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
     ]
-    CheckIncludes = []
     libs = [boost.lib, 'Plugin_OctreeZone', 'OgreMain' ]
     ModuleName = "ogreoctreezone"
     descText = "Octree Zone Management - Expose all functions in OctreeZone incase required"
+    
+class ogreoggsound(pymodule):
+    version = "r237"
+    active = True
+    name = 'ogreoggsound'
+    parent = "ogre/sound"
+    include_dirs = [
+        boost.PATH,
+        Config.PATH_INCLUDE_Ogre,
+        Config.PATH_INCLUDE_ogreoggsound,
+        Config.PATH_INCLUDE_OGG,
+        Config.PATH_INCLUDE_VORBIS,
+        Config.PATH_INCLUDE_OPENAL,
+    ]
+    lib_dirs = [
+        boost.PATH_LIB,
+        Config.PATH_LIB_Ogre_OgreMain,
+        Config.PATH_LIB_ogreoggsound
+    ]
+    moduleLibs=[os.path.join(Config.PATH_LIB_ogreoggsound,'OgreOggSound')]
+    libs = [boost.lib, 'OgreMain', 'OgreOggSound' ]
+    ModuleName = "ogreoggsound"
+    descText = "Ogre OGG Sound Module"
 
 if ogre.version.startswith ("1.7"):
     class ogreterrain(pymodule):
@@ -1973,7 +2040,6 @@ if ogre.version.startswith ("1.7"):
             boost.PATH_LIB,
             Config.PATH_LIB_Ogre_OgreMain,
         ]
-        CheckIncludes = []
         libs = [boost.lib, 'OgreTerrain', 'OgrePaging', 'OgreMain' ]
         ModuleName = "ogreterrain"
         descText = "OgreTerrain: New Terrain Manager in Ogre"
@@ -1992,7 +2058,6 @@ if ogre.version.startswith ("1.7"):
             boost.PATH_LIB,
             Config.PATH_LIB_Ogre_OgreMain,
         ]
-        CheckIncludes = []
         libs = [boost.lib, 'OgrePaging', 'OgreMain' ]
         ModuleName = "ogrepaging"
         descText = "OgreTerrain: New Terrain Manager in Ogre"
@@ -2010,6 +2075,7 @@ projects = {
 #    'newton' : newton,
     'ogrerefapp' : ogrerefapp,
     'ogrenewt' : ogrenewt,
+    'ogrenewt2' : ogrenewt2,
     'ogreode' : ogreode,
     'ogreal' : ogreal,
     'quickgui' : quickgui,
@@ -2045,28 +2111,12 @@ projects = {
     'plsm2' : plsm2,
     'ogreoctreezone' : ogreoctreezone,
     'ogreoctreesm' : ogreoctreesm,
+    'ogreoggsound' : ogreoggsound,
     
 }
 if ogre.version.startswith ("1.7"):
     projects['ogrepaging'] = ogrepaging
     projects['ogreterrain'] = ogreterrain
-#
-# let's setup some defaults
-#
-def CheckPaths(cls, name):
-    """ lets check we can find files listed in the CheckIncludes list somewhere in the include_dirs directories
-    also look for libs in the lib_dirs.
-    This way we can warn people early if they have a configuration problem"""
-    if cls.active:  ## only check active classes
-        for incfile in cls.CheckIncludes:
-            found = False
-            log("Checking for %s include file (%s class) in include_dirs" % (incfile, name))
-            for lookdir in cls.include_dirs:
-                if os.path.isfile(os.path.join(lookdir, incfile)):
-                    found = True
-                    break
-            if not found:
-                pass
 
 #
 # a couple of specials that should be done differently
@@ -2087,7 +2137,6 @@ for name, cls in projects.items():
                 print "Set %s.%s to %s" % (name, key, value)
 
 
-    ##CheckPaths(cls, name)
     cls.root_dir = os.path.join(root_dir, 'code_generators', name)
     cls.dir_name = name + '_' + str(cls.version)
     cls.generated_dir = os.path.join(generated_dir, cls.dir_name)

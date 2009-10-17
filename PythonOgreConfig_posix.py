@@ -68,6 +68,7 @@ if isMAC:
    
     
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
+PATH_Newton2 =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.10.1')
 PATH_OGG =          os.path.join(BASE_DIR, 'libogg-1.1.3')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'libvorbis-1.2.0')
@@ -110,6 +111,9 @@ PATH_raknet = os.path.join(BASE_DIR, 'raknet')
 PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib')
 PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
 
+PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
+PATH_INCLUDE_ogreoggsound = os.path.join(PATH_ogreoggsound,'include')
+PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'Release')
 
 ###
 ### these paths assume you've left all the directory structure as standard
@@ -120,7 +124,9 @@ PATH_LIB_Ogre_OgreMain=         os.path.join( LOCAL_LIB ) # PATH_Ogre, 'OgreMain
 PATH_LIB_Ogre_Dependencies =    os.path.join( LOCAL_LIB ) # , 'Dependencies/lib/Release')
 PATH_LIB_OgreRefApp =           os.path.join( LOCAL_LIB ) # PATH_Ogre, 'ReferenceApplication/ReferenceAppLayer/lib/Release')
 PATH_LIB_OgreNewt =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release') 
+PATH_LIB_OgreNewt2 =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release') 
 PATH_LIB_Newton =               os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
+PATH_LIB_Newton2 =               os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
 
 PATH_LIB_OIS =                  os.path.join( LOCAL_LIB ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
 PATH_LIB_CEGUI =                os.path.join( LOCAL_LIB ) #PATH_Ogre, r'Dependencies/lib/Release' )
@@ -166,6 +172,12 @@ PATH_INCLUDE_Ogre_Dependencies =    PATH_INCLUDE_Ogre #      os.path.join( PATH_
 PATH_INCLUDE_OIS =          os.path.join(LOCAL_INCLUDE,'OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
 PATH_INCLUDE_CEGUI =        os.path.join(LOCAL_INCLUDE,'CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
 
+PATH_INCLUDE_ogrepaging =   os.path.join(PATH_Ogre,'Components','Paging', 'include')
+PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
+PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
+PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
+    
+    
 if SDK :
     PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'include','OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
     PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI,'include','CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
@@ -181,6 +193,7 @@ if isMAC:
 
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
+PATH_INCLUDE_OgreNewt2 =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_ODE =          os.path.join(LOCAL_INCLUDE,'ode') #os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    '' #      os.path.join( PATH_ODE, 'ode/src')

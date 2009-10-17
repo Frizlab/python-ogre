@@ -17,8 +17,8 @@ LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_40_0' ) #-trunk')
-# PATH_Boost =        os.path.join(BASE_DIR, 'boost-trunk')
+#PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_40_0' ) #-trunk')
+PATH_Boost =        os.path.join(BASE_DIR, 'boost_svn')
 
 
 ## Path to your boost_pythonxxxx lib file
@@ -47,13 +47,12 @@ PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
 PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
 PATH_Ogre = "c:\\ogre"
-if SDK:
-    PATH_Ogre =         "C:\\OgreSDK"
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.2')
 
 PATH_OIS =          os.path.join(BASE_DIR, 'ois' ) ##'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
+PATH_Newton2 =       os.path.join(BASE_DIR, 'newtonsdk2','sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.11')
 PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
@@ -111,10 +110,10 @@ PATH_raknet = os.path.join(BASE_DIR, 'raknet')
 PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib')
 PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
 
-# it's time for the SDK version
-if SDK:
-    PATH_CEGUI =        PATH_Ogre
-    PATH_OIS =          PATH_Ogre
+PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
+PATH_INCLUDE_ogreoggsound = os.path.join(PATH_ogreoggsound,'include')
+PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'Release')
+ 
 
     
         
@@ -127,7 +126,10 @@ PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' ) #, 'Release' )
 PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
 PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
 PATH_LIB_OgreNewt =             os.path.join( PATH_OgreAddons, 'ogrenewt/OgreNewt_Main/lib/Release') 
+PATH_LIB_OgreNewt2 =             os.path.join( PATH_OgreAddons, 'ogrenewt2/lib') 
 PATH_LIB_Newton =               os.path.join( PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
+PATH_LIB_Newton2 =               os.path.join( PATH_Newton2 ,'x32','lib_vs9_mt')  ##NOTE Posix platforms this lives in 'lib-mt'
+
 PATH_LIB_OIS =                  os.path.join( PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
 PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI, 'lib' )
 PATH_LIB_ODE =                  os.path.join( PATH_ODE, 'lib/ReleaseSingleLib')## probable releaselib for posix
@@ -159,12 +161,6 @@ PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
 PATH_LIB_plsm2 = PATH_plsm2
 PATH_LIB_OPENAL=        os.path.join(PATH_OPENAL, 'libs','win32' ) ##'release') #'openal')
                 
-if SDK:
-    PATH_LIB_Ogre_OgreMain =        os.path.join( PATH_Ogre, 'lib' )
-    PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
-    PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'lib') 
-    PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib' )
-    PATH_LIB_pcz =                  os.path.join( PATH_Ogre, 'lib','opt' )
 
 PATH_INCLUDE_ogrepaging =   os.path.join(PATH_Ogre,'Components','Paging', 'include')
 PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
@@ -178,6 +174,7 @@ PATH_INCLUDE_Ogre_Dependencies = os.path.join( PATH_Ogre, 'Dependencies/include'
 PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes')    ## Note the plural include's
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
+PATH_INCLUDE_OgreNewt2 =     os.path.join(PATH_OgreAddons,'ogrenewt2/inc')
 PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI, 'include')
 PATH_INCLUDE_ODE =          os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
@@ -249,23 +246,17 @@ PATH_INCLUDE_opensteer = os.path.join(PATH_opensteer, 'include')
 PATH_INCLUDE_opensteer_opensteer = os.path.join(PATH_opensteer, 'include', 'OpenSteer')
 
 if SDK:
+    PATH_Ogre =         "C:\\OgreSDK"
+    PATH_CEGUI =        PATH_Ogre
+    PATH_OIS =          PATH_Ogre
     PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'include') 
     PATH_INCLUDE_OIS =          os.path.join(PATH_Ogre,'include/OIS')   
     PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'include/CEGUI')
     PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples','include')
     PATH_INCLUDE_ogrepcz = os.path.join(PATH_Ogre,'include', 'opt')
     PATH_INCLUDE_Ogre_Dependencies = os.path.join(PATH_Ogre,'include') 
-    
-# test to use hydrax dll for performance reasons...
-if False:
-    PATH_hydrax = os.path.join(BASE_DIR, 'Hydrax-v0.5')
-    PATH_INCLUDE_hydrax = os.path.join(PATH_hydrax,'Hydrax','src','Hydrax')
-    PATH_INCLUDE_hydrax_modules = [
-        os.path.join(PATH_INCLUDE_hydrax,'Modules'),
-        os.path.join(PATH_INCLUDE_hydrax,'Modules','ProjectedGrid'),
-        os.path.join(PATH_INCLUDE_hydrax,'Modules','SimpleGrid'),
-        os.path.join(PATH_INCLUDE_hydrax,'Noise'),
-        os.path.join(PATH_INCLUDE_hydrax,'Noise','Perlin')
-        ]
-    PATH_LIB_hydrax = os.path.join(PATH_hydrax, 'Hydrax','bin','release')
-    
+    PATH_LIB_Ogre_OgreMain =        os.path.join( PATH_Ogre, 'lib' )
+    PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
+    PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'lib') 
+    PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib' )
+    PATH_LIB_pcz =                  os.path.join( PATH_Ogre, 'lib','opt' )

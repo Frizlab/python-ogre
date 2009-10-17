@@ -504,6 +504,7 @@ def generate_code():
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
     additional_files= os.listdir(environment.Config.PATH_INCLUDE_mygui)
+    additional_files = []
     for f in additional_files:
         if f.endswith('cpp') or f.endswith('.h'):
             sourcefile = os.path.join(environment.Config.PATH_INCLUDE_mygui, f)

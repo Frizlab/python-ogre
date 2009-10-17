@@ -1,3 +1,8 @@
+October 15 2009:  Release 1.6.4 R1001
+=====================================
+Basically an Ogre 1.6.4 release with every module updated :)
+See ReportVersion.out for the various versions...
+
 April 2 2009: Release 1.6.1 R940
 =================================
 

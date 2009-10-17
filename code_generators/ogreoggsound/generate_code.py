@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 
 ## STARTER TEMPLATE..
-## replace quickgui with lowercase project name
+## replace ogreoggsound with lowercase project name
 ## set MAIN_NAMESPACE
 ## rename and configure .h files
 
@@ -55,7 +55,7 @@ from pyplusplus.decl_wrappers import algorithm
 algorithm.create_valid_name = common_utils.PO_create_valid_name 
 
 
-MAIN_NAMESPACE = 'QuickGUI'
+MAIN_NAMESPACE = 'OgreOggSound'
 
 ############################################################
 ##
@@ -69,45 +69,19 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-        
-    excludes=[
-                #'::QuickGUI::ComboBox::_clearSelection'
-                #'::QuickGUI::ComboBox::addComboBoxEventHandler'
-#                 ,'::QuickGUI::ContainerWidget::setDrawChildrenWhenNotVisible'
-#                 ,'::QuickGUI::ContainerWidget::getDrawChildrenWhenNotVisible'
-#                 ,'::QuickGUI::TreeViewNode::isSelected'
-                '::QuickGUI::ComboBox::_clearSelection',
-                '::QuickGUI::ContainerWidget::setDrawChildrenWhenNotVisible',
-                '::QuickGUI::PropertyGrid::getPropertyWidth',
-                '::QuickGUI::PropertyGridItem::isSelected',
-                '::QuickGUI::ScriptProperty::ScriptProperty',
-                '::QuickGUI::ContainerWidget::getDrawChildrenWhenNotVisible',
-                '::QuickGUI::TreeViewNode::isSelected',
-                '::QuickGUI::Widget::setConsumeMouseEvents',
-                '::QuickGUI::ScriptProperty::getPropertyName',
-                '::QuickGUI::ScriptProperty::getValues',
-                '::QuickGUI::DescFactory::createInstance'
-                ]
-            
+    excludes=['::OgreOggSound::WAVEHEADER'
+            ]
     for e in excludes:
-        try:
-            global_ns.member_functions(e).exclude()
-            print "Excluding Function", e
-        except:
-            print "Failed to exclude function", e
-    
- 
-    NotExported=['::QuickGUI::ScriptProperty']
-    for c in NotExported:
-        print "Excluding Class", c
-        main_ns.class_( c ).exclude()
- 
-    # excluding static const strings that cause a boost cant set variable error    
-    for v in main_ns.variables():
-        if '::Ogre::String const' in v.type.decl_string:
-            v.exclude()
-            print "Excluding Const String var:",v, v.decl_string   
+        main_ns.class_(e).exclude()
         
+    excludes=['::OgreOggSound::OgreOggStaticSound::release'
+              ,'::OgreOggSound::OgreOggStaticWavSound::release'
+              ,'::OgreOggSound::OgreOggStreamSound::release'
+              ,'::OgreOggSound::OgreOggStreamWavSound::release'
+              ]
+    for e in excludes:
+        main_ns.member_functions(e).exclude()
+              
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -120,19 +94,7 @@ def ManualInclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-    includes=['::Ogre::FontPtr',
-              '::Ogre::SharedPtr<Ogre::DataStream>'
-              ]
-    for i in includes:
-        global_ns.class_(i).include(already_exposed=True)
-        print "Include Class:", i 
         
-#     includes=['::QuickGUI::WidgetFactory<QuickGUI::Widget>',
-#             '::QuickGUI::Factory<QuickGUI::WidgetDesc>'
-#             ]
-#     for i in includes:
-#         global_ns.class_(i).include()
-#         print "Include Class:", i   
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -225,43 +187,45 @@ def Fix_NT ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-#     messages.disable( 
-# #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-#           messages.W1020
-#         , messages.W1021
-#         , messages.W1022
-#         , messages.W1023
-#         , messages.W1024
-#         , messages.W1025
-#         , messages.W1026
-#         , messages.W1027
-#         , messages.W1028
-#         , messages.W1029
-#         , messages.W1030
-#         , messages.W1031
-#         , messages.W1035
-#         , messages.W1040 
-#         , messages.W1038        
-#         , messages.W1041
-#         , messages.W1036 # pointer to Python immutable member
-#         , messages.W1033 # unnamed variables
-#         , messages.W1018 # expose unnamed classes
-#         , messages.W1049 # returns reference to local variable
-#         , messages.W1014 # unsupported '=' operator
-#          )
+    messages.disable( 
+#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+          messages.W1020
+        , messages.W1021
+        , messages.W1022
+        , messages.W1023
+        , messages.W1024
+        , messages.W1025
+        , messages.W1026
+        , messages.W1027
+        , messages.W1028
+        , messages.W1029
+        , messages.W1030
+        , messages.W1031
+        , messages.W1035
+        , messages.W1040 
+        , messages.W1038        
+        , messages.W1041
+        , messages.W1036 # pointer to Python immutable member
+        , messages.W1033 # unnamed variables
+        , messages.W1018 # expose unnamed classes
+        , messages.W1049 # returns reference to local variable
+        , messages.W1014 # unsupported '=' operator
+         )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
     # NOTE: If you update the source library code you need to manually delete the cache .XML file   
     #
     xml_cached_fc = parser.create_cached_source_fc(
-                        os.path.join( environment.quickgui.root_dir, "python_quickgui.h" )
-                        , environment.quickgui.cache_file )
+                        os.path.join( environment.ogreoggsound.root_dir, "python_ogreoggsound.h" )
+                        , environment.ogreoggsound.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE',
-                'WIN32', 'NDEBUG', 'WINDOWS' , '_PRECOMP']  
-
-    defined_symbols.append( 'VERSION_' + environment.quickgui.version )  
+    defined_symbols = ['OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE',
+                        'BOOST_HAS_THREADS']
+    if environment.isWindows():
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
+                        
+    defined_symbols.append( 'VERSION_' + environment.ogreoggsound.version )  
     
     #
     # build the core Py++ system from the GCCXML created source
@@ -269,10 +233,10 @@ def generate_code():
     mb = module_builder.module_builder_t( [ xml_cached_fc ]
                                           , gccxml_path=environment.gccxml_bin
                                           , working_directory=environment.root_dir
-                                          , include_paths=environment.quickgui.include_dirs
+                                          , include_paths=environment.ogreoggsound.include_dirs
                                           , define_symbols=defined_symbols
                                           , indexing_suite_version=2
-                                          , cflags=environment.quickgui.cflags
+                                          , cflags=environment.ogreoggsound.cflags
                                            )
                                            
     # if this module depends on another set it here                                           
@@ -322,7 +286,7 @@ def generate_code():
     common_utils.Auto_Document( mb, MAIN_NAMESPACE )
     
     ## add additional version information to the module to help identify it correctly 
-    common_utils.addDetailVersion ( mb, environment, environment.quickgui )
+    common_utils.addDetailVersion ( mb, environment, environment.ogreoggsound )
 
     ##########################################################################################
     #
@@ -330,23 +294,23 @@ def generate_code():
     #
     ##########################################################################################
     extractor = exdoc.doc_extractor() # I'm excluding the UTFstring docs as lots about nothing 
-    mb.build_code_creator (module_name='_quickgui_' , doc_extractor= extractor )
+    mb.build_code_creator (module_name='_ogreoggsound_' , doc_extractor= extractor )
     
-    for inc in environment.quickgui.include_dirs:
+    for inc in environment.ogreoggsound.include_dirs:
         mb.code_creator.user_defined_directories.append(inc )
-    mb.code_creator.user_defined_directories.append( environment.quickgui.generated_dir )
-    mb.code_creator.replace_included_headers( customization_data.header_files( environment.quickgui.version ) )
+    mb.code_creator.user_defined_directories.append( environment.ogreoggsound.generated_dir )
+    mb.code_creator.replace_included_headers( customization_data.header_files( environment.ogreoggsound.version ) )
 
-    huge_classes = map( mb.class_, customization_data.huge_classes( environment.quickgui.version ) )
+    huge_classes = map( mb.class_, customization_data.huge_classes( environment.ogreoggsound.version ) )
 
-    mb.split_module(environment.quickgui.generated_dir, huge_classes, use_files_sum_repository=False)
+    mb.split_module(environment.ogreoggsound.generated_dir, huge_classes, use_files_sum_repository=False)
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
     
-    common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_quickgui, 
-                            destPath = environment.quickgui.generated_dir, 
-                            recursive=False )
+#     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_ogreoggsound, 
+#                             destPath = environment.ogreoggsound.generated_dir, 
+#                             recursive=False )
         
 if __name__ == '__main__':
     start_time = time.clock()
