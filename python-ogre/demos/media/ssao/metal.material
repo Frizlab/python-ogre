@@ -1,0 +1,7 @@
+import diffuse_template from "diffuse.material"
+
+material metal : diffuse_template
+{
+    set_texture_alias ambient_tex RustedMetal.jpg
+    set_texture_alias diffuse_tex RustedMetal.jpg
+}
