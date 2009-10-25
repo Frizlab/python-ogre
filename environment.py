@@ -653,6 +653,7 @@ class ogre(pymodule):
         include_dirs = [
             boost.PATH,
             Config.PATH_INCLUDE_Ogre,
+            python_include_dirs,
         ]
         LINKFLAGS = ''
 
@@ -675,7 +676,10 @@ class ogre(pymodule):
         ]
         libs = [boost.lib, 'OgreMain']
         lib_dirs = [Config.LOCAL_LIB]
-        include_dirs = [boost.PATH, Config.PATH_INCLUDE_Ogre]
+        include_dirs = [boost.PATH, 
+                        Config.PATH_INCLUDE_Ogre,
+                        python_include_dirs,
+                        ]
         CCFLAGS = ' -D__PYTHONOGRE_BUILD_CODE '
 
 

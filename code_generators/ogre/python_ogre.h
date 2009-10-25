@@ -7,13 +7,13 @@
 #include <vector>
 #include <set>
 #include <map>
+
 #if defined __APPLE_CC__
     #include "strings.h"
     #include "Carbon/Carbon.h"
 #endif
+
 #include "python_ogre_masterlist.h"
-
-
 
 typedef HashMap<Ogre::String, unsigned short> OgreHashMapStringUshortOuter;
 

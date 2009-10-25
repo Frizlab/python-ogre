@@ -36,25 +36,21 @@
 #endif
 
 Ogre::SharedPtr<Ogre::DataStream> d;
-Ogre::AnyNumeric AnyNumUshort ((Ogre::ushort)0);
-Ogre::AnyNumeric AnyNumUlong ((Ogre::ulong)0);
-Ogre::AnyNumeric AnyNumUint8 ((Ogre::uint8)0);
-Ogre::AnyNumeric AnyNumUint32 ((Ogre::uint32)0);
-Ogre::AnyNumeric AnyNumUint16 ((Ogre::uint16)0);
-Ogre::AnyNumeric AnyNumUint ((Ogre::uint)0);
-Ogre::AnyNumeric AnyNumUchar ((Ogre::uchar) 0);
 Ogre::AnyNumeric AnyNumReal ((Ogre::Real)1.0);
-Ogre::AnyNumeric AnyNumInt (1);
-Ogre::Any AnyUshort ((Ogre::ushort)0);
-Ogre::Any AnyUlong ((Ogre::ulong)0);
-Ogre::Any AnyUint8 ((Ogre::uint8)0);
-Ogre::Any AnyUint32 ((Ogre::uint32)0);
-Ogre::Any AnyUint16 ((Ogre::uint16)0);
-Ogre::Any AnyUint ((Ogre::uint)0);
-Ogre::Any AnyUchar ((Ogre::uchar) 0);
+Ogre::AnyNumeric AnyNumInt ((int)1);
+sizeof( AnyNumReal );
+sizeof( AnyNumInt );
+
+// Ogre::Any AnyPython ((boost::python::object)0); 
 Ogre::Any AnyString ((Ogre::String) "");
 Ogre::Any AnyReal ((Ogre::Real)1.0);
-Ogre::Any AnyInt (1);
+Ogre::Any AnyInt ((int)1);
+
+// sizeof( AnyPython );
+sizeof( AnyString );
+sizeof( AnyReal );
+sizeof( AnyInt );
+
 std::list<Ogre::SceneNode *> specialList; // adding this to stop duplicate exposing in scene managers
 
 sizeof(d);
@@ -378,25 +374,7 @@ sizeof( Ogre::AliasTextureNamePairList );
 sizeof( Ogre::ATTRIBUTE_PARSER );
 sizeof( Ogre::ARGB );
 sizeof( Ogre::ABGR );
-sizeof( AnyUshort );
-sizeof( AnyUlong );
-sizeof( AnyUint8 );
-sizeof( AnyUint32 );
-sizeof( AnyUint16 );
-sizeof( AnyUint );
-sizeof( AnyUchar );
-sizeof( AnyString );
-sizeof( AnyReal );
-sizeof( AnyNumUshort );
-sizeof( AnyNumUlong );
-sizeof( AnyNumUint8 );
-sizeof( AnyNumUint32 );
-sizeof( AnyNumUint16 );
-sizeof( AnyNumUint );
-sizeof( AnyNumUchar );
-sizeof( AnyNumReal );
-sizeof( AnyNumInt );
-sizeof( AnyInt );
+
 sizeof( ::pyplusplus::aliases::SubMeshLodGeometryLinkList );
 sizeof( ::pyplusplus::aliases::InstSubMeshLodGeometryLinkList );
 sizeof( Ogre::Singleton<Ogre::DynLibManager> );

@@ -38,13 +38,41 @@ class TutorialApplication(SampleFramework.Application):
         print nud.getTypeName()
         print nud.getTypeID()   
         
-        meshMgr = ogre.MeshManager.getSingleton() 
-        mesh = meshMgr.createManual("test", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
-        print mesh
-        print dir(mesh)
-        ser = ogre.MeshSerializer()
-        ser.exportMesh(mesh,".cube.mesh");
-       
+        # now test Any
+        list=[1,2,3,4]
+        a=ogre.Any(list)
+        b=a.getData()
+        if len(b) != 2:
+            print "ERROR", b
+        if b[0] != 'p':
+            print "ERROR", b
+        if len(b[1]) != 4:
+            print "ERROR", b
+        print b
+        list[1]=12
+        print b[1]
+        c=ogre.createAny(['us',123])
+        d=c.getData()
+        print d
+        c=ogre.createAny(['l',123])
+        d=c.getData()
+        print d
+        c=ogre.createAny(['ul',123])
+        d=c.getData()
+        print d
+        c=ogre.createAny(['uc',5])
+        d=c.getData()
+        print d
+        c=ogre.createAny(['p',list])
+        #del list
+        d=c.getData()
+        print d
+        
+        a=ogre.Any( nud )
+        print a
+        b=a.getData()
+        print b
+        print b[1].id, b[1].name
         sys.exit()
 
 if __name__ == '__main__': 

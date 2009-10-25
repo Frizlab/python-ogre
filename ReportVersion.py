@@ -9,7 +9,7 @@ import ogre.renderer.OGRE as o
 #add environment to the path
 sys.path.append(  '.' )
 sys.path.append(  os.path.join(os.getcwd(), 'plugins' ))
-import environment
+
 #add common utils to the pass
 if sys.platform == 'win32': 
     newpath = os.path.join ( os.path.abspath(os.path.dirname(__file__)), 'plugins')
@@ -38,9 +38,16 @@ if __name__ == '__main__':
 #    bm.setupLogging("version.info") # options.logfilename)
 #    logger = logging.getLogger('PythonOgre.ReportVersionInfo')
     #for name in moduleList:
+    try:
+        import environment
+        _ENV=1
+    except:
+        _ENV=0
+        
     print "   PythonOgre Ver: %s" % (o.PythonOgreVersion__)
     print "   Python Version: %s" % (o.PythonVersion__)
     print
+
     for name,cls in environment.projects.items():
         if cls.active and cls.pythonModule:
             name='.'.join([cls.parent.replace('/','.'), cls.ModuleName])
