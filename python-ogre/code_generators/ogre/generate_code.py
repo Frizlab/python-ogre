@@ -486,7 +486,9 @@ def ManualInclude ( mb ):
         main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)5> >").include()
         main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)6> >").include()
         main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)7> >").include()
-
+    
+#        main_ns.class_("::Ogre::AnyNumUshort").include()
+    
     #RenderOperation class is marked as private, but I think this is a mistake
     main_ns.class_('RenderOperation').include()
 
@@ -1350,7 +1352,8 @@ def generate_code():
     xml_cached_fc = parser.create_cached_source_fc(
                         os.path.join( environment.ogre.root_dir, "python_ogre.h" )
                         , environment.ogre.cache_file )
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', '__PYTHONOGRE_BUILD_CODE']
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', '__PYTHONOGRE_BUILD_CODE',
+                        '__GCCXML__']
     undefine_symbols=[]
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')

@@ -1,4 +1,8 @@
 import os
+import os
+import os
+import os
+import os
 import environment
 
 
@@ -304,7 +308,41 @@ WRAPPER_REGISTRATION_ResourceManager = [
     ]
     
 
+WRAPPER_DEFINITION_Any=\
+"""
+boost::python::tuple Any_getData(Ogre::Any & me )
+    	{
+			if (me.isEmpty()) return boost::python::make_tuple( "none", 0 ); 
+            if (me.getType() == typeid(int)) 
+                return boost::python::make_tuple("i", Ogre::any_cast<int>(me));
+            if (me.getType() == typeid(long)) 
+                return boost::python::make_tuple("l",Ogre::any_cast<long>(me));
+            if (me.getType() == typeid(PyObject *)) {
+                PyObject *  data = Ogre::any_cast<PyObject *>(me);
+                return boost::python::make_tuple("p",boost::python::object(boost::python::handle<>(boost::python::borrowed(data))) );
+                }
+            if (me.getType() == typeid(unsigned int)) 
+                return boost::python::make_tuple("ui", Ogre::any_cast<unsigned int>(me));
+            if (me.getType() == typeid(unsigned long)) 
+                return boost::python::make_tuple("ul",Ogre::any_cast<unsigned long>(me));
+            if (me.getType() == typeid(Ogre::String)) 
+                return boost::python::make_tuple("s", Ogre::any_cast<Ogre::String>(me));
+            if (me.getType() == typeid(Ogre::Real)) 
+                return boost::python::make_tuple("r", Ogre::any_cast<Ogre::Real>(me));
+            if (me.getType() == typeid(unsigned char)) 
+                return boost::python::make_tuple("uc", Ogre::any_cast<unsigned char>(me));
+            if (me.getType() == typeid(unsigned short)) 
+                return boost::python::make_tuple("us", Ogre::any_cast<unsigned short>(me));
+            if (me.getType() == typeid(Ogre::UserDefinedObject *)) 
+                return boost::python::make_tuple("ud", Ogre::any_cast<Ogre::UserDefinedObject *>(me));
+			return boost::python::make_tuple( "unknown", 0 ); // TODO: really should raise an exception 
+            }
 
+"""   
+WRAPPER_REGISTRATION_Any = [   
+"""def( "getData", &Any_getData, 
+                "Python-Ogre Helper Function: extract an python object from an Ogre.Any variable");""",
+]                
 WRAPPER_DEFINITION_General = \
 """
 bool checkDataStreamPtr(Ogre::DataStreamPtr& stream) 
@@ -319,6 +357,131 @@ bool checkDataStreamPtrConst(const Ogre::DataStreamPtr& stream)
     return true;
 }
 
+unsigned long General_getAnyUnsignedLong ( Ogre::Any & me ){
+    unsigned long temp = Ogre::any_cast<unsigned long>(me);
+    return temp;
+    }
+    
+int General_getAnyInt ( Ogre::Any & me ){
+    int temp = Ogre::any_cast<int>(me);
+    return temp;
+    }
+unsigned int General_getAnyUnsignedInt ( Ogre::Any & me ){
+    int temp = Ogre::any_cast<unsigned int>(me);
+    return temp;
+    }    
+long General_getAnyLong ( Ogre::Any & me ){
+    int temp = Ogre::any_cast<long>(me);
+    return temp;
+    }
+    
+unsigned char General_getAnyUnsignedChar ( Ogre::Any & me ){
+    int temp = Ogre::any_cast<unsigned char>(me);
+    return temp;
+    }
+    
+unsigned short General_getAnyUnsignedShort ( Ogre::Any & me ){
+    int temp = Ogre::any_cast<unsigned short>(me);
+    return temp;
+    }
+    
+Ogre::Real General_getAnyReal ( Ogre::Any & me ){
+    Ogre::Real temp = Ogre::any_cast<Ogre::Real>(me);
+    return temp;
+    }
+    
+Ogre::String General_getAnyString ( Ogre::Any & me ){
+    Ogre::String temp = Ogre::any_cast<Ogre::String>(me);
+    return temp;
+    }
+    
+Ogre::UserDefinedObject * General_getAnyUserDefinedObject ( Ogre::Any & me ){
+    Ogre::UserDefinedObject * temp = Ogre::any_cast<Ogre::UserDefinedObject* >(me);
+    return temp;
+    }
+
+Ogre::Any * General_createAny ( boost::python::list listin ) {
+    Ogre::String intype;
+    int outint;
+    Ogre::Any * outany;
+    if (len(listin) == 2 ) {
+        intype = boost::python::extract<Ogre::String> (listin[0] );
+        if (intype == "i")  {
+            outint = boost::python::extract<int> (listin[1]);
+            outany= new Ogre::Any(outint);
+            return outany;
+            }
+        if (intype == "ui")  {
+            unsigned int out = boost::python::extract<unsigned int> (listin[1]);
+            outany= new Ogre::Any(out);
+            return outany;
+            }
+        if (intype == "l")  {
+            long out = boost::python::extract<long> (listin[1]);
+            outany= new Ogre::Any(out);
+            return outany;
+            }
+        if (intype == "ul")  {
+            unsigned long out = boost::python::extract<unsigned long> (listin[1]);
+            outany= new Ogre::Any(out);
+            return outany;
+            }
+        if (intype == "uc")  {
+            unsigned char out = boost::python::extract<unsigned char> (listin[1]);
+            outany= new Ogre::Any(out);
+            return outany;
+            }
+        if (intype == "us")  {
+            unsigned short out = boost::python::extract<unsigned short> (listin[1]);
+            outany= new Ogre::Any(out);
+            return outany;
+            }
+        if (intype == "s")  {
+            Ogre::String out = boost::python::extract<Ogre::String> (listin[1]);
+            outany= new Ogre::Any(out);
+            return outany;
+            }
+        if (intype == "r")  {
+            Ogre::Real out = boost::python::extract<Ogre::Real> (listin[1]);
+            outany= new Ogre::Any(out);
+            return outany;
+            }
+        if (intype == "p")  {
+            boost::python::object t = boost::python::extract<boost::python::object>(listin[1]);
+            PyObject * out = t.ptr();
+            Py_INCREF( out ); // in this case I'm going to increment the reference 
+            outany= new Ogre::Any((void *)out);
+            return outany;
+            }
+        } 
+    // assume it's a list with a python object
+    if (len(listin) == 1 ) {
+        boost::python::object t = boost::python::extract<boost::python::object>(listin[0]);
+        PyObject * out = t.ptr();
+        Py_INCREF( out ); // in this case I'm going to increment the reference 
+        outany= new Ogre::Any((void *)out);
+        return outany;
+        }
+    outany= new Ogre::Any(0);
+    return outany;
+    }
+
+Ogre::AnyNumeric * General_createAnyNumeric ( boost::python::list listin ) {
+    Ogre::String intype;
+    int outint;
+    Ogre::AnyNumeric * outany;
+    outany = new (Ogre::AnyNumeric);
+    outany = 0;
+    /*if (len(listin) == 2 ) {
+        intype = boost::python::extract<Ogre::String> (listin[0] );
+        if (intype == "i") {
+            outint = boost::python::extract<int> (listin[1]);
+            return Ogre::AnyNumeric(outint);
+            }
+        }*/
+    return outany;
+    }
+    
 Ogre::OverlayContainer * General_castElementAsOverlayContainer( Ogre::OverlayElement * e ){  
        return (Ogre::OverlayContainer*) e;
     }
@@ -517,7 +680,40 @@ Utility_CastResourceToNative(Ogre::ResourcePtr& r){
 WRAPPER_REGISTRATION_General = [
     """bp::def( "checkDataStreamPtr", &checkDataStreamPtr);""",
     """bp::def( "checkDataStreamPtrConst", &checkDataStreamPtrConst ); """,
- 
+    """bp::def( "getAnyInt", &General_getAnyInt, 
+                "Python-Ogre Helper Function: extract an int value from an Ogre.Any varliable");""",
+    """bp::def( "getAnyUnsignedInt", &General_getAnyInt, 
+                "Python-Ogre Helper Function: extract an unsigned int value from an Ogre.Any varliable");""",
+    """bp::def( "getAnyUnsignedLong", &General_getAnyUnsignedLong, 
+                "Python-Ogre Helper Function: extract an unsigned long value from an Ogre.Any varliable");""",
+    """bp::def( "getAnyUnsignedChar", &General_getAnyUnsignedChar, 
+                "Python-Ogre Helper Function: extract an unsigned Char value from an Ogre.Any varliable");""",
+    """bp::def( "getAnyUnsignedShort", &General_getAnyUnsignedShort, 
+                "Python-Ogre Helper Function: extract an unsigned short value from an Ogre.Any varliable");""",
+    """bp::def( "getAnyLong", &General_getAnyLong, 
+                "Python-Ogre Helper Function: extract an long value from an Ogre.Any varliable");""",
+    """bp::def( "getAnyReal", &General_getAnyReal, 
+                "Python-Ogre Helper Function: extract an real value from an Ogre.Any varliable");""",
+    """bp::def( "getAnyString", &General_getAnyString, 
+                "Python-Ogre Helper Function: extract a string value from an Ogre.Any varliable");""",
+    """bp::def( "getAnyUserDefinedObject", &General_getAnyUserDefinedObject, 
+                "Python-Ogre Helper Function: extract a UserDefinedObject from an Ogre.Any varliable",
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+    """bp::def( "createAny", &General_createAny, 
+                "Python-Ogre Helper Function: create an Any variable with a specific base type.\\n\\
+                Input: Tuple. 1st value is type to create, 2nd is value\\n\\
+                Output: Ogre::Any type.\\n\\
+                values can be 'i' (int), 'l' (long), 'ui' (unsigned int), 's' (string), 'r' (real)\\n\\
+                'ul' (unsigned long),'us' (unsigned short), 'uc' (unsigned char).",
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+    """bp::def( "createAnyNumeric", &General_createAnyNumeric, 
+                "Python-Ogre Helper Function: create an AnyNumeric variable with a specific base type.\\n\\
+                Input: Tuple. 1st value is type to create, 2nd is value\\n\\
+                Output: Ogre::Any type.\\n\\
+                values can be 'i' (int), 'l' (long), 'ui' (unsigned int), 'r' (real)\\n\\
+                'ul' (unsigned long),'us' (unsigned short), 'uc' (unsigned char).",
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+                
     """bp::def( "castAsOverlayContainer", &General_castElementAsOverlayContainer,
                 "Python-Ogre Helper Function: Casts as Overlay Container -- needed for add2D.\\n\\
                 Input: Element\\n\\
@@ -981,6 +1177,11 @@ def apply( mb ):
     rt = mb.class_( 'ResourceManager' )
     rt.add_declaration_code( WRAPPER_DEFINITION_ResourceManager )
     apply_reg (rt,  WRAPPER_REGISTRATION_ResourceManager )
+
+    rt = mb.class_( 'Any' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_Any )
+    apply_reg (rt,  WRAPPER_REGISTRATION_Any )
+    rt.add_registration_code ( """def(bp::init< PyObject * >(( bp::arg("value") )) )""" )
     
     rt = mb.class_( 'Node' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Node )
