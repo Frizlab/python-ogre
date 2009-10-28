@@ -121,12 +121,16 @@ def ManualInclude ( mb ):
     else:
         main_ns = global_ns    
     includes=['::Ogre::FontPtr',
-              '::Ogre::SharedPtr<Ogre::DataStream>'
+              '::Ogre::SharedPtr<Ogre::DataStream>',
+              '::Ogre::Font'
               ]
     for i in includes:
-        global_ns.class_(i).include(already_exposed=True)
-        print "Include Class:", i 
-        
+        try:
+            global_ns.class_(i).include(already_exposed=True)
+            print "Include Class:", i 
+        except:
+            print "Unable to include Class:", i
+            
 #     includes=['::QuickGUI::WidgetFactory<QuickGUI::Widget>',
 #             '::QuickGUI::Factory<QuickGUI::WidgetDesc>'
 #             ]
