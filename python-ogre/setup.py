@@ -85,8 +85,9 @@ PACKAGEDATA = {
 
 }
 
-PACKAGEDATA.update(METADATA)
-setup(**PACKAGEDATA)
+if __name__ == '__main__':
+    PACKAGEDATA.update(METADATA)
+    setup(**PACKAGEDATA)
  
 
  

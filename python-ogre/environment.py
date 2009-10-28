@@ -1174,7 +1174,7 @@ class ogreode(pymodule):
                     ]
 
 class quickgui(pymodule):
-    version = "9.09"
+    version = "9.10"
     name = 'quickgui'
     parent = "ogre/gui"
 
@@ -2006,7 +2006,7 @@ class ogreoctreezone(pymodule):
     descText = "Octree Zone Management - Expose all functions in OctreeZone incase required"
     
 class ogreoggsound(pymodule):
-    version = "r237"
+    version = "r243"
     active = True
     name = 'ogreoggsound'
     parent = "ogre/sound"
