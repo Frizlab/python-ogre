@@ -5,7 +5,7 @@
    sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::SharedPtr<Ogre::Resource>, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> > >, false> > );
    sizeof( stdext::_Hash<stdext::_Hmap_traits<std::string, Ogre::MovableObject*, stdext::hash_compare<std::string, std::less<std::string> >, std::allocator<std::pair<std::string const, Ogre::MovableObject*> >, false> > );
 #endif
-#if OGRE_VERSION_MINOR != 7
+#if OGRE_VERSION_MINOR < 7
     sizeof( Ogre::Mesh::LodDistanceList );
     sizeof( Ogre::Material::LodDistanceList );
     sizeof( Ogre::Material::LodDistanceIterator );
@@ -31,6 +31,9 @@
     sizeof(std::pair<std::string const, Ogre::Node*>);
     sizeof(std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> >);
     sizeof(std::pair<std::string const, unsigned short>);
+   // sizeof(Ogre::SceneManager::RenderContext);
+    sizeof(Ogre::CompositorLogic);
+    sizeof(Ogre::CustomCompositionPass);
 
     
 #endif
@@ -68,7 +71,12 @@ sizeof( std::set< std::string > );
 sizeof( std::pair<unsigned int,unsigned int> );
 sizeof( std::pair<bool,String> );
 sizeof( std::pair<bool, float> );
+sizeof( std::pair<std::string, unsigned short> );
+
 sizeof( std::pair<Ogre::SharedPtr<Ogre::Resource>, bool> );
+sizeof( std::pair<bool, Ogre::SharedPtr<Ogre::Resource> > );
+sizeof( std::pair<std::string, Ogre::SharedPtr<Ogre::Resource> > );
+
 sizeof( std::multimap< std::string, std::string > );
 sizeof( std::map<Ogre::String, Ogre::MovableObjectFactory*> );
 sizeof( std::map<Ogre::String, Ogre::Archive*> );
@@ -96,6 +104,7 @@ sizeof( Ogre::UnaryOptionList );
 sizeof( Ogre::TrackVertexColourType );
 sizeof( Ogre::TextureUnitState::EffectMap );
 sizeof( Ogre::TexturePtr );
+sizeof( Ogre::Technique * );
 sizeof( Ogre::Technique::PassIterator );
 sizeof( Ogre::Technique::IlluminationPassIterator );
 sizeof( Ogre::SubMesh::VertexBoneAssignmentList );

@@ -8,14 +8,14 @@ class TestApplication(sf.Application):
         sceneManager = self.sceneManager
         
         overman = ogre.OverlayManager.getSingleton()
-        statspanel = overman.getOverlayElement('Core/StatPanel', False)
+        statspanel = overman.getByName('POCore/DebugOverlay')
         print statspanel
         
         statspanel.caption=ogre.UTFString("This does work")
         statspanel.setCaption(ogre.UTFString("as does this") )
         
 #         statspanel.caption="This is broken"
-        statspanel.setCaption ("This is broken")
+#        statspanel.setCaption ("This is broken")
         
         sys.exit()        
         
@@ -23,5 +23,5 @@ if __name__ == '__main__':
     try:
         application = TestApplication()
         application.go()
-    except ogre.Exception, e:
+    except ogre.OgreException, e:
         print e

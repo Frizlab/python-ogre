@@ -53,11 +53,13 @@ Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add m
 #endif    
 
 
-/*
+
 #if OGRE_VERSION_MINOR >= 7
-    #include "OgreIteratorWrapper.h"
+    #include "OgreCustomCompositionPass.h"
+    #include "OgreCompositorLogic.h"
+    #include "OgreUserObjectBindings.h"
 #endif
-*/
+
 
 #include "OgreMeshFileFormat.h"
 #include "OgreMeshSerializerImpl.h"

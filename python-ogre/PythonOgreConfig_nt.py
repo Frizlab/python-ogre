@@ -5,6 +5,7 @@ import getpass
 SDK=False # Changes Ogre include path settings
 
 _UserName = getpass.getuser()
+_SVN = False    # if building from Ogre svn
 
 ## The root directory is where this module is located
 module_dir = os.path.abspath(os.path.dirname(__file__) )
@@ -30,7 +31,7 @@ PATH_LIB_date_time_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/date_time/buil
 if (getpass.getuser() == 'amiller' ):  # special for Andy's machine as I tend to build against multiple python versions
    PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
    PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python_' +PythonVersionString +'/build/msvc-9.0/release/threading-multi')
-
+   _SVN = True
 
 
 
@@ -44,9 +45,10 @@ pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplusplus')
 
 ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
-PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
-PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
-PATH_Ogre = "c:\\ogre"
+if _SVN:
+    PATH_Ogre =         os.path.join(BASE_DIR, 'ogre_svn')
+else:
+    PATH_Ogre = "c:\\ogre"
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.2')
 
@@ -123,6 +125,8 @@ PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'Release')
 ###        
 PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/lib')
 PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' ) #, 'Release' )
+if _SVN:
+    PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib', 'Release' )
 PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
 PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
 PATH_LIB_OgreNewt =             os.path.join( PATH_OgreAddons, 'ogrenewt/OgreNewt_Main/lib/Release') 

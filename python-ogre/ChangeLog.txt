@@ -1,3 +1,10 @@
+October 30 2009:  Release 1.6.4 R1017
+=====================================
+Enhanced OgreAny support
+QuickGui 9.10
+Fix to ogrenewt2 to expose body class
+Updates to ReportVerion to work in non svn environment
+
 October 15 2009:  Release 1.6.4 R1001
 =====================================
 Basically an Ogre 1.6.4 release with every module updated :)
