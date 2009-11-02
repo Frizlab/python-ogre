@@ -6,6 +6,7 @@ module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is
 BASE_DIR,ignore = os.path.split(module_dir) ##  r'/home/andy/development'
 
 SDK = False
+_SVN = False    # if building from Ogre svn
 
 # the base of the /usr/... dircetory structure that we are using
 ROOT_DIR = os.path.join(BASE_DIR,'root')

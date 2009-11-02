@@ -1,8 +1,7 @@
 import os
-import os
-import os
 import sys
 import getpass
+import subprocess
 
 _LOGGING_ON = False
 _PreCompiled = True
@@ -77,26 +76,24 @@ if False:
 ##
 ## these should be fine with auto create - however override them as necessary
 ##
-PATH_Python = os.path.dirname(sys.executable)
 ## I want a version string 2.4 or 2.5 etc
 PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
-
 if isWindows():
-    python_include_dirs = os.path.join(PATH_Python, 'include')
-    python_lib_dirs = os.path.join(PATH_Python, 'libs')
-##
-## for linux or darwin (MAC OS X)
+    ppath = os.path.dirname(sys.executable)
+    python_include_dirs = os.path.join(ppath, 'include')
+    python_lib_dirs = os.path.join(ppath, 'libs')
+elif isLinux():
+    ## It's linux of some sort
+    python_include_dirs = os.path.join('/usr/include/python' + PythonVersionString, '')
+    python_lib_dirs = os.path.join('/usr/lib/python' + PythonVersionString, 'libs')
+elif isMac(): ## it's Mac OS X
+    pathlist = os.path.normpath(sys.prefix).split('/')
+    version = pathlist[pathlist.index('Versions') + 1]
+    python_include_dirs = '/'.join(pathlist[:pathlist.index('Versions') + 2]) + '/include/python' + version
+    python_lib_dirs = ''
 else:
-    if os.sys.platform <> 'darwin':
-        ## It's linux of some sort
-        python_include_dirs = os.path.join('/usr/include/python' + PythonVersionString, '')
-        python_lib_dirs = os.path.join('/usr/lib/python' + PythonVersionString, 'libs')
-    else:
-        ## it's Mac OS X
-        pathlist = PATH_Python.split('/')
-        version = pathlist[pathlist.index('Versions') + 1]
-        python_include_dirs = '/'.join(pathlist[:pathlist.index('Versions') + 2]) + '/include/python' + version
-        python_lib_dirs = ''
+    raise (SystemExit, "Don't know what this system is (checked for Windows, Linux and Mac)!")
+    
 
 root_dir = os.path.abspath(os.path.dirname(__file__))## The root directory is where this module is located
 
@@ -158,6 +155,12 @@ print "Using the %s cores" % NUMBER_OF_CORES
 ######################
 downloadPath = os.path.abspath("downloads")
 wget = "wget -c -nc "
+if isMac():
+    try:
+        subprocess.check_call(['curl','--help'])
+        wget = "curl -C- -L -O -s"
+    except: #check_call will raise this is it can't find curl
+        pass # so leave wget alone
 tar = "tar "
 gzip = "gzip "
 
@@ -337,7 +340,7 @@ class newton(module):
 class pygccxml(module):
     source_version = "head"
     source = [
-        [svn, " co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev pygccxml", os.getcwd()]
+        [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pygccxml_dev pygccxml", os.getcwd()]
     ]
 
     if isLinux() or isMac():
@@ -354,7 +357,7 @@ class pygccxml(module):
 class pyplusplus(module):
     source_version = "head"
     source = [
-        [svn, " co https://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev pyplusplus", os.getcwd()]
+        [svn, " co http://pygccxml.svn.sourceforge.net/svnroot/pygccxml/pyplusplus_dev pyplusplus", os.getcwd()]
     ]
 
     if isLinux() or isMac():
@@ -375,19 +378,17 @@ class cg(module):
             base = 'Cg-2.0_May2008_x86_64'
         else:
             base = 'Cg-2.0_May2008_x86'
-
         source = [
             [wget, " http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0015/" + base + ".tgz", downloadPath]
         ]
-
         buildCmds = [
             [0, tar + " xvzf " + os.path.join(downloadPath, base) + ".tgz --overwrite", ROOT], # unpack it directly into 'our' root
         ]
 
-    if isMac():
+    elif isMac():
         ## "http://downloads.sourceforge.net/ogre/OgreDependenciesOSX_20070929.zip"
         source = [
-            [wget, "http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0015/Cg-2.0_May2008.dmg", downloadPath ]
+            [wget, "http://developer.download.nvidia.com/cg/Cg_2.2/Cg-2.2_October2009.dmg", downloadPath ]
         ]
         buildCmds = []
 
@@ -445,22 +446,27 @@ class freeimage(module):
             ]
 
 class cmake(module):
-    if isLinux() or isMac():
+    if isLinux() :
         base = 'cmake-2.6.2-Linux-i386'
-
-        if isMac():
-            base = 'cmake-2.6.2-Darwin-universal'
-
-        source = [
-            [wget, "http://www.cmake.org/files/v2.6/" + base + ".tar.gz", downloadPath],
-        ]
-
         buildCmds = [
             [0, tar + " xzf " + os.path.join(downloadPath, base) + ".tar.gz --overwrite", ''],
             [0, cp + "-R  * " + PREFIX, os.path.join(os.getcwd(), base) ],
         ]
+        source = [
+            [wget, "http://www.cmake.org/files/v2.6/" + base + ".tar.gz", downloadPath],
+        ]
 
-    if isWindows():
+    elif isMac():
+        base = 'cmake-2.6.2-Darwin-universal'
+        buildCmds = [
+            [0, tar + " xzf " + os.path.join(downloadPath, base) + ".tar.gz", ''],
+            [0, cp + r"-R  CMake\ 2.6-2.app/Contents/* " + PREFIX, os.path.join(os.getcwd(), base) ],
+        ]
+        source = [
+            [wget, "http://www.cmake.org/files/v2.6/" + base + ".tar.gz", downloadPath],
+        ]
+
+    elif isWindows(): 
         source = [
             [wget, "http://www.cmake.org/files/v2.6/cmake-2.6.4-win32-x86.exe", downloadPath]
         ]
@@ -477,9 +483,16 @@ class scons(module):
     ]
 
     # the utils in Windows don't handle paths or tar spawing gzip hence the work arounds
-    if isLinux() or isMac():
+    if isLinux():
         buildCmds = [
             [0, tar + " zxf " + os.path.join(downloadPath, base) + ".tar.gz --overwrite", '' ],
+            # note fix here as scons defaults to adding bundle to command line which stops us building dynamiclibs!!
+            [0, 'sed -i "" s/-bundle// applelink.py', os.path.join(os.getcwd(), base, 'engine', 'SCons', 'Tool')   ],
+            [0, "python setup.py install  --prefix=%s" % PREFIX, os.path.join(os.getcwd(), base) ]
+        ]
+    elif isMac():
+        buildCmds = [
+            [0, tar + " zxf " + os.path.join(downloadPath, base) + ".tar.gz ", '' ],
             # note fix here as scons defaults to adding bundle to command line which stops us building dynamiclibs!!
             [0, 'sed -i "" s/-bundle// applelink.py', os.path.join(os.getcwd(), base, 'engine', 'SCons', 'Tool')   ],
             [0, "python setup.py install  --prefix=%s" % PREFIX, os.path.join(os.getcwd(), base) ]
@@ -624,7 +637,7 @@ class ogre(pymodule):
     myLibraryPaths = []
     myLibraries = ['OgreMain']
     libraries = myLibraries
-
+    CCFLAGS=""
     if isWindows():
         version = "1.6.4"
         source = [
@@ -637,7 +650,11 @@ class ogre(pymodule):
             [0, unzip + os.path.join(downloadPath, "OgreDependencies_VC9_Eihort_20080203.zip"), Config.PATH_Ogre  ],
             [0, 'echo Please use MSVC Express Edition to build Ogre Release.', '']
         ]
-
+        try:
+            if Config._SVN:
+                version="1.7.SVN"
+        except:
+            pass
         # requirements to build a precompiled header on the fly
         if _PreCompiled:
             pchstop = 'python_ogre_precompiled.h'
@@ -718,7 +735,10 @@ class ogre(pymodule):
 
         LINKFLAGS = ''
 
-
+    if Config._SVN: # building Ogre 1.7
+        include_dirs.insert (0, os.path.join ( Config.PATH_Ogre, 'include') ) # puts buildsettings.h in the path
+        CCFLAGS += " -DHAVE_OGRE_BUILDSETTINGS_H "
+        
 class ois(pymodule):
     version = "1.0"
 
@@ -834,7 +854,7 @@ class ogrenewt(pymodule):
         libs = ['Newton32', boost.lib, 'OgreMain']
 
     source = [
-        [svn, " co https://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogrenewt " + base, os.getcwd()]
+        [svn, " co http://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogrenewt " + base, os.getcwd()]
     ]
     baseDir = os.path.join(os.getcwd(), base)
     buildCmds = [
@@ -897,7 +917,7 @@ class ogrenewt2(pymodule):
         libs = ['Newton32', boost.lib, 'OgreMain']
 
     source = [
-        [svn, " co https://svn.ogre3d.org/svnroot/ogreaddons/branches/ogrenewt/newton20 " + base, os.getcwd()]
+        [svn, " co http://svn.ogre3d.org/svnroot/ogreaddons/branches/ogrenewt/newton20 " + base, os.getcwd()]
     ]
     baseDir = os.path.join(os.getcwd(), base)
     buildCmds = [
@@ -1147,7 +1167,7 @@ class ogreode(pymodule):
         Config.PATH_INCLUDE_Ogre,
     ]
     source = [
-       [svn, " co https://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogreode " + baseDir, os.getcwd()]
+       [svn, " co http://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogreode " + baseDir, os.getcwd()]
     ]
     buildCmds = [
        [0, "patch -s -N -i ../../python-ogre/patch/ogreode.patch -p0", baseDir],

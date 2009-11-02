@@ -302,14 +302,14 @@ def Auto_Document ( mb, namespace=None ):
         s = c.documentation
         if not s:
             s = ""
-        c.documentation="<<private declaration>>\\n"+s
+        c.documentation="Private declaration.\\n"+s
     query = declarations.access_type_matcher_t( 'protected' ) 
     for c in main_ns.calldefs( query, allow_empty=True ):
 #         print "PROTECTED:", c
         s = c.documentation
         if not s:
             s = ""
-        c.documentation="<<protected declaration>>\\n"+s
+        c.documentation="Protected declaration.\\n"+s
        
 
 

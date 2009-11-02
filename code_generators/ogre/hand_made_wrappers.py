@@ -1,8 +1,4 @@
 import os
-import os
-import os
-import os
-import os
 import environment
 
 
@@ -333,8 +329,8 @@ boost::python::tuple Any_getData(Ogre::Any & me )
                 return boost::python::make_tuple("uc", Ogre::any_cast<unsigned char>(me));
             if (me.getType() == typeid(unsigned short)) 
                 return boost::python::make_tuple("us", Ogre::any_cast<unsigned short>(me));
-            if (me.getType() == typeid(Ogre::UserDefinedObject *)) 
-                return boost::python::make_tuple("ud", Ogre::any_cast<Ogre::UserDefinedObject *>(me));
+//            if (me.getType() == typeid(Ogre::UserDefinedObject *)) 
+//                return boost::python::make_tuple("ud", Ogre::any_cast<Ogre::UserDefinedObject *>(me));
 			return boost::python::make_tuple( "unknown", 0 ); // TODO: really should raise an exception 
             }
 
@@ -395,10 +391,12 @@ Ogre::String General_getAnyString ( Ogre::Any & me ){
     return temp;
     }
     
+/*
 Ogre::UserDefinedObject * General_getAnyUserDefinedObject ( Ogre::Any & me ){
     Ogre::UserDefinedObject * temp = Ogre::any_cast<Ogre::UserDefinedObject* >(me);
     return temp;
     }
+*/
 
 Ogre::Any * General_createAny ( boost::python::list listin ) {
     Ogre::String intype;
@@ -696,9 +694,9 @@ WRAPPER_REGISTRATION_General = [
                 "Python-Ogre Helper Function: extract an real value from an Ogre.Any varliable");""",
     """bp::def( "getAnyString", &General_getAnyString, 
                 "Python-Ogre Helper Function: extract a string value from an Ogre.Any varliable");""",
-    """bp::def( "getAnyUserDefinedObject", &General_getAnyUserDefinedObject, 
-                "Python-Ogre Helper Function: extract a UserDefinedObject from an Ogre.Any varliable",
-                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+#    """bp::def( "getAnyUserDefinedObject", &General_getAnyUserDefinedObject, 
+#                "Python-Ogre Helper Function: extract a UserDefinedObject from an Ogre.Any varliable",
+#                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
     """bp::def( "createAny", &General_createAny, 
                 "Python-Ogre Helper Function: create an Any variable with a specific base type.\\n\\
                 Input: Tuple. 1st value is type to create, 2nd is value\\n\\

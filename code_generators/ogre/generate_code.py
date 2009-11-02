@@ -181,7 +181,10 @@ def ManualExclude ( mb ):
 
     #all constructors in this class are private, also some of them are public.
 
-    main_ns.free_functions ('any_cast').exclude () #not relevant for Python
+    try: 
+        main_ns.free_functions ('any_cast').exclude () #not relevant for Python
+    except:
+        pass
 
     #AttribParserList is a map from string to function pointer, this class could not be exposed
     AttribParserList = main_ns.typedef( name="AttribParserList" )
@@ -375,6 +378,7 @@ def ManualExclude ( mb ):
               '::Ogre::vector<Ogre::ProgressiveMesh::PMWorkingData',
               '::Ogre::vector<Ogre::SceneManager::LightInfo',
               
+              
               ]
 #===============================================================================
 #        c = main_ns.class_('::Ogre::ResourceGroupManager::ResourceGroup')
@@ -434,7 +438,12 @@ def ManualExclude ( mb ):
             except:
                 pass
         excludelist= ['::Ogre::HashedVector<Ogre::Light*>::resize',  # compile time issue
-                      '::Ogre::HashedVector<Ogre::Light*>::at']
+                      '::Ogre::HashedVector<Ogre::Light*>::at',
+                      '::Ogre::SceneManager::_pauseRendering', # bug in source needs fixing
+                      '::Ogre::SceneManager::_resumeRendering',
+                      #'::Ogre::CompositorManager::getCustomCompositionPass',
+                      '::Ogre::NedPoolingPolicy::deallocateBytes',
+                      ]
         for c in excludelist:
             main_ns.member_functions(c).exclude()
 
@@ -600,8 +609,14 @@ def ManualFixes ( mb ):
     f.arguments[1].name="int"
 
     # need to stop the automatic char to array conversion for this function
-    global_ns.member_function ('::Ogre::NedAllocPolicy::allocateBytes').documentation = "This is to stop automatic conversion"
-
+    try:
+        global_ns.member_function ('::Ogre::NedAllocPolicy::allocateBytes').documentation = "This is to stop automatic conversion"
+    except:
+        pass
+    try:
+        global_ns.member_function ('::Ogre::NedPoolingPolicy::allocateBytes').documentation = "This is to stop automatic conversion"
+    except:
+        pass
     # have to hand wrap a set of functions that are virtual and return a pointer to a static string
     funcNames = ['getType', 'getTypeName']
     for funcName in funcNames:
@@ -1319,9 +1334,9 @@ def FindProtectedVars ( mb ):
 #
 def generate_code():
     messages.disable(
-# #         messages.W1005 # using a non public variable type for argucments or returns
+        messages.W1005 # using a non public variable type for argucments or returns
 # # #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-        messages.W1020
+        , messages.W1020
         , messages.W1021
         , messages.W1022
         , messages.W1023
@@ -1335,10 +1350,10 @@ def generate_code():
         , messages.W1031
 # #         , messages.W1035
 # #         , messages.W1040
-# #         , messages.W1041 # overlapping names when creating a property
+        , messages.W1041 # overlapping names when creating a property
 # # #         , messages.W1038
-# #         , messages.W1036 # pointer to Python immutable member
-# # #         , messages.W1033 # unnamed variables
+        , messages.W1036 # pointer to Python immutable member
+        , messages.W1033 # unnamed variables
 # # #         , messages.W1018 # expose unnamed classes
 # #         , messages.W1049 # returns reference to local variable
 # #         , messages.W1014 # unsupported '=' operator
@@ -1364,6 +1379,8 @@ def generate_code():
 
     environment.ogre.include_dirs.insert ( 0,os.getcwd() )
 
+    if environment.Config._SVN: # building Ogre 1.7
+        defined_symbols.append ('HAVE_OGRE_BUILDSETTINGS_H') # it uses the cmake buildsettings include
     #
     # build the core Py++ system from the GCCXML created source
     #
