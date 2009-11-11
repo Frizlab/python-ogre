@@ -287,7 +287,7 @@ namespace Hydrax
 		return Cmpnts;
 	}
 
-	bool CfgFileManager::_isStringInList(const std::vector<Ogre::String> &List, const Ogre::String &Find)
+	bool CfgFileManager::_isStringInList(const Ogre::StringVector &List, const Ogre::String &Find)
 	{
 		for (unsigned int k = 0; k < List.size(); k++)
 		{
@@ -302,8 +302,7 @@ namespace Hydrax
 
 	const void CfgFileManager::_loadComponentsSettings(Ogre::ConfigFile& CfgFile) const
 	{
-		std::vector<Ogre::String> Cmpnts = Ogre::StringUtil::split(CfgFile.getSetting("Components"), "|");
-
+        Ogre::StringVector Cmpnts = Ogre::StringUtil::split(CfgFile.getSetting("Components"), "|");
 		HydraxComponent ComponentsToLoad[8] = {
 			HYDRAX_COMPONENTS_NONE,HYDRAX_COMPONENTS_NONE,HYDRAX_COMPONENTS_NONE,HYDRAX_COMPONENTS_NONE,
 			HYDRAX_COMPONENTS_NONE,HYDRAX_COMPONENTS_NONE,HYDRAX_COMPONENTS_NONE,HYDRAX_COMPONENTS_NONE};

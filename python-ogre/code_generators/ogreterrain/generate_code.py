@@ -75,6 +75,12 @@ def ManualExclude ( mb ):
             main_ns.class_(c).exclude()
         except:
             print "Failed to exclude:", c
+    ex = ['::Ogre::TerrainLayerBlendMap::upload']
+    for c in ex:
+        try:
+            main_ns.member_functions(c).exclude()
+        except:
+            print "Failed to exclude:", c
             
  ############################################################
 ##

@@ -88,10 +88,14 @@ def filter_declarations( mb ):
                 arg.default_value = '0xffffffff'
 
          
-    ## this one fails at link time
-    mb.class_( 'ScriptFunctor' ).exclude()   
-    mb.class_( 'CEGUIRQListener' ).exclude()     
-
+    ## class to exclude
+    excludes=['::CEGUI::FactoryModule','::CEGUI::ScriptFunctor','::CEGUI::CEGUIRQListener'
+        ]
+    for e in excludes:
+        try:
+            CEGUI_ns.class_( e ).exclude()     
+        except:
+            pass
     ## now have functions in String that return uint arrays a need to be wrapped
     sc = CEGUI_ns.class_( "String" )
     sc.member_functions('data').exclude()
@@ -107,11 +111,13 @@ def filter_declarations( mb ):
     lo.arguments[3].type = lo.arguments[4].type     #AJM Not sure how args work so setting the func pointer to a void pointer
     
     ## OgreCEGUIRenderer.h has an assumed namespace in one of the default agrs that we need to fix
-    orRe = CEGUI_ns.constructor('OgreCEGUIRenderer', arg_types=[None, None, None, None] )
-    pos = orRe.arguments[1].default_value.index("RENDER_QUEUE_OVERLAY")
-    tempstring = orRe.arguments[1].default_value[:pos]+"::Ogre::"+orRe.arguments[1].default_value[pos:]
-    orRe.arguments[1].default_value = tempstring
-    
+    try:
+        orRe = CEGUI_ns.constructor('OgreCEGUIRenderer', arg_types=[None, None, None, None] )
+        pos = orRe.arguments[1].default_value.index("RENDER_QUEUE_OVERLAY")
+        tempstring = orRe.arguments[1].default_value[:pos]+"::Ogre::"+orRe.arguments[1].default_value[pos:]
+        orRe.arguments[1].default_value = tempstring
+    except:
+        pass
     # try to force this one..
     ## a string one that stops pydoc working against CEGUI
     CEGUI_ns.class_('ListHeader').variable('SegmentNameSuffix').exclude()
@@ -143,16 +149,27 @@ def filter_declarations( mb ):
     CEGUI_ns.class_( "Window" ).member_functions("setUserData").exclude()
     CEGUI_ns.class_( "Window" ).member_functions("getUserData").exclude()
 
-    # Py++ doesn't know that this should be noncopyable so we set it here        
-    CEGUI_ns.class_('EventSet').noncopyable = True
-    CEGUI_ns.class_('GlobalEventSet').noncopyable = True
-    CEGUI_ns.class_('MouseCursor').noncopyable = True
-    CEGUI_ns.class_('OgreCEGUIRenderer').noncopyable = True
-
+    # Py++ doesn't know that this should be noncopyable so we set it here  
+    nocopy=['EventSet','GlobalEventSet','MouseCursor','OgreCEGUIRenderer','CEGUIOgreRenderer',
+            ]
+    for c in nocopy:
+        try:
+            CEGUI_ns.class_(c).noncopyable = True
+        except:
+            pass
+    for c in CEGUI_ns.classes():
+        if c.name.endswith ("Exception"):
+            c.noncopyable=True
     # changes to latest py++ can gccxml etc June 15 2008
-    excludes = ['::CEGUI::ItemListBase::getSortCallback'  ]
+    excludes = ['::CEGUI::ItemListBase::getSortCallback',
+                '::CEGUI::OgreRenderer::createOgreImageCodec',
+                '::CEGUI::RefCounted<CEGUI::FormattedRenderedString>::isValid']
     for f in excludes:
-        CEGUI_ns.member_function(f).exclude()
+        try:
+            CEGUI_ns.member_function(f).exclude()
+        except:
+            print "Couldn't exclude :",f
+        
     CEGUI_ns.class_('RawDataContainer').exclude() # has pointers that need to be handled -- hopefully not needed    
     
     CEGUI_ns.member_function("::CEGUI::WindowManager::loadWindowLayout", arg_types=[None,None,None,None,None]).exclude()   
@@ -265,8 +282,9 @@ def generate_code():
                         os.path.join( environment.cegui.root_dir, "python_CEGUI.h" )
                         , environment.cegui.cache_file )
                         
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'CEGUI_NONCLIENT_BUILD','OGRE_GCC_VISIBILITY','__PYTHONOGRE_BUILD_CODE' ]
-    defined_symbols.append( 'VERSION_' + environment.cegui.version )  
+    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'CEGUI_NONCLIENT_BUILD','OGRE_GCC_VISIBILITY','__PYTHONOGRE_BUILD_CODE',
+                        'OGRE_GUIRENDERER_EXPORTS']
+    defined_symbols.append( 'VERSION_' + environment.cegui.version.replace ('.','_')   )
 
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
@@ -280,6 +298,8 @@ def generate_code():
                                           , indexing_suite_version=2
                                           , cflags=environment.ogre.cflags
                                           )
+    # if this module depends on another set it here                                           
+    mb.register_module_dependency ( environment.ogre.generated_dir )
                                           
     filter_declarations (mb)
                                           
@@ -335,8 +355,8 @@ def generate_code():
     lastc = mb.code_creator.creators[ mb.code_creator.last_include_index() ]
     mb.code_creator.remove_creator( lastc )  
     # and now add our precompiled ones..
-    for x in range (len (customization_data.header_files( environment.ogre.version ) ), 0 ,-1 ):
-        h = customization_data.header_files( environment.ogre.version )[x-1]        
+    for x in range (len (customization_data.header_files( environment.cegui.version ) ), 0 ,-1 ):
+        h = customization_data.header_files( environment.cegui.version )[x-1]        
         mb.code_creator.adopt_creator ( include.include_t ( header= h ), 0)
 
 

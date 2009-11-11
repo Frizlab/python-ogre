@@ -50,7 +50,7 @@ if _SVN:
 else:
     PATH_Ogre = "c:\\ogre"
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.2')
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.7.1')
 
 PATH_OIS =          os.path.join(BASE_DIR, 'ois' ) ##'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
@@ -89,7 +89,7 @@ PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
 PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
-PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.74') 
+PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.75') 
 PATH_PhysX=         "c:/program files/NVIDIA Corporation/NVIDIA Physx SDK/v2.8.1/SDKs"
 PATH_Theora=        os.path.join(BASE_DIR,'ogrevideo','trunk','TheoraVideoPlugin')
 
@@ -123,7 +123,7 @@ PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'Release')
 ### these paths assume you've left all the directory structure as standard
 ### Override anything that is different
 ###        
-PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'Samples/Common/CEGUIRenderer/lib')
+PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_CEGUI, 'lib')
 PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' ) #, 'Release' )
 if _SVN:
     PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib', 'Release' )
@@ -167,6 +167,7 @@ PATH_LIB_OPENAL=        os.path.join(PATH_OPENAL, 'libs','win32' ) ##'release') 
                 
 
 PATH_INCLUDE_ogrepaging =   os.path.join(PATH_Ogre,'Components','Paging', 'include')
+PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_Ogre,'Components','RTShaderSystem', 'include')
 PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
 PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
@@ -179,7 +180,7 @@ PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes')    ## Note the plu
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_OgreNewt2 =     os.path.join(PATH_OgreAddons,'ogrenewt2/inc')
-PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI, 'include')
+PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI, 'cegui','include')
 PATH_INCLUDE_ODE =          os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    os.path.join( PATH_ODE, 'ode/src')
@@ -199,7 +200,7 @@ PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
 PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
-PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples/Common/CEGUIRenderer/include')
+PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_INCLUDE_CEGUI, 'RendererModules','Ogre')
 PATH_INCLUDE_quickgui =     PATH_quickgui
 PATH_INCLUDE_NxOgre_09=        PATH_NxOgre_09
 PATH_INCLUDE_NxOgre=        os.path.join(PATH_NxOgre, 'include')

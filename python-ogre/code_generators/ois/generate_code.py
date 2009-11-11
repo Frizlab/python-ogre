@@ -43,8 +43,8 @@ except ImportError, e:
   from pyplusplus.module_creator import sort_algorithms
 from pyplusplus.code_creators import include
 
-#import common_utils.extract_documentation as exdoc
-import common_utils.sphinx_extract as exdoc
+import common_utils.extract_documentation as exdoc
+#import common_utils.sphinx_extract as exdoc
 
 
 import common_utils.var_checker as varchecker
@@ -65,7 +65,9 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-    
+    excludes=["::OIS::JoyStickState::mVectors"]
+    for e in excludes:
+        main_ns.variable(e).exclude()
         
 ############################################################
 ##
@@ -305,8 +307,8 @@ def generate_code():
     lastc = mb.code_creator.creators[ mb.code_creator.last_include_index() ]
     mb.code_creator.remove_creator( lastc )  
     # and now add our precompiled ones..
-    for x in range (len (customization_data.header_files( environment.ogre.version ) ), 0 ,-1 ):
-        h = customization_data.header_files( environment.ogre.version )[x-1]        
+    for x in range (len (customization_data.header_files( environment.ois.version ) ), 0 ,-1 ):
+        h = customization_data.header_files( environment.ois.version )[x-1]        
         mb.code_creator.adopt_creator ( include.include_t ( header= h ), 0)
 
 

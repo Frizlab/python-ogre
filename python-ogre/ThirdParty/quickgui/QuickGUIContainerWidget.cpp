@@ -1,3 +1,32 @@
+/*
+-----------------------------------------------------------------------------
+This source file is part of QuickGUI
+For the latest info, see http://www.ogre3d.org/addonforums/viewforum.php?f=13
+
+Copyright (c) 2009 Stormsong Entertainment
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+(http://opensource.org/licenses/mit-license.php)
+-----------------------------------------------------------------------------
+*/
+
 #include "QuickGUIContainerWidget.h"
 #include "QuickGUIBrush.h"
 #include "QuickGUISerialWriter.h"
@@ -288,31 +317,24 @@ namespace QuickGUI
 
 	void ContainerWidget::destroyChildren()
 	{
-		if(mDesc->sheet != NULL)
+		for(std::list<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
 		{
-			for(std::list<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
-				mDesc->sheet->mFreeList.push_back((*it));
-		}
-		else
-		{
-			WidgetFactory* f = FactoryManager::getSingleton().getWidgetFactory();
+			(*it)->_setSheet(NULL);
+			(*it)->_setGUIManager(NULL);
+			(*it)->setParent(NULL);
 
-			for(std::list<Widget*>::iterator it = mChildren.begin(); it != mChildren.end(); ++it)
+			if(mDesc->containerwidget_supportScrollBars)
 			{
-				(*it)->_setSheet(NULL);
-				(*it)->_setGUIManager(NULL);
-				(*it)->setParent(NULL);
-
-				if(mDesc->containerwidget_supportScrollBars)
-				{
-					// Register Event Handler for when child is resized, moved, or visibility changed
-					(*it)->removeWidgetEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,this);
-					(*it)->removeWidgetEventHandler(WIDGET_EVENT_SIZE_CHANGED,this);
-					(*it)->removeWidgetEventHandler(WIDGET_EVENT_POSITION_CHANGED,this);
-				}
-
-				f->destroyInstance((*it));
+				// Register Event Handler for when child is resized, moved, or visibility changed
+				(*it)->removeWidgetEventHandler(WIDGET_EVENT_VISIBLE_CHANGED,this);
+				(*it)->removeWidgetEventHandler(WIDGET_EVENT_SIZE_CHANGED,this);
+				(*it)->removeWidgetEventHandler(WIDGET_EVENT_POSITION_CHANGED,this);
 			}
+
+			if(mDesc->sheet != NULL)
+				mDesc->sheet->mFreeList.push_back((*it));
+			else
+				Root::getSingleton().mGUIManagers.begin()->second->mFreeList.push_back((*it));
 		}
 		mChildren.clear();
 
@@ -598,11 +620,6 @@ namespace QuickGUI
 				(*it)->removeWidgetEventHandler(WIDGET_EVENT_SIZE_CHANGED,this);
 				(*it)->removeWidgetEventHandler(WIDGET_EVENT_POSITION_CHANGED,this);
 			}
-
-			if(mDesc->sheet != NULL)
-				mDesc->sheet->mFreeList.push_back((*it));
-			else
-				Root::getSingleton().mGUIManagers.begin()->second->mFreeList.push_back((*it));
 		}
 		mChildren.clear();
 

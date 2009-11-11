@@ -13,14 +13,18 @@ class var_checker:
         self.source = None
         
     def __call__(self, declaration):
-#         print "var_checker called with:", declaration
-        try:    
-            if self.file_name != declaration.location.file_name:            
-                self.file_name = declaration.location.file_name
-                self.source = open(declaration.location.file_name).readlines()
-        except:
-            print "Var Checker called without location:", declaration
-            return ""
+        print "var_checker called with:", declaration
+        if not declaration.location.file_name :
+            print __file__, ": location file name is empty", declaration
+            return False 
+        if self.file_name != declaration.location.file_name:            
+            self.file_name = declaration.location.file_name
+            try:    
+                self.source = open(self.file_name).readlines()
+            except:
+                print __file__, ": Unable to open ", self.file_name, "source is unknown", declaration
+                self.file_name= None # ensure we try again next time
+                return False
             
         ## note the gccxml uses a 1 based line scheme whereas we are using python arrays - 0 based
         ## so we need to subtract 1 from the line number.
@@ -28,8 +32,11 @@ class var_checker:
         try:
             varline = self.source[declaration.location.line-1]
         except IndexError:
+            print __file__, ":IndexError ", self.source, declaration.location.line
             return False # Bug showed up with Caelum where decl location was bigger than source ??
-                        
+        except TypeError:
+            print __file__, ":TypeError ", self.source, declaration.location.line
+            return False
 #         print "Checker info:",declaration.location.line, declaration.location.file_name
 #         print "Checker Line:", varline
         if not '=' in varline:

@@ -421,9 +421,10 @@ def apply( mb ):
 # #     mb.add_declaration_code( WRAPPER_DEFINITION_General )
 # #     mb.add_registration_code( WRAPPER_REGISTRATION_General )
 #     
-    rt = mb.class_( 'EventSet' )
-    rt.add_declaration_code( WRAPPER_DEFINITION_EventSet )
-    rt.add_registration_code( WRAPPER_REGISTRATION_EventSet )
+    if not environment.cegui.version.startswith ("0.7"):
+        rt = mb.class_( 'EventSet' )
+        rt.add_declaration_code( WRAPPER_DEFINITION_EventSet )
+        rt.add_registration_code( WRAPPER_REGISTRATION_EventSet )
 
     rt = mb.class_( 'String' )
     rt.add_declaration_code( WRAPPER_DEFINITION_String )

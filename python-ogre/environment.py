@@ -66,11 +66,6 @@ else:
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "6"
 PythonOgrePatchVersion = "4"
-if False:
-    PythonOgreMajorVersion = "1"
-    PythonOgreMinorVersion = "7"
-    PythonOgrePatchVersion = "0"
-    _USE_THREADS = True
 
 
 ##
@@ -143,6 +138,14 @@ if not _ConfigSet:
     ##
     print "\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % (_SystemType)
     sys.exit(-1)
+
+
+if Config._SVN:
+    PythonOgreMajorVersion = "1"
+    PythonOgreMinorVersion = "7"
+    PythonOgrePatchVersion = "0"
+    #_USE_THREADS = True
+
     
 # Let the user override the number of cores.
 if hasattr(Config, "NUMBER_OF_CORES") and Config.NUMBER_OF_CORES:
@@ -157,8 +160,8 @@ downloadPath = os.path.abspath("downloads")
 wget = "wget -c -nc "
 if isMac():
     try:
-        subprocess.check_call(['curl','--help'])
-        wget = "curl -C- -L -O -s"
+        subprocess.check_call(['curl','--version'], stdout=file('/dev/null','w'))
+        wget = "curl -C- -L -O -s "
     except: #check_call will raise this is it can't find curl
         pass # so leave wget alone
 tar = "tar "
@@ -171,6 +174,7 @@ if isWindows():
     unzip = "unzip -o "
     cvs = "cvs -z3 -q  "
     svn = "svn "
+    sed_ = "sed --in-place "
     VCBUILD = "'c:\\Program Files\\Microsoft Visual Studio 8\\vc\\vcpackages\\vcbuild.exe'  /useenv  "
     VCBUILD = '"c:/Program Files/Microsoft Visual Studio 8/vc/vcpackages/vcbuild.exe" /useenv '
 else:
@@ -505,7 +509,10 @@ class scons(module):
 
 class boost(module):
     """Boost module, also included bjam."""
-    version = "1.41r56875"
+    if Config._SVN:
+        version = "1.41r57399"
+    else:
+        version = "1.40"
     ModuleName = ""
 
     if isWindows():
@@ -513,7 +520,9 @@ class boost(module):
         PATH_LIB_DATETIME = Config.PATH_LIB_date_time_STATIC
         base = 'boost_1_40_0'
         lib = 'boost_python-vc90-mt-1_41'
-        versionBase = '1_41' ## the version used on the library name
+        versionBase = '1_40' ## the version used on the library name
+        if Config._SVN:
+            versionBase = '1_41' ## the version used on the library name
     else:
         base = 'boost_1_40_0'
         versionBase = '1_40' ## the version used on the library name
@@ -652,7 +661,7 @@ class ogre(pymodule):
         ]
         try:
             if Config._SVN:
-                version="1.7.SVN"
+                version="1.7.r9285"
         except:
             pass
         # requirements to build a precompiled header on the fly
@@ -662,7 +671,16 @@ class ogre(pymodule):
             pchincludes = ['python_ogre_precompiled.h']
 
         libs = [boost.lib, 'OgreMain']
-        moduleLibs = [os.path.join(boost.PATH_LIB,boost.lib), os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'OgreMain')]
+        if not Config._SVN:
+            moduleLibs = [os.path.join(boost.PATH_LIB,boost.lib),
+                          os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'OgreMain'),
+                          os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'cg'),
+                          ]
+        else:
+            moduleLibs = [os.path.join(boost.PATH_LIB,boost.lib), 
+                          os.path.join(Config.PATH_Ogre,'bin','Release', 'OgreMain'),
+                          os.path.join(Config.PATH_Ogre,'bin','Release', 'cg'),
+                          ]
         lib_dirs = [
             boost.PATH_LIB,
             Config.PATH_LIB_Ogre_OgreMain,
@@ -734,11 +752,7 @@ class ogre(pymodule):
         ]
 
         LINKFLAGS = ''
-
-    if Config._SVN: # building Ogre 1.7
-        include_dirs.insert (0, os.path.join ( Config.PATH_Ogre, 'include') ) # puts buildsettings.h in the path
-        CCFLAGS += " -DHAVE_OGRE_BUILDSETTINGS_H "
-        
+       
 class ois(pymodule):
     version = "1.0"
 
@@ -974,8 +988,9 @@ class ogrenewt2(pymodule):
 class cegui(pymodule):
     parent = "ogre/gui"
     version = "0.6.2b"
-
+        
     if isWindows():
+        version = "0.7.1"
         if _PreCompiled:
             pchstop = 'cegui.h'
             pchbuild = 'buildpch.cpp'
@@ -986,14 +1001,17 @@ class cegui(pymodule):
             os.path.join(bp,'CEGUIExpatParser'),
             os.path.join(bp,'CEGUIFalagardWRBase'),
             ]
-        if PythonOgreMajorVersion == "1" and int(PythonOgreMinorVersion) < 7:
+        if PythonOgreMajorVersion == "1" and int(PythonOgreMinorVersion) < 7 and not Config._SVN:
             libs.append('OgreGUIRenderer')
 #            moduleLibs.append(os.path.join(bp,'OgreGUIRenderer'))
             moduleLibs.append(os.path.join(Config.PATH_LIB_Ogre_OgreMain,'OgreGUIRenderer'))
         else:
             libs.append('CEGUIOgreRenderer')
 #            moduleLibs.append(os.path.join(bp,'CEGUIOgreRenderer'))
-            moduleLibs.append(os.path.join(Config.PATH_LIB_Ogre_OgreMain,'CEGUIOgreRenderer'))
+            if not Config._SVN:
+                moduleLibs.append(os.path.join(Config.PATH_LIB_Ogre_OgreMain,'CEGUIOgreRenderer'))
+            else:
+                moduleLibs.append(os.path.join(Config.PATH_Ogre,'Samples','Common','bin','Release','CEGUIOgreRenderer'))
         
     elif isLinux():
         libs = [boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
@@ -1024,17 +1042,19 @@ class cegui(pymodule):
         ]
 
     if isWindows():
-        version = "0.6.2b"
-        base = "CEGUI-0.6.2"
+        version = "0.7.1"
+        base = "CEGUI-0.7.1"
         source = [
-            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.2b.zip", downloadPath],
-            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-DEPS-0.6.0-vc9.zip", downloadPath]
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.1.zip?download", downloadPath],
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-DEPS-0.7.x-r1-vc9.zip?download", downloadPath]
         ]
         buildCmds = [
-            [0, unzip + " " + os.path.join(downloadPath, "CEGUI-0.6.2b.zip"), os.getcwd()],
-            [0, unzip + " " + os.path.join(downloadPath, "CEGUI-DEPS-0.6.0-vc9.zip"), os.path.join(os.getcwd(), base) ],
-            [0, 'move CEGUI-0.6.0\dependencies .', os.path.join(os.getcwd(), base) ],
-            [0, 'echo Now run build_vs2008.bat from the CEGUI makefiles\premake directory', ''],
+            [0, unzip + " " + os.path.join(downloadPath, "CEGUI-0.7.1.zip"), os.getcwd()],
+            [0, unzip + " " + os.path.join(downloadPath, "CEGUI-DEPS-0.7.x-r1-vc9.zip"), os.path.join(os.getcwd(), base) ],
+            #[0, 'move CEGUI-0.6.0\dependencies .', os.path.join(os.getcwd(), base) ],
+            [0, sed_ + ' -s "s/OGRE_RENDERER = false/OGRE_RENDERER = true/" config.lua ', os.path.join(os.getcwd(), base, 'projects','premake')],
+            [0, sed_ + ' -s "s/SAMPLES_OGRE = false/SAMPLES_OGRE = true/" config.lua ', os.path.join(os.getcwd(), base, 'projects','premake')],
+            [0, 'echo Now run build_vs2008.bat from the CEGUI projects\premake directory', ''],
             [0, 'echo then use MSVC to build the CEGUI Release project', ''],
             [0, 'echo WARNING - Check that RTTI is enabled in the compiler options', ''],
             [0, 'echo Then ensure that OgreGUIRender is compiled with this version of CEGUI', '']
@@ -1194,7 +1214,7 @@ class ogreode(pymodule):
                     ]
 
 class quickgui(pymodule):
-    version = "9.10"
+    version = "r1174"
     name = 'quickgui'
     parent = "ogre/gui"
 
@@ -1626,7 +1646,7 @@ class et(pymodule):  ## editable terrain
     ModuleName = 'et'
 
 class bullet(pymodule):
-    version = "2.74"
+    version = "2.75"
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
@@ -1672,7 +1692,7 @@ class ogrebulletc(pymodule):
     libs = [boost.lib, 'OgreMain',
         'LibBulletCollision', 'LibBulletDynamics', 'LibBulletMultiThreaded',
         'LibBulletSoftBody', 'libconvexdecomposition'
-    ]
+        ]
     if isLinux():
        libs.append('LibLinearMath')
     else:
@@ -1694,6 +1714,7 @@ class ogrebulletc(pymodule):
     ]
     if isWindows():
         CCFLAGS = ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
+        #LINKFLAGS = '  /NODEFAULTLIB:LIBCMT.lib  '
     else:
         CCFLAGS = ' -D_PRECOMP -fno-inline '
     ModuleName = 'OgreBulletC'
@@ -1707,7 +1728,7 @@ class ogrebulletd(pymodule):
     libs = [boost.lib, 'OgreMain',
         'LibBulletCollision', 'LibBulletDynamics', 'LibBulletSoftBody',
         'LibBulletMultiThreaded', 'libconvexdecomposition'
-    ]
+        ]
     if isWindows():
         libs.append('libbulletMath')
     else:
@@ -1730,6 +1751,7 @@ class ogrebulletd(pymodule):
     ]
     if isWindows():
         CCFLAGS = ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
+        #LINKFLAGS = '  /NODEFAULTLIB:LIBCMT.lib '
     else:
         CCFLAGS = ' -D_PRECOMP -fno-inline '
     ModuleName = 'OgreBulletD'
@@ -1972,6 +1994,7 @@ class doctester(pymodule):
     descText = "A test environment for documentation stringa"
 
 class plsm2(pymodule):
+    active = False
     version = ogre.version
     parent = "ogre/renderer"
     include_dirs = [
@@ -1991,7 +2014,8 @@ class plsm2(pymodule):
 
 class ogreoctreesm(pymodule):
     version = ogre.version
-    active = False
+    if not Config._SVN:
+        active = False
     name = 'ogreoctreesm'
     parent = "ogre/renderer"
     include_dirs = [
@@ -2009,7 +2033,9 @@ class ogreoctreesm(pymodule):
 
 class ogreoctreezone(pymodule):
     version = ogre.version
-    active = False
+    if not Config._SVN:
+        active = False
+    active = False # need to write it !!    
     name = 'ogreoctreezone'
     parent = "ogre/renderer"
     include_dirs = [
@@ -2051,7 +2077,6 @@ class ogreoggsound(pymodule):
 if ogre.version.startswith ("1.7"):
     class ogreterrain(pymodule):
         version = ogre.version
-        active = False
         name = 'ogreterrain'
         parent = "ogre/renderer"
         include_dirs = [
@@ -2070,7 +2095,6 @@ if ogre.version.startswith ("1.7"):
 
     class ogrepaging(pymodule):
         version = ogre.version
-        active = False
         name = 'ogrepaging'
         parent = "ogre/renderer"
         include_dirs = [
@@ -2084,8 +2108,25 @@ if ogre.version.startswith ("1.7"):
         ]
         libs = [boost.lib, 'OgrePaging', 'OgreMain' ]
         ModuleName = "ogrepaging"
-        descText = "OgreTerrain: New Terrain Manager in Ogre"
+        descText = "OgrePaging: New Paging Manager in Ogre"
 
+    class ogrertshadersystem(pymodule):
+        version = ogre.version
+        name = 'ogrertshadersystem'
+        parent = "ogre/renderer"
+        include_dirs = [
+            boost.PATH,
+            Config.PATH_INCLUDE_Ogre,
+            Config.PATH_INCLUDE_ogrertshadersystem
+        ]
+        lib_dirs = [
+            boost.PATH_LIB,
+            Config.PATH_LIB_Ogre_OgreMain,
+        ]
+        libs = [boost.lib, 'OgreRTShaderSystem', 'OgreMain' ]
+        ModuleName = "ogrertshadersystem"
+        descText = "OgreRTShaderSystem: New Real Time Shader System in Ogre"       
+        
 ############################################################################################
 
 ## Here is the master list....
@@ -2141,6 +2182,7 @@ projects = {
 if ogre.version.startswith ("1.7"):
     projects['ogrepaging'] = ogrepaging
     projects['ogreterrain'] = ogreterrain
+    projects['ogrertshadersystem']=ogrertshadersystem
 
 #
 # a couple of specials that should be done differently
@@ -2199,7 +2241,10 @@ for name, cls in projects.items():
                 cls.LINKFLAGS += ' -F' + f + ' '
     elif isWindows():
         cls.cflags += ' -D"_HAS_TR1=0" ' # to solve an issue with <map> include with MSVC 9 and advanced feature pack and gccxml ?????
-
+        if Config._SVN: # building Ogre 1.7
+            cls.include_dirs.insert (0, os.path.join ( Config.PATH_Ogre, 'include') ) # puts buildsettings.h in the path
+            cls.CCFLAGS += " -DHAVE_OGRE_BUILDSETTINGS_H "
+ 
     if not hasattr(cls, 'ModuleName'):
         cls.ModuleName = name[0].upper() + name[1:]
     if not hasattr(cls, 'PydName'):

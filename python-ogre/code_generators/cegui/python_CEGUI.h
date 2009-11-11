@@ -8,14 +8,20 @@
     #include "Carbon/Carbon.h"
 #endif
 #include "CEGUI.h"
+
 #include "CEGUIXMLParser.h"     // needed for System
 #include "CEGUIXMLHandler.h"
 #include "CEGUIXMLAttributes.h" // needed for FontManager
 #include "CEGUIXMLSerializer.h"
-#include "OgreCEGUIRenderer.h"
 
-#if ( CEGUI_VERSION_MINOR > 5 )
-    #include "OgreCEGUIResourceProvider.h"
+#if defined VERSION_0_7_1
+    #include "CEGUIOgreRenderer.h"
+    #include "CEGUIOgreResourceProvider.h"
+#else 
+    #include "OgreCEGUIRenderer.h"
+    #if ( CEGUI_VERSION_MINOR > 5 )
+        #include "OgreCEGUIResourceProvider.h"
+    #endif
 #endif
 
 #include "Ogre.h"   // we need this to fix unexposed stuff..

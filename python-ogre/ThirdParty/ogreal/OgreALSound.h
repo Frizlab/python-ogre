@@ -351,7 +351,7 @@ namespace OgreAL {
 		void _updateRenderQueue(Ogre::RenderQueue* queue);
 		/** Notifies the sound when it is attached to a node */
 		void _notifyAttached(Ogre::Node *parent, bool isTagPoint = false);
-	#if(OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR == 6)
+	#if(OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR > 5)
 		/** Overridden from MovableObject */
 		virtual void visitRenderables(Ogre::Renderable::Visitor* visitor, bool debugRenderables = false){}
 	#endif

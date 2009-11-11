@@ -7,4 +7,4 @@ sizeof( ::MyGUI::Edit );
 sizeof( ::MyGUI::Any::AnyEmpty );
 sizeof( ::MyGUI::LayerItemKeeper );
 sizeof( ::MyGUI::RenderItem );
-sizeof( ::std::pair<::MyGUI::Guid const, ::MyGUI::IResource*> );
+sizeof( ::std::pair< ::MyGUI::Guid const, ::MyGUI::IResource* > );

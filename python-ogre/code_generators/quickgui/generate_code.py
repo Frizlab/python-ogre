@@ -97,10 +97,13 @@ def ManualExclude ( mb ):
             print "Failed to exclude function", e
     
  
-    NotExported=['::QuickGUI::ScriptProperty']
+    NotExported=[]
     for c in NotExported:
-        print "Excluding Class", c
-        main_ns.class_( c ).exclude()
+        try:
+            main_ns.class_( c ).exclude()
+            print "Excluding Class", c
+        except:
+            print "Unable to exclude class", c
  
     # excluding static const strings that cause a boost cant set variable error    
     for v in main_ns.variables():
