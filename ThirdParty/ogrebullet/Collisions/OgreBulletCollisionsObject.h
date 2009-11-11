@@ -46,7 +46,11 @@ namespace OgreBulletCollisions
 	 * \see
 	 * Ogre::MovableObject | Ogre::UserDefinedObject | OgreBulletDynamics::RigidBody
 	 */
+#if (OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR < 7)
 	class Object : public Ogre::MovableObject, public Ogre::UserDefinedObject
+#else
+	class Object : public Ogre::MovableObject //, public Ogre::UserObjectBindings
+#endif
     {
     public:
         Object(const Ogre::String &name,  CollisionsWorld *world, bool init);

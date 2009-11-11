@@ -154,37 +154,8 @@ def ManualExclude ( mb ):
             ,'::btAlignedObjectArray< btMultiSapBroadphase::btMultiSapProxy* >'
             ,'::btRaycastVehicle'
             ,'::btAlignedAllocator< btRaycastVehicle*, 16u >'
-            
             ,'::btThreadSupportInterface'
-            
-# #             ## Alignement issues !!!
-# #             ,'::btAxisSweep3'  
-# #             ,'::btAxisSweep3Internal< unsigned int >'
-# #             ,'::btAxisSweep3Internal< unsigned short >'
-# #             ,'::btBU_Simplex1to4'
-# #             ,'::btBoxShape'
-# # #             ,'::btBroadphasePair'
-# #             ,'::btBroadphaseProxy'
-# #             ,'::btBvhSubtreeInfo'
-# #             ,'::btBvhTriangleMeshShape'
-# #             ,'::btCapsuleShape'
-# #             ,'::btCapsuleShapeX'
-# #             ,'::btCapsuleShapeY'
-# #             ,'::btCapsuleShapeZ'
-# #             ,'::btCollisionDispatcher'
-# #             ,'::btCollisionObject'
-# #             ,'::btCollisionWorld'
-# #             ,'::btCompoundShape'
-# #             ,'::btCompoundShapeChild'
-# #             ,'::btConeShape'
-# #             ,'::btConeShapeX'
-# #             ,'::btConeShapeY'
-# #             ,'::btConeShapeZ'
-# #             ,'::btConeTwistConstraint'
-# #             ,'::btConstraintPersistentData'
-# #             ,'::btContinuousDynamicsWorld'
-# #             ,'::btConvexHullShape'
-# #             ,'::btConvexSeparatingDistanceUtil'
+            ,'::btAlignedAllocator< btRigidBody*, 16u >'
             ]
             
 
@@ -261,13 +232,17 @@ def ManualFixes ( mb ):
                 if a.default_value and "&0.0" in a.default_value:
                     a.default_value = "::btVector3( (0.0), (0.0), (0.0) )"
      
-                                   
+      
     ## Bug ingccxml where it doesn't get the namespace for default values
     ## btCollisionWorld::addCollisionObject
     f=main_ns.class_('btCollisionWorld').mem_fun('addCollisionObject')
     f.arguments[1].default_value = 'btBroadphaseProxy::DefaultFilter'  # (short int)(btBroadphaseProxy::DefaultFilter)
     f.arguments[2].default_value = 'btBroadphaseProxy::AllFilter'  # (short int)(btBroadphaseProxy::AllFilter)
-      
+
+    # another relate class with incorrect default argument namespace
+    f=main_ns.class_('btDiscreteDynamicsWorld').mem_fun('addCollisionObject')
+    f.arguments[1].default_value = 'btBroadphaseProxy::StaticFilter'  
+    
     f = ['::btBroadphaseInterface::createProxy',
         '::btMultiSapBroadphase::createProxy',
         '::btDispatcher::getNewManifold'
@@ -427,7 +402,9 @@ def generate_code():
                         os.path.join( environment.bullet.root_dir, "python_bullet.h" )
                         , environment.bullet.cache_file )
 
-    defined_symbols = [ 'BULLET_EXPORTS', '__GCCXML__' ]
+    defined_symbols = [ 'BULLET_EXPORTS', '__GCCXML__', 
+                        '__MINGW32__'   # needed to turn off allocator allignment which boost can't do..
+                        ]
     defined_symbols.append( 'VERSION_' + environment.bullet.version )  
     
     #

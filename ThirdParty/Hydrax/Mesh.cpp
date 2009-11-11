@@ -411,15 +411,22 @@ namespace Hydrax
 
 		if (mCreated)
 		{
-			mEntity->getParentSceneNode()->getWorldTransforms(&mWorldMatrix);
+#if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 7
+         mWorldMatrix = mEntity->getParentSceneNode()->_getFullTransform();
+#else
+         mEntity->getParentSceneNode()->getWorldTransforms(&mWorldMatrix);
+#endif
 		}
 		else
 		{
 			Ogre::SceneNode *mTmpSN = new Ogre::SceneNode(0);
 		    mTmpSN->setPosition(mHydrax->getPosition());
 
-			mTmpSN->getWorldTransforms(&mWorldMatrix);
-
+#if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 7
+         mWorldMatrix = mTmpSN->_getFullTransform();
+#else
+         mTmpSN->getWorldTransforms(&mWorldMatrix);
+#endif
 		    delete mTmpSN;
 		}
 
@@ -432,15 +439,22 @@ namespace Hydrax
 
 		if (mCreated)
 		{
-			mEntity->getParentSceneNode()->getWorldTransforms(&mWorldMatrix);
+#if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 7
+         mWorldMatrix = mEntity->getParentSceneNode()->_getFullTransform();
+#else
+         mEntity->getParentSceneNode()->getWorldTransforms(&mWorldMatrix);
+#endif
 		}
 		else
 		{
 			Ogre::SceneNode *mTmpSN = new Ogre::SceneNode(0);
 		    mTmpSN->setPosition(mHydrax->getPosition());
 
-			mTmpSN->getWorldTransforms(&mWorldMatrix);
-
+#if OGRE_VERSION_MAJOR >= 1 && OGRE_VERSION_MINOR >= 7
+         mWorldMatrix = mTmpSN->_getFullTransform();
+#else
+         mTmpSN->getWorldTransforms(&mWorldMatrix);
+#endif
 		    delete mTmpSN;
 		}
 

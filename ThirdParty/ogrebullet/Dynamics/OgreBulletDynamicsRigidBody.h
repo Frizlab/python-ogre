@@ -135,7 +135,9 @@ namespace OgreBulletDynamics
        virtual void setTransform(const btVector3 &pos, const btQuaternion &quat);
        virtual void setTransform(const btTransform& worldTrans);
 
-        virtual ~WheeledRigidBody(){};
+#if OGRE_VERSION_MINOR < 7
+       virtual ~WheeledRigidBody(){};
+#endif
 
     protected:
 		RaycastVehicle *mVehicle;

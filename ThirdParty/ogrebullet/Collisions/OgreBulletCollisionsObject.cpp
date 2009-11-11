@@ -44,7 +44,9 @@ namespace OgreBulletCollisions
     Object::Object(const String &name, CollisionsWorld *world, bool init)
         :	
         MovableObject(name),
+#if (OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR < 7)
         UserDefinedObject(),
+#endif
         mWorld(world),
         mShape(0),
         mState(0),

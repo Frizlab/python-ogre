@@ -226,7 +226,9 @@ def generate_code():
                         , environment.ogrebulletd.cache_file )
 
     if os.name == 'nt':
-        defined_symbols = ["WIN32","NDEBUG","_WINDOWS", "_PRECOMP", 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE' ]
+        defined_symbols = ["WIN32","NDEBUG","_WINDOWS", "_PRECOMP",
+                        'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE',
+                        ]
     else:
         defined_symbols = ["NDEBUG", "_PRECOMP", 'OGRE_NONCLIENT_BUILD', '__PYTHONOGRE_BUILD_CODE' ]
     defined_symbols.append( 'VERSION_' + environment.ogrebulletd.version )
@@ -234,6 +236,8 @@ def generate_code():
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         defined_symbols.append('BOOST_HAS_WINTHREADS')
+    if environment.Config._SVN: # building Ogre 1.7
+        defined_symbols.append ('HAVE_OGRE_BUILDSETTINGS_H') # it uses the cmake buildsettings include
 
     #
     # build the core Py++ system from the GCCXML created source

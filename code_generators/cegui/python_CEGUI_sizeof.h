@@ -1,3 +1,4 @@
+#if 1
 sizeof ( ::std::pair<float, float> );
 sizeof ( ::CEGUI::Event::Connection ) ;
 sizeof ( ::CEGUI::Event::Subscriber) ;
@@ -27,3 +28,4 @@ sizeof(  CEGUI::ConstBaseIterator<std::map<CEGUI::String, CEGUI::WindowFactoryMa
 sizeof(  CEGUI::ConstBaseIterator<std::map<CEGUI::String, CEGUI::WindowFactory*, CEGUI::String::FastLessCompare, std::allocator<std::pair<const CEGUI::String, CEGUI::WindowFactory*> > > > );
 sizeof(  CEGUI::ConstBaseIterator<std::map<CEGUI::String, CEGUI::Font*, CEGUI::String::FastLessCompare, std::allocator<std::pair<const CEGUI::String, CEGUI::Font*> > > > );
 sizeof(  CEGUI::ConstBaseIterator<std::map<CEGUI::String, CEGUI::Image, CEGUI::String::FastLessCompare, std::allocator<std::pair<const CEGUI::String, CEGUI::Image> > > > );
+#endif

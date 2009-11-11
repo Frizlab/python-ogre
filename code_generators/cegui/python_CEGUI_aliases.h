@@ -1,3 +1,4 @@
+#if 1
 typedef std::vector<CEGUI::ListboxItem*> ListBoxItemPtrVector;
 // typedef std::vector<CEGUI::Scheme::AliasMapping> AliasMappingVector;
 typedef std::vector<CEGUI::PropertyInitialiser> PropertyInitialiserVector;
@@ -6,10 +7,11 @@ typedef std::vector<CEGUI::PropertyInitialiser> PropertyInitialiserVector;
 // typedef std::vector<CEGUI::Scheme::UIElementFactory> UIElementFactoryVector;
 // typedef std::vector<CEGUI::Scheme::UIModule> UIModuleVector;
 
+/*
 #if ( CEGUI_VERSION_MINOR > 5 )
  typedef std::list<CEGUI::OgreCEGUITexture*> OgreCEGUITextureList;
 #endif
-
+*/
 
 typedef ::CEGUI::Event::Connection Connection;
 typedef ::CEGUI::Event::Subscriber Subscriber;
@@ -62,3 +64,4 @@ typedef std::vector<CEGUI::Window*>    WindowVector;   //!< Type to use for a co
 typedef std::vector<CEGUI::Property*> PropertyList;
 typedef std::map<CEGUI::String, CEGUI::WindowRendererFactory*, CEGUI::String::FastLessCompare> WR_Registry;
 typedef std::map<CEGUI::String, CEGUI::String, CEGUI::String::FastLessCompare> AttributeMap;
+#endif
