@@ -542,7 +542,8 @@ class boost(module):
             [wget, 'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1-linuxx86.tgz', downloadPath],
             # this isn't used unless building from source -- however small download :)
             [wget, 'http://downloads.sourceforge.net/boost/boost-jam-3.1.17.tgz', downloadPath],
-            [wget, 'http://downloads.sourceforge.net/boost/' + base + '.tar.gz', downloadPath]
+            [wget, 'http://downloads.sourceforge.net/boost/' + base + '.tar.gz', downloadPath],
+            [svn, ' co http://svn.boost.org/svn/boost/trunk boost-trunk',os.getcwd()]
         ]
 
         buildCmds = [
@@ -561,9 +562,10 @@ class boost(module):
             [0, cp + " bjam %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase, bjambuilddir)],
 
             ## and now boost
-            [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
-            [0, 'chmod -R +rw *', os.path.join(os.getcwd(), base)],
-            [0, PREFIX + '/bin/bjam release --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), base) ],
+           ## [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
+           ## [0, 'chmod -R +rw *', os.path.join(os.getcwd(), base)],
+            ##[0, PREFIX + '/bin/bjam release install --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), base) ],
+            [0, PREFIX + '/bin/bjam release install --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), 'boost-trunk') ],
            # [0, "./configure --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam" % PREFIX, os.path.join(os.getcwd(), base)],
            # [0, 'make', os.path.join(os.getcwd(), base)],
            # [0, 'make install', os.path.join(os.getcwd(), base)],
@@ -611,7 +613,7 @@ class boost(module):
 
     # If we are not given a LIB path, use the version we are building.
     if Config.PATH_Boost is None:
-        PATH = os.path.join(Config.LOCAL_INCLUDE, "boost-%s" % versionBase)
+        PATH = os.path.join(Config.LOCAL_INCLUDE, "boost") ## -%s" % versionBase)
     else:
         PATH = Config.PATH_Boost
 

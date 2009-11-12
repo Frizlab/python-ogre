@@ -131,6 +131,7 @@ def ManualExclude ( mb ):
     global_ns.class_('::Ogre::ResourceManager').mem_fun('create').exclude()
 
 
+
     global_ns.class_('::Ogre::Node').member_functions('getChild').exclude()
     global_ns.class_('::Ogre::Node').member_functions('removeChild').exclude()
     global_ns.class_('::Ogre::Node').member_functions('getParent').exclude()
@@ -320,6 +321,11 @@ def ManualExclude ( mb ):
 #            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
 #            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
 
+        #needed for linux
+        try:
+            main_ns.member_function('::Ogre::ResourceGroupManager::addCreatedResource').exclude()
+        except:
+            pass
         # these don't exist
         main_ns.class_("ScriptCompiler").mem_fun("removeNameExclusion").exclude()
         main_ns.class_("ScriptCompiler").mem_fun("addNameExclusion").exclude()
