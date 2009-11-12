@@ -274,9 +274,9 @@ class pymodule(module):
 ##
 ####################################################
 class gccxml(module):
-    source_version = "20091016"
+    source_version = "20091110"
     source = [
-        [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 16Oct2009 gccxml", os.getcwd()]
+        [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 10Nov2009 gccxml", os.getcwd()]
     ]
 
     if isLinux() or isMac():
@@ -381,9 +381,10 @@ class cg(module):
         if is64():
             base = 'Cg-2.0_May2008_x86_64'
         else:
-            base = 'Cg-2.0_May2008_x86'
+            base = 'Cg-2.2_October2009_x86'
         source = [
-            [wget, " http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0015/" + base + ".tgz", downloadPath]
+#            [wget, " http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0015/" + base + ".tgz", downloadPath]
+             [wget, " http://developer.download.nvidia.com/cg/Cg_2.2/" + base+ ".tgz", downloadPath]
         ]
         buildCmds = [
             [0, tar + " xvzf " + os.path.join(downloadPath, base) + ".tgz --overwrite", ROOT], # unpack it directly into 'our' root
@@ -451,7 +452,7 @@ class freeimage(module):
 
 class cmake(module):
     if isLinux() :
-        base = 'cmake-2.6.2-Linux-i386'
+        base = 'cmake-2.6.4-Linux-i386'
         buildCmds = [
             [0, tar + " xzf " + os.path.join(downloadPath, base) + ".tar.gz --overwrite", ''],
             [0, cp + "-R  * " + PREFIX, os.path.join(os.getcwd(), base) ],
@@ -461,7 +462,7 @@ class cmake(module):
         ]
 
     elif isMac():
-        base = 'cmake-2.6.2-Darwin-universal'
+        base = 'cmake-2.6.4-Darwin-universal'
         buildCmds = [
             [0, tar + " xzf " + os.path.join(downloadPath, base) + ".tar.gz", ''],
             [0, cp + r"-R  CMake\ 2.6-2.app/Contents/* " + PREFIX, os.path.join(os.getcwd(), base) ],
@@ -491,14 +492,14 @@ class scons(module):
         buildCmds = [
             [0, tar + " zxf " + os.path.join(downloadPath, base) + ".tar.gz --overwrite", '' ],
             # note fix here as scons defaults to adding bundle to command line which stops us building dynamiclibs!!
-            [0, 'sed -i "" s/-bundle// applelink.py', os.path.join(os.getcwd(), base, 'engine', 'SCons', 'Tool')   ],
+            [0, 'sed -i s/-bundle// applelink.py', os.path.join(os.getcwd(), base, 'engine', 'SCons', 'Tool')   ],
             [0, "python setup.py install  --prefix=%s" % PREFIX, os.path.join(os.getcwd(), base) ]
         ]
     elif isMac():
         buildCmds = [
             [0, tar + " zxf " + os.path.join(downloadPath, base) + ".tar.gz ", '' ],
             # note fix here as scons defaults to adding bundle to command line which stops us building dynamiclibs!!
-            [0, 'sed -i "" s/-bundle// applelink.py', os.path.join(os.getcwd(), base, 'engine', 'SCons', 'Tool')   ],
+            [0, 'sed -i s/-bundle// applelink.py', os.path.join(os.getcwd(), base, 'engine', 'SCons', 'Tool')   ],
             [0, "python setup.py install  --prefix=%s" % PREFIX, os.path.join(os.getcwd(), base) ]
         ]
 
@@ -562,9 +563,10 @@ class boost(module):
             ## and now boost
             [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
             [0, 'chmod -R +rw *', os.path.join(os.getcwd(), base)],
-            [0, "./configure --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam" % PREFIX, os.path.join(os.getcwd(), base)],
-            [0, 'make', os.path.join(os.getcwd(), base)],
-            [0, 'make install', os.path.join(os.getcwd(), base)],
+            [0, PREFIX + '/bin/bjam release --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), base) ],
+           # [0, "./configure --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam" % PREFIX, os.path.join(os.getcwd(), base)],
+           # [0, 'make', os.path.join(os.getcwd(), base)],
+           # [0, 'make install', os.path.join(os.getcwd(), base)],
         ]
 
     if isMac():
@@ -693,8 +695,8 @@ class ogre(pymodule):
         LINKFLAGS = ''
 
     elif isLinux():
-        version = "1.6.1"
-        base = "ogre-v1-6-1"
+        version = "1.6.4"
+        base = "ogre-v1-6-4"
 
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/" + base + ".tar.bz2", downloadPath],
