@@ -22,6 +22,8 @@ PATH_LIB_date_time_STATIC = LOCAL_LIB
 ## and the name of the boost python library
 LIB_Boost = None
 
+LIB_Boost = "libboost_python"
+
 # in Linux we need to code in the Relative path for the library
 RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\'' 
 
