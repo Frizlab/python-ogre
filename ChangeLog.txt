@@ -1,3 +1,11 @@
+November 13 2009: Release 1.7.0 R1018
+=====================================
+<BLEEDING EDGE RELEASE>
+Initial release based upon Ogre 1.7 - there will be code breaking changes here
+CEGUI 0.7.1 -- using the CEGUI 'ogre' renderer (not the native Ogre one) so none of the demos currently work due to api changes
+Latest QuickGUI from the SVN
+see ReportVersion.out for detailed modules and their versions.
+
 October 30 2009:  Release 1.6.4 R1017
 =====================================
 Enhanced OgreAny support

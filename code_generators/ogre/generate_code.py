@@ -1636,12 +1636,13 @@ def generate_code():
                 f = open(fname, 'r')
                 buf = f.read()
                 f.close()
-                buf = buf.replace ( " MEMCATEGORY_GENERAL", " Ogre::MEMCATEGORY_GENERAL")
-                buf = buf.replace ( "<MEMCATEGORY_GENERAL", "<Ogre::MEMCATEGORY_GENERAL")
-                f = open ( fname, 'w+')
-                f.write ( buf )
-                f.close()
-                print "UGLY FIX OK:", fname
+                if (" MEMCATEGORY_GENERAL" in buf) or ("<MEMCATEGORY_GENERAL" in buf):
+                    buf = buf.replace ( " MEMCATEGORY_GENERAL", " Ogre::MEMCATEGORY_GENERAL")
+                    buf = buf.replace ( "<MEMCATEGORY_GENERAL", "<Ogre::MEMCATEGORY_GENERAL")
+                    f = open ( fname, 'w+')
+                    f.write ( buf )
+                    f.close()
+                    print "UGLY FIX OK:", fname
             except:
                 print "ERROR: Unable to fix:", fname
         
