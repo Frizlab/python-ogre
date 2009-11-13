@@ -1015,7 +1015,7 @@ class cegui(pymodule):
             if not Config._SVN:
                 moduleLibs.append(os.path.join(Config.PATH_LIB_Ogre_OgreMain,'CEGUIOgreRenderer'))
             else:
-                moduleLibs.append(os.path.join(Config.PATH_Ogre,'Samples','Common','bin','Release','CEGUIOgreRenderer'))
+                moduleLibs.append(os.path.join(bp,'CEGUIOgreRenderer'))
         
     elif isLinux():
         libs = [boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
@@ -2130,7 +2130,26 @@ if ogre.version.startswith ("1.7"):
         libs = [boost.lib, 'OgreRTShaderSystem', 'OgreMain' ]
         ModuleName = "ogrertshadersystem"
         descText = "OgreRTShaderSystem: New Real Time Shader System in Ogre"       
-        
+    
+    class ogresdksample(pymodule):
+        version = ogre.version
+        name = 'ogresdksample'
+        parent = "ogre/renderer"
+        include_dirs = [
+            boost.PATH,
+            Config.PATH_INCLUDE_Ogre,
+            os.path.join(Config.PATH_Ogre, "Samples", "Common", "include"),
+            Config.PATH_INCLUDE_OIS
+        ]
+        lib_dirs = [
+            boost.PATH_LIB,
+            Config.PATH_LIB_Ogre_OgreMain,
+            Config.PATH_LIB_OIS
+        ]
+        libs = [boost.lib, 'OgreMain' ]
+        ModuleName = "ogresdksample"
+        descText = "OgreSDKSample: New SDK Sample Framework in Ogre"       
+    
 ############################################################################################
 
 ## Here is the master list....
@@ -2187,6 +2206,7 @@ if ogre.version.startswith ("1.7"):
     projects['ogrepaging'] = ogrepaging
     projects['ogreterrain'] = ogreterrain
     projects['ogrertshadersystem']=ogrertshadersystem
+    projects['ogresdksample'] = ogresdksample
 
 #
 # a couple of specials that should be done differently

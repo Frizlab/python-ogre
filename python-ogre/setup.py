@@ -32,7 +32,7 @@ Py++, hence making maintainence etc very simple."""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "1.6.4",
+    "version":          "1.7",
     "license":          "LGPL",
     "url":              "http://python-ogre.python-hosting.com/",
     "author":           "Lakin Wecker, Roman Yakovenko, Andy Miller",
@@ -64,7 +64,7 @@ PACKAGEDATA = {
                         'ogre.physics', 'ogre.physics.ODE', 'ogre.physics.OgreRefApp',
                         'ogre.physics.OgreOde', 'ogre.physics.Opcode',
                         'ogre.physics.OgreNewt', 'ogre.physics.ogrenewt2',
-                        'ogre.physics.bullet','ogre.physics.PhysX','ogre.physics.NxOgre',
+                        'ogre.physics.bullet','ogre.physics.PhysX', #'ogre.physics.NxOgre',
                         'ogre.physics.OgreBulletC', 'ogre.physics.OgreBulletD',
                         'ogre.addons','ogre.addons.ogrevideo',
                         'ogre.addons.plib', # 'ogre.gui.navi',
@@ -76,14 +76,21 @@ PACKAGEDATA = {
                         'ogre.addons.ogrevideoffmpeg',
                         'ogre.renderer.plsm2',
                         'ogre.addons.raknet',
-                        'ogre.renderer.ogreoctreesm',
-                        'ogre.renderer.ogrepaging',
-                        'ogre.renderer.ogreterrain'],
+                        ],
                         
        "package_dir": {'': 'packages_'+ PythonVersionString },
        "package_data": {'': ['*.pyd', '*.dll', '*.so', '*.dylib']}
 
 }
+
+if METADATA['version'].startswith ("1.7"):
+    for x in [ 'ogre.renderer.ogreoctreesm',
+                'ogre.renderer.ogrepaging',
+                'ogre.renderer.ogreterrain',
+                'ogre.renderer.ogresdksample',
+                'ogre.renderer.ogrertshadersystem'] :
+        PACKAGEDATA['packages'].append ( x )
+        
 
 if __name__ == '__main__':
     PACKAGEDATA.update(METADATA)
