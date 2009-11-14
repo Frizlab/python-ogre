@@ -59,3 +59,18 @@ Index: ogre/OgreMain/include/OgreString.h
  	typedef ::__gnu_cxx::hash< _StringBase > _StringHash;
  #   else
  	typedef ::std::tr1::hash< _StringBase > _StringHash;
+    
+Index: ogre/OgreMain/src/OgreResourceGroupManager.cpp
+===================================================================
+--- ogre/OgreMain/src/OgreResourceGroupManager.cpp	2009-08-10 14:50:14.000000000 +0200
++++ ogre/OgreMain/src/OgreResourceGroupManager.cpp	2009-11-13 20:00:11.059944290 +0100
+@@ -914,6 +914,9 @@
+ 
+ 			// Get all the patterns and search them
+ 			const StringVector& patterns = su->getScriptPatterns();
++            if(patterns.size() > 20) {
++                continue;
++            }
+ 			for (StringVector::const_iterator p = patterns.begin(); p != patterns.end(); ++p)
+ 			{
+ 				FileInfoListPtr fileList = findResourceFileInfo(grp->name, *p);

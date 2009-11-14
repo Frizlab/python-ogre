@@ -706,11 +706,13 @@ class ogre(pymodule):
 
         buildCmds = [
             [0, tar + " jxf " + os.path.join(downloadPath, base) + ".tar.bz2 --overwrite", os.getcwd() ],
-            [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.1.patch -p0 ", os.getcwd()],
+            [0, "patch -s -N -i ./python-ogre/patch/ogre_%s.patch -p0 " % version, os.getcwd()],
+#            [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.1.patch -p0 ", os.getcwd()],
             [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
             [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
             [0, "./configure --prefix=%s --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')], #--with-gui=Xt
-            [0, "make", os.path.join(os.getcwd(), 'ogre')],
+            [0, "make -j%i" % NUMBER_OF_CORES, os.path.join(os.getcwd(), 'ogre')],
+ #          [0, "make", os.path.join(os.getcwd(), 'ogre')],
             [0, "make install", os.path.join(os.getcwd(), 'ogre')],
         ]
         libs = [boost.lib, 'OgreMain']

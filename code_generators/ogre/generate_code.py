@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#!/usr/bin/env python
 # -----------------------------------------------------------------------------
 # This source file is part of Python-Ogre and is covered by the LGPL
 # For the latest info, see http://python-ogre.org/

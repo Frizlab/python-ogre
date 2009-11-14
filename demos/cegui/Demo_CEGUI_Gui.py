@@ -88,10 +88,14 @@ class GuiApplication ( SampleFramework.Application ):
         l.setPosition(20,80,50) 
 
         ## setup GUI system
-        self.GUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow, 
-            ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager) 
-            
-        self.GUIsystem = CEGUI.System(self.GUIRenderer) 
+        if CEGUI.Version__.startswith ("0.6"):
+            self.GUIRenderer = CEGUI.OgreRenderer(self.renderWindow, 
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager) 
+            self.GUIsystem = CEGUI.System(self.GUIRenderer) 
+        else:
+            self.GUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            self.GUIsystem = CEGUI.System.getSingleton()
+
 
         logger = CEGUI.Logger.getSingleton()
         level = CEGUI.Informative
@@ -123,18 +127,23 @@ class GuiApplication ( SampleFramework.Application ):
         v.setBackgroundColour( ogre.ColourValue().Black ) 
 
             
-        ## Retrieve CEGUI texture for the RTT
-        rttTexture = self.GUIRenderer.createTexture( "RttTex") 
+        if CEGUI.Version__.startswith ("0.6"):
+            ## Retrieve CEGUI texture for the RTT
+            rttTexture = self.GUIRenderer.createTexture( "RttTex") 
 
-        rttImageSet = CEGUI.ImagesetManager.getSingleton().createImageset("RttImageset", rttTexture) 
+            rttImageSet = CEGUI.ImagesetManager.getSingleton().createImageset("RttImageset", rttTexture) 
 
-        rttImageSet.defineImage( "RttImage", 
-                CEGUI.Point(0.0, 0.0),
-                CEGUI.Size(rttTexture.getWidth(), rttTexture.getHeight()),
-                CEGUI.Point(0.0,0.0)) 
+            rttImageSet.defineImage( "RttImage", 
+                    CEGUI.Point(0.0, 0.0),
+                    CEGUI.Size(rttTexture.getWidth(), rttTexture.getHeight()),
+                    CEGUI.Point(0.0,0.0)) 
 
         ## load scheme and set up defaults
-        CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
+        if CEGUI.Version__.startswith ("0.6"):
+            CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
+        else:
+            CEGUI.SchemeManager.getSingleton().create("TaharezLookSkin.scheme") 
+
         self.GUIsystem.setDefaultMouseCursor("TaharezLook",  "MouseArrow") 
         self.GUIsystem.setDefaultFont( "BlueHighway-12") 
         
@@ -278,7 +287,10 @@ class GuiApplication ( SampleFramework.Application ):
         if(self.EditorGuiSheet):
             CEGUI.WindowManager.getSingleton().destroyWindow(self.EditorGuiSheet) 
     
-        self.EditorGuiSheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("cegui8.layout", False)  
+        if CEGUI.Version__.startswith ("0.6"):
+            self.EditorGuiSheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("cegui8.layout", False)  
+        else:
+            self.EditorGuiSheet = CEGUI.WindowManager.getSingleton().loadWindowLayout("cegui8.layout")  
         self.setupLoadedLayoutHandlers() 
     
         editorWindow = CEGUI.WindowManager.getSingleton().getWindow( "OgreGuiDemo2/MainWindow") 

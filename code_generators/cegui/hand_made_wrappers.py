@@ -58,12 +58,14 @@ EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeMouseCursor,
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeSystem, 
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
-EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeRenderer, 
-            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeEventSet, 
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 #if CEGUI_VERSION_MINOR > 5 && CEGUI_VERSION_PATCH > 0
 EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeTree, 
+            bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
+#endif
+#if CEGUI_VERSION_MINOR < 7 
+EventSet_exposer.def( "subscribeEvent", &EventSet_subscribeRenderer, 
             bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());
 #endif
                         
@@ -346,12 +348,15 @@ EventConnection * EventSet_subscribeSystem(CEGUI::System *self , CEGUI::String c
     EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
     return connect; 
 }
+
+#if CEGUI_VERSION_MINOR < 7 
 EventConnection * EventSet_subscribeRenderer(CEGUI::Renderer *self , CEGUI::String const & name, 
                                                 PyObject* subscriber, CEGUI::String const & method="")
 {
     EventConnection *connect = new EventConnection(self->subscribeEvent(name, EventCallback(subscriber, method))); 
     return connect; 
 }
+#endif
 
 #if CEGUI_VERSION_MINOR > 5 && CEGUI_VERSION_PATCH > 0
 EventConnection * EventSet_subscribeTree(CEGUI::Tree *self , CEGUI::String const & name, 
@@ -421,10 +426,10 @@ def apply( mb ):
 # #     mb.add_declaration_code( WRAPPER_DEFINITION_General )
 # #     mb.add_registration_code( WRAPPER_REGISTRATION_General )
 #     
-    if not environment.cegui.version.startswith ("0.7"):
-        rt = mb.class_( 'EventSet' )
-        rt.add_declaration_code( WRAPPER_DEFINITION_EventSet )
-        rt.add_registration_code( WRAPPER_REGISTRATION_EventSet )
+
+    rt = mb.class_( 'EventSet' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_EventSet )
+    rt.add_registration_code( WRAPPER_REGISTRATION_EventSet )
 
     rt = mb.class_( 'String' )
     rt.add_declaration_code( WRAPPER_DEFINITION_String )

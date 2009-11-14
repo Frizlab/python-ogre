@@ -78,12 +78,14 @@ class GuiApplication ( SampleFramework.Application ):
 #         CEGUI.ScriptModule.setDefaultResourceGroup("lua_scripts")
 #         
         ## setup GUI system
-        self.GUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow, 
-            ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager) 
-
-            
-        self.GUIsystem = CEGUI.System(self.GUIRenderer) 
-   
+        if CEGUI.Version__.startswith ("0.6"):
+            self.GUIRenderer = CEGUI.OgreRenderer(self.renderWindow, 
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager) 
+            self.GUIsystem = CEGUI.System(self.GUIRenderer) 
+        else:
+            self.GUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            self.GUIsystem = CEGUI.System.getSingleton()
+        
         logger = CEGUI.Logger.getSingleton()
         logger.setLoggingLevel( CEGUI.Informative ) 
 
@@ -91,12 +93,15 @@ class GuiApplication ( SampleFramework.Application ):
         winMgr = CEGUI.WindowManager.getSingleton()
 
         ## load scheme and set up defaults
-        CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
+        if CEGUI.Version__.startswith ("0.6"):
+            CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
+        else:
+            CEGUI.SchemeManager.getSingleton().create("TaharezLookSkin.scheme") 
         self.GUIsystem.setDefaultMouseCursor("TaharezLook",  "MouseArrow") 
-        #CEGUI.FontManager.getSingleton().createFont("Commonwealth-10.font")
-
+        
         ## load an image to use as a background
-        CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "ogregui.tga")
+        if CEGUI.Version__.startswith ("0.6"):
+            CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "ogregui.tga")
         
         ## here we will use a StaticImage as the root, then we can use it to place a background image
         background = winMgr.createWindow("TaharezLook/StaticImage", "background_wnd")
