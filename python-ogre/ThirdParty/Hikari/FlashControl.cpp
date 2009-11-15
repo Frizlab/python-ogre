@@ -278,6 +278,16 @@ void FlashControl::gotoFrame(long frameNum)
 	flashInterface->raw_GotoFrame(frameNum);
 }
 
+int FlashControl::getFramesCount()
+{
+	return flashInterface->GetTotalFrames();
+}
+
+int FlashControl::getFrameCurrent()
+{
+	return flashInterface->GetFrameNum();
+}
+
 void FlashControl::setLoop(bool shouldLoop)
 {
 	flashInterface->PutLoop(shouldLoop);

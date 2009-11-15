@@ -279,6 +279,7 @@ bool cVideoPlayer::refresh(unsigned long time)
 							FrameRGB->data,
 							FrameRGB->linesize);
                         
+				sws_freeContext(img_convert_ctx);
                         
 // 			Ogre::LogManager::getSingletonPtr()->logMessage(
 // 				Ogre::String("Replay Num.: ")+ Ogre::StringConverter::toString(replayCont) +
