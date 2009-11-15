@@ -165,6 +165,16 @@ public:
 	* Navigates the currently-loaded movie to a certain frame and stops there.
 	*/
 	void gotoFrame(long frameNum);
+	
+	/**
+	* Returns number of frame sin movie
+	*/
+	int getFramesCount();
+
+	/**
+	* Returns current frame
+	*/
+	int getFrameCurrent();
 
 	/**
 	* Sets whether or not the currently-loaded movie should restart when
