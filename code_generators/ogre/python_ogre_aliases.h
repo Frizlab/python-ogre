@@ -466,6 +466,10 @@ typedef std::multimap<std::string, std::string> stdMultimapStringString;
 typedef std::vector<float, Ogre::STLAllocator<float, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdVectorFloatOgreAlloc;
 typedef std::vector<Ogre::Any,Ogre::STLAllocator<Ogre::Any, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdVectorOgreAnyOgreAlloc;
     
+typedef std::pair<std::string const, Ogre::MovableObject*> stdPairStringMovableObject;
+typedef std::pair<std::string const, Ogre::Node*> stdPairStringNodePtr;
+typedef std::pair<bool, Ogre::SharedPtr<Ogre::Resource> > stdPairSharedPtrResource;
+    
  typedef std::list<Ogre::Particle*, Ogre::STLAllocator<Ogre::Particle*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >  stdListParticle;
  typedef std::list<Ogre::ParticleEmitter*, Ogre::STLAllocator<Ogre::ParticleEmitter*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdListParticleEmitter;
  typedef std::list<Ogre::SharedPtr<Ogre::AbstractNode>, Ogre::STLAllocator<Ogre::SharedPtr<Ogre::AbstractNode>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > stdListSharedPtrAbstractNode;

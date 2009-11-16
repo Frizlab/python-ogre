@@ -112,7 +112,32 @@ class GuiFrameListener ( sf.FrameListener, ois.MouseListener, ois.KeyListener ):
         k = gui.KeyCode.values[arg.key]
         self.mGUIManager.injectKeyUp( k )
         return True
-
+        
+        
+def createWidget (  parent, widgetType, dimensions, name=None, **attributes ):
+        """ helper function for making widgets -- shows a cool feature of python in 
+        that you can go looking for functions by name
+        """
+        dm = gui.DescManager.getSingletonPtr()
+        func = getattr(dm, "getDefault"+widgetType+"Desc") 
+        # create the widget description
+        widget = func() 
+        widget.resetToDefault()
+        if name:
+            widget.widget_name = name
+        else:
+            widget.widget_name = widgetType
+        widget.widget_dimensions = dimensions
+        # now handle any attributes
+        for a in attributes.keys():
+            try:
+                setattr (widget, a, attributes[a] )
+            except:
+                print "Unable to set attribute ", a, "on widget", widget
+        # find the function to create this widget
+        func = getattr(parent, "create" + widgetType )
+        return  func(widget)
+  
 class QuickGUIDemoApp (sf.Application):
     def __del__ (self ):
         self.guiroot.destroyGUIManager(self.mGUIManager)
@@ -226,38 +251,7 @@ class QuickGUIDemoApp (sf.Application):
         self.callbacks.append( cb )
         return cb
         
-    def makeWidget ( self, widgetType, dimensions, name=None, **attributes ):
-        """ helper function for making widgets -- shows a cool feature of python in 
-        that you can go looking for functions by name
-        """
-        dm = gui.DescManager.getSingletonPtr()
-        func = getattr(dm, "getDefault"+widgetType+"Desc") 
-        # create the widget description
-        widget = func() 
-        widget.resetToDefault()
-        if name:
-            widget.widget_name = name
-        else:
-            widget.widget_name = widgetType
-        widget.widget_dimensions = dimensions
-        # now handle any attributes
-        for a in attributes.keys():
-            try:
-                setattr (widget, a, attributes[a] )
-            except:
-                print "Unable to set attribute ", a, "on widget", widget
-        # find the function to create this widget
-        func = getattr(self.mSheet, "create" + widgetType )
-        return  func(widget)
-    
-    def addMenuItem ( self, menu, name ):
-        dm = gui.DescManager.getSingletonPtr()
-        md = dm.getDefaultMenuDesc()
-        md.resetToDefault()
-        md.widget_name = name
-        md.textDesc.segments.append(gui.TextSegment("micross.12",gui.ColourValue().Black,name))
-        ##menu.createMenu(md)
-
+  
     def createGUI ( self ):  
         self.callbacks=[]
         sf.info ("Creating GUI")
@@ -272,13 +266,37 @@ class QuickGUIDemoApp (sf.Application):
         
 		
         
-        self.TreeView = self.makeWidget ( "TreeView", gui.Rect(0,75,200,300) )
-        self.Panel = self.makeWidget ( "Panel", gui.Rect(225,75,150,217), name="MainPanel", 
+        self.TreeView = createWidget ( self.mSheet,"TreeView", gui.Rect(0,75,200,300) )
+        self.Panel = createWidget (  self.mSheet,"Panel", gui.Rect(225,75,150,217), name="MainPanel", 
                         widget_resizeFromBottom=True, widget_resizeFromRight = True )
-        #self.bd = self.makeWidget( "ScrollButton", gui.Rect(400,250,75,23) )
-        self.tb = self.makeWidget( "ToolBar", gui.Rect(0,0,800,20), name="TestToolBar")
+        #self.bd = createWidget(  self.mSheet,"ScrollButton", gui.Rect(400,250,75,23) )
+        self.tb = createWidget(  self.mSheet,"ToolBar", gui.Rect(0,0,800,20), name="TestToolBar")
+        print dir(self.tb)
+        self.tb.createMenu("File")
+
+        menu = dm.getDefaultMenuDesc()
+        menu.resetToDefault()
+        menu.widget_name = "Edit"
+        menu.textDesc.segments.append(gui.TextSegment("micross.12",gui.ColourValue().Black,"Edit"))
+        
+        sv = gui.vector_QuickGUITextSegment()
+        sv.append (gui.TextSegment("micross.12",gui.ColourValue().Black,"Edit"))
+        
+        m = self.tb.createMenu()
+        m.textDesc.segments.append(gui.TextSegment("micross.12",gui.ColourValue().Black,"HelpMe"))
+        m.createSubMenu ("test")
+        
+        m.createTextItem ( sv )
+        m.createTextItem ( "Item2" )
+        m.createSubMenu ("test")
+        #m.createTextItem ( gui.TextSegment("micross.12",gui.ColourValue().Black,"Item1") )
+        #m.createTextItem ( gui.TextSegment("micross.12",gui.ColourValue().Black,"Item2") )
+        
+        self.tb.createMenu("Format")
+        
+        
         ##self.addMenuItem ( self.tb, "File")
-        self.combo = self.makeWidget ( "ComboBox", gui.Rect(400,100,125,20), combobox_dropDownMaxHeight = 60 )
+        self.combo = createWidget ( self.mSheet,"ComboBox", gui.Rect(400,100,125,20), combobox_dropDownMaxHeight = 60 )
         
         if False:
           pd = descFactory.getInstance("DefaultPanelDesc")

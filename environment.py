@@ -542,8 +542,10 @@ class boost(module):
             [wget, 'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1-linuxx86.tgz', downloadPath],
             # this isn't used unless building from source -- however small download :)
             [wget, 'http://downloads.sourceforge.net/boost/boost-jam-3.1.17.tgz', downloadPath],
-            [wget, 'http://downloads.sourceforge.net/boost/' + base + '.tar.gz', downloadPath],
-            [svn, ' co http://svn.boost.org/svn/boost/trunk boost-trunk',os.getcwd()]
+            ## boost 1.40 is broken with python 2.6 so need the svn
+            #[wget, 'http://downloads.sourceforge.net/boost/' + base + '.tar.gz', downloadPath],
+            ## only doing an export not a co to save bandwidth
+            [svn, ' export http://svn.boost.org/svn/boost/trunk boost-trunk',os.getcwd()]
         ]
 
         buildCmds = [
@@ -665,7 +667,7 @@ class ogre(pymodule):
         ]
         try:
             if Config._SVN:
-                version="1.7.r9285"
+                version="1.7.r9314"
         except:
             pass
         # requirements to build a precompiled header on the fly
@@ -1278,6 +1280,7 @@ class betagui(pymodule):
     name = 'betagui'
     parent = "ogre/gui"
     cflags = ""
+    active = False # no one seems to be using this so removing support (11/09)
     include_dirs = [
         boost.PATH,
         Config.PATH_INCLUDE_Ogre,
