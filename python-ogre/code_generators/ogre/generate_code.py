@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #!/usr/bin/env python
+#!/usr/bin/env python
 # -----------------------------------------------------------------------------
 # This source file is part of Python-Ogre and is covered by the LGPL
 # For the latest info, see http://python-ogre.org/
@@ -484,6 +485,10 @@ def ManualInclude ( mb ):
         "pair<Ogre::SharedPtr<Ogre::Resource>, bool>",
         "list<Ogre::SceneNode*>",
         "pair<bool, std::string>"
+        "pair<std::string const, Ogre::SharedPtr<Ogre::Resource> >",
+        "pair<std::string const, Ogre::MovableObject*>",
+        "pair<std::string const, Ogre::Node*>",
+        "pair<bool, Ogre::SharedPtr<Ogre::Resource> >",
         ]
 
     for c in includes:
