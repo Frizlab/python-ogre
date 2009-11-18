@@ -283,7 +283,6 @@ class QuickGUIDemoApp (sf.Application):
         sv.append (gui.TextSegment("micross.12",gui.ColourValue().Black,"Edit"))
         
         m = self.tb.createMenu()
-        m.textDesc.segments.append(gui.TextSegment("micross.12",gui.ColourValue().Black,"HelpMe"))
         m.createSubMenu ("test")
         
         m.createTextItem ( sv )
