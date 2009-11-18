@@ -2154,7 +2154,25 @@ if ogre.version.startswith ("1.7"):
         libs = [boost.lib, 'OgreMain' ]
         ModuleName = "ogresdksample"
         descText = "OgreSDKSample: New SDK Sample Framework in Ogre"       
-    
+ 
+    class skyx(pymodule):
+        version = "0.1"
+        name = 'skyx'
+        parent = "addons/skyx"
+        include_dirs = [
+            boost.PATH,
+            Config.PATH_INCLUDE_Ogre,
+            os.path.join(Config.BASE_DIR, "SkyX", "SkyX", "SkyX")
+        ]
+        lib_dirs = [
+            boost.PATH_LIB,
+            Config.PATH_LIB_Ogre_OgreMain,
+            os.path.join(Config.BASE_DIR, "SkyX", "SkyX", "SkyX", "bin")
+        ]
+        libs = [boost.lib, 'OgreMain', 'SkyX' ]
+        ModuleName = "skyx"
+        descText = "SkyX: Great sky"
+        
 ############################################################################################
 
 ## Here is the master list....
@@ -2212,6 +2230,7 @@ if ogre.version.startswith ("1.7"):
     projects['ogreterrain'] = ogreterrain
     projects['ogrertshadersystem']=ogrertshadersystem
     projects['ogresdksample'] = ogresdksample
+    projects['skyx'] = skyx
 
 #
 # a couple of specials that should be done differently
