@@ -567,8 +567,8 @@ class boost(module):
            ## [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
            ## [0, 'chmod -R +rw *', os.path.join(os.getcwd(), base)],
             ##[0, PREFIX + '/bin/bjam release install --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), base) ],
-            [0, PREFIX + '/bin/bjam release install --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), 'boost-trunk') ],
-           # [0, "./configure --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam" % PREFIX, os.path.join(os.getcwd(), base)],
+            ##[0, PREFIX + '/bin/bjam release install --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), 'boost-trunk') ],
+            [0, PREFIX + '/bin/bjam -j%i release install --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, PREFIX), os.path.join(os.getcwd(), 'boost-trunk') ], 
            # [0, 'make', os.path.join(os.getcwd(), base)],
            # [0, 'make install', os.path.join(os.getcwd(), base)],
         ]
