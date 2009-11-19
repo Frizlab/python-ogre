@@ -88,7 +88,8 @@ if METADATA['version'].startswith ("1.7"):
                 'ogre.renderer.ogrepaging',
                 'ogre.renderer.ogreterrain',
                 'ogre.renderer.ogresdksample',
-                'ogre.renderer.ogrertshadersystem'] :
+                'ogre.renderer.ogrertshadersystem',
+                'ogre.addons.skyx'] :
         PACKAGEDATA['packages'].append ( x )
         
 

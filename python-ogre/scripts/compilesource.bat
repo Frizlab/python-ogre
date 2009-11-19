@@ -24,6 +24,9 @@ cd %_ROOT%\\MyGUI2.2.3_source
 cd %_ROOT%\\Ogreoggsound
 %_VCBUILD% /useenv ogreoggsoundlib_vc9.sln "Release|Win32"
 
+cd %_ROOT%\\SkyX\\SkyX
+%_VCBUILD% /useenv SkyX.sln "Release|Win32"
+
 rem cd %_ROOT%\\Ogre
 rem %_VCBUILD% /useenv ParticleUniverse.sln "Release|Win32"
 
