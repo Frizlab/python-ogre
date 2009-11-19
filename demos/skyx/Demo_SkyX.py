@@ -18,6 +18,7 @@ import ogre.addons.skyx as skyx
 # Misc
 # ----------------------------------------------------------------------------
 mShowInformation = False
+
 def getConfigStringFromSkyXAtmosphereOptions( Options ) :
     hour = int(Options.Time.x)
     min  = int((Options.Time.x - hour)*60)
@@ -51,27 +52,29 @@ def getConfigStringFromSkyXAtmosphereOptions( Options ) :
 # 'createScene' method which is where you set up your own personal scene.
 # ----------------------------------------------------------------------------
 class SkyXDemoListener(sf.FrameListener):
-    def __init__ ( self, win, cam, sm):
+    def __init__ ( self, win, cam, sm, app):
         sf.FrameListener.__init__(self, win, cam)
-        self.SceneManager = sm
+        self.sceneManager = sm
         self.keyBuffer = -1
+        self.SkyX = app.SkyX
+        self.textArea = app.textArea
 
     def frameStarted(self, frameEvent):
         #self.keyboard.capture()
 
         # Check camera height
-        raySceneQuery = self.SceneManager.\
+        raySceneQuery = self.sceneManager.\
                  createRayQuery(ogre.Ray(self.camera.getPosition() + ogre.Vector3(0,1000000,0),
-                                ogre.Vector3.NEGATIVE_UNIT_Y))
-        qryResult = raySceneQuery.execute()
-        i = qryResult.begin()
+                                ogre.Vector3().NEGATIVE_UNIT_Y))
 
-        if (i != qryResult.end() and i.worldFragment):
-            if (self.camera.getDerivedPosition().y < i.worldFragment.singleIntersection.y + 30):
-                self.camera.setPosition(self.camera.getPosition().x,
-                            i.worldFragment.singleIntersection.y + 30,
+        for queryResult in raySceneQuery.execute():
+            if queryResult.worldFragment is not None:
+                if (self.camera.getDerivedPosition().y < queryResult.worldFragment.singleIntersection.y + 30):
+                    self.camera.setPosition(self.camera.getPosition().x,
+                            queryResult.worldFragment.singleIntersection.y + 30,
                             self.camera.getPosition().z)
-
+            
+                
         SkyXOptions = self.SkyX.getAtmosphereManager().getOptions()
 
         # Time
@@ -145,9 +148,9 @@ class SkyXDemoListener(sf.FrameListener):
 
         self.textArea.setCaption(getConfigStringFromSkyXAtmosphereOptions(SkyXOptions))
 
-        self.SkyX.update(e.timeSinceLastFrame)
+        self.SkyX.update(frameEvent.timeSinceLastFrame)
 
-        self.keyBuffer -= e.timeSinceLastFrame
+        self.keyBuffer -= frameEvent.timeSinceLastFrame
 
         # Update terrain material
         ogre.MaterialManager.getSingleton().getByName("Terrain").getTechnique(0).getPass(0)\
@@ -158,6 +161,9 @@ class SkyXDemoListener(sf.FrameListener):
 
 
 class SkyxApplication(sf.Application):
+    def __del__ ( self ):
+        self.SkyX.remove()  # need to remove from the scene before deleting everything else
+        sf.Application.__del__ ( self )
 
     # Just override the mandatory create scene method
     def _createScene(self):
@@ -168,10 +174,10 @@ class SkyxApplication(sf.Application):
         self.camera.setDirection(1, 0, 0)
 
         # Create our text area for display SkyX parameters
-        createTextArea()
+        self.createTextArea()
 
         # Create SkyX
-        self.SkyX = skyx.SkyX(self.SceneManager, self.camera)
+        self.SkyX = skyx.SkyX(self.sceneManager, self.camera)
         self.SkyX.create()
 
         # Add our ground atmospheric scattering pass to terrain material
@@ -180,18 +186,20 @@ class SkyxApplication(sf.Application):
                 getTechnique(0).createPass(), 5000, ogre.SBT_TRANSPARENT_COLOUR)
 
         # Create our terrain
-        self.SceneManager.setWorldGeometry("Terrain.cfg")
+        self.sceneManager.setWorldGeometry("Terrain.cfg")
 
         # Add a basic cloud layer
         self.SkyX.getCloudsManager().add(skyx.CloudLayer.Options())
 
     def _createFrameListener( self ):
-        self.frameListener = SkyXDemoListener(self.renderWindow, self.camera, self.SceneManager)
+        self.frameListener = SkyXDemoListener(self.renderWindow, self.camera, self.sceneManager, self)
         self.root.addFrameListener(self.frameListener)
 
     def _chooseSceneManager( self ):
         # Create the SceneManager, in this case terrain scene manager
-        self.SceneManager = self.root.createSceneManager("TerrainSceneManager")
+#        self.sceneManager = self.root.createSceneManager("TerrainSceneManager")
+#        self.sceneManager = self.root.createSceneManager(ogre.ST_GENERIC)
+        self.sceneManager = self.root.createSceneManager(ogre.ST_EXTERIOR_CLOSE)
 
     # Create text area for SkyX parameters
     def createTextArea( self ):
@@ -209,8 +217,8 @@ class SkyxApplication(sf.Application):
         self.textArea.setCaption("SkyX plugin demo")
         self.textArea.setCharHeight(16)
         self.textArea.setFontName("BlueHighway")
-        self.textArea.setColourBottom(ColourValue(0.3, 0.5, 0.3))
-        self.textArea.setColourTop(ColourValue(0.5, 0.7, 0.5))
+        self.textArea.setColourBottom(ogre.ColourValue(0.3, 0.5, 0.3))
+        self.textArea.setColourTop(ogre.ColourValue(0.5, 0.7, 0.5))
 
         # Create an overlay, and add the panel
         overlay = ogre.OverlayManager.getSingleton().create("OverlayName")

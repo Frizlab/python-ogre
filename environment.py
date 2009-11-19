@@ -667,7 +667,7 @@ class ogre(pymodule):
         ]
         try:
             if Config._SVN:
-                version="1.7.r9314"
+                version="1.7.r9326"
         except:
             pass
         # requirements to build a precompiled header on the fly
@@ -2158,7 +2158,7 @@ if ogre.version.startswith ("1.7"):
     class skyx(pymodule):
         version = "0.1"
         name = 'skyx'
-        parent = "addons/skyx"
+        parent = "ogre/addons"
         include_dirs = [
             boost.PATH,
             Config.PATH_INCLUDE_Ogre,
@@ -2170,6 +2170,7 @@ if ogre.version.startswith ("1.7"):
             os.path.join(Config.BASE_DIR, "SkyX", "SkyX", "SkyX", "bin")
         ]
         libs = [boost.lib, 'OgreMain', 'SkyX' ]
+        moduleLibs = [os.path.join(Config.BASE_DIR, "SkyX", "SkyX", "SkyX", "bin","SkyX")]
         ModuleName = "skyx"
         descText = "SkyX: Great sky"
         

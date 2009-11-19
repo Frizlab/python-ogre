@@ -16,9 +16,13 @@ Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add m
 #include "OgreBlendMode.h"
 #include "OgreBorderPanelOverlayElement.h"
 // #include "OgreCodec.h"  //  this one causes a Py++ exception
-#include "OgreCompiler2Pass.h"
-#include "OgreCompositorScriptCompiler.h"
-#include "OgreCompositorSerializer.h"
+
+#if (OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR < 7) // these no longer in 1.7
+    #include "OgreCompiler2Pass.h"
+    #include "OgreCompositorScriptCompiler.h"
+    #include "OgreCompositorSerializer.h"
+    #include "OgreCompositorScriptCompiler.h"
+#endif
 #include "OgreConfig.h"
 #ifndef __APPLE_CC__  // need to exlude under MacOS X
     #include "OgreConfigDialog.h"
@@ -113,7 +117,6 @@ Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add m
 #include "OgreVertexIndexData.h"
 
 // for 1.6.1 -- going crasy on the includes
-#include "OgreCompositorScriptCompiler.h"
 //#include "OgreCompositorScriptCompiler2.h"
 //#include "OgreParticleScriptCompiler.h"
 #include "OgreScriptCompiler.h"

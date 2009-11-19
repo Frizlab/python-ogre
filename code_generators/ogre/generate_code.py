@@ -486,8 +486,8 @@ def ManualInclude ( mb ):
         "list<Ogre::SceneNode*>",
         "pair<bool, std::string>"
         "pair<std::string const, Ogre::SharedPtr<Ogre::Resource> >",
-        "pair<std::string const, Ogre::MovableObject*>",
-        "pair<std::string const, Ogre::Node*>",
+ ##       "pair<std::string const, Ogre::MovableObject*>",
+ ##       "pair<std::string const, Ogre::Node*>",
         "pair<bool, Ogre::SharedPtr<Ogre::Resource> >",
         ]
 
@@ -1635,7 +1635,7 @@ def generate_code():
 
     if environment.ogre.version.startswith("1.7"):
         ## have a code generation issue that needs resolving...
-        filesToFix=['LightList.pypp.cpp', 'stdVectorRenderWindowDescription.pypp.cpp']
+        filesToFix=['LightList.pypp.cpp', 'stdVectorRenderWindowDescription.pypp.cpp','InstancedGeometry.pypp.cpp']
         for filename in filesToFix:
             fname = os.path.join( environment.ogre.generated_dir, filename)
             try:
