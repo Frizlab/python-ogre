@@ -2174,6 +2174,26 @@ if ogre.version.startswith ("1.7"):
         ModuleName = "skyx"
         descText = "SkyX: Great sky"
         
+    class awesomium(pymodule):
+        active=False
+        version = "1.5"
+        name = 'awesomium'
+        parent = "ogre/addons"
+        include_dirs = [
+            boost.PATH,
+            Config.PATH_INCLUDE_Ogre,
+            os.path.join(Config.BASE_DIR, "awesomium")
+        ]
+        lib_dirs = [
+            boost.PATH_LIB,
+            Config.PATH_LIB_Ogre_OgreMain,
+            os.path.join(Config.BASE_DIR, "awesomium")
+        ]
+        libs = [boost.lib, 'OgreMain', 'Awesomium' ]
+        moduleLibs = [os.path.join(Config.BASE_DIR,"awesomium")]
+        ModuleName = "awesomium"
+        descText = "Awesomium: WebGUI in Ogre "
+        
 ############################################################################################
 
 ## Here is the master list....
@@ -2232,6 +2252,7 @@ if ogre.version.startswith ("1.7"):
     projects['ogrertshadersystem']=ogrertshadersystem
     projects['ogresdksample'] = ogresdksample
     projects['skyx'] = skyx
+    projects['awesomium'] = awesomium
 
 #
 # a couple of specials that should be done differently

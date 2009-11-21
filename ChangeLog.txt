@@ -1,3 +1,10 @@
+November 21 2009: Release 1.7.0 R1029
+=====================================
+Added SkyX module
+Fixed ogreode to work with Ogre1.7
+Updated ODE to 0.11.1
+Small fix to a couple of demos
+
 November 13 2009: Release 1.7.0 R1018
 =====================================
 <BLEEDING EDGE RELEASE>
