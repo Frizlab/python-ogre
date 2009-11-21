@@ -135,7 +135,7 @@ class GranTurismOgreFrameListener ( sf.FrameListener ):
         if (self.TimeUntilNextToggle <= 0) :
             # Switch debugging objects on or off
             if (self.Keyboard.isKeyDown(OIS.KC_E)):
-                World.getSingleton ().setShowDebugObjects(not World.getSingleton ().getShowDebugObjects())
+                self.world.setShowDebugGeometries(not self.world.getShowDebugGeometries())
                 self.TimeUntilNextToggle = 0.5
 
             if self.Keyboard.isKeyDown(OIS.KC_N):

@@ -1090,7 +1090,7 @@ class cegui(pymodule):
 
 
 class ode(pymodule):
-    version = "0.11"
+    version = "0.11.1"
     parent = "ogre/physics"
     odeLibraryName = 'ode'
     libs = [boost.lib, odeLibraryName]

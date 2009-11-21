@@ -65,8 +65,8 @@ def ManualExclude ( mb ):
     excludes=[  '::OgreOde_Loader::DotLoader::loadFile', 
                 '::OgreOde::EntityInformer::getIndices',   # returns const * to TriangleIndex
                 '::OgreOde_Prefab::Vehicle::load',
-                '::OgreOde::Geometry::setUserObject',   #hand wrapped
-                '::OgreOde::Geometry::getUserObject',   #hand wrapped
+#                '::OgreOde::Geometry::setUserObject',   #hand wrapped
+#                '::OgreOde::Geometry::getUserObject',   #hand wrapped
                 '::OgreOde::PlaneBoundedRegionGeometry::_planeCallback',
                 '::OgreOde::TerrainGeometry::_heightCallback',
                 '::OgreOde::EntityInformer::getIndices', ## unsigned int const *
@@ -111,8 +111,14 @@ def ManualExclude ( mb ):
     
     try: # this only works with ogre 1.7 so wrap in a try..
         global_ns.class_('::std::list<Ogre::Plane, Ogre::STLAllocator<Ogre::Plane, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').include(already_exposed=True)
+        print "***SPECIAL 1 OK ***"
     except:
-        pass 
+        print "FAIL ON 1"
+    try: # this only works with ogre 1.7 so wrap in a try..
+        global_ns.class_('::std::list<Ogre::Plane>').include(already_exposed=True)
+        print "***SPECIAL 2 OK ***"
+    except:
+        print "FAIL ON 2"
     # a specal set as the constructors require pointers to vertex buffers which we can't do 
     # so make them no initable (so boost won't allow you to try and make them)
     # and have helper functions in hand wrappers to use instead   
@@ -123,7 +129,7 @@ def ManualExclude ( mb ):
 #         print dir ( global_ns.class_( c ) )
 #           
                 
-    
+    global_ns.class_('::Ogre::Plane').include(already_exposed=True)
     
 ############################################################
 ##
@@ -303,7 +309,7 @@ def generate_code():
                                            
     # if this module depends on another set it here                                           
     mb.register_module_dependency ( environment.ogre.generated_dir )
-    mb.register_module_dependency ( environment.ois.generated_dir )
+    #mb.register_module_dependency ( environment.ois.generated_dir )
     
     # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
     mb.constructors().allow_implicit_conversion = False                                           
@@ -362,6 +368,9 @@ def generate_code():
     for cls in global_ns.classes():
         if not cls.ignore:
             print cls, cls.decl_string
+    for cls in mb.global_ns.namespace("std").classes():
+        if not cls.ignore:
+            print cls, cls.decl_string
     
     
     ##########################################################################################
@@ -381,6 +390,27 @@ def generate_code():
 
     mb.split_module(environment.ogreode.generated_dir, huge_classes, use_files_sum_repository=False)
 
+    if False:
+        ## UGLY FIX
+        ## we have a class that needs to be removed and for some reason py++ isn't doing it :(
+        ##
+        for f in  ['StdListPlane.pypp.cpp','StdListPlane.pypp.hpp']:
+            fname = os.path.join( environment.ogreode.generated_dir, f)
+            os.remove ( fname ) #remove the extra files
+            
+        # now remove the entries for the stdlistplane class     
+        fname = os.path.join( environment.ogreode.generated_dir, '_ogreode_.main.cpp')  
+        f = open(fname, 'r')
+        buf = f.readlines()
+        f.close()
+        newbuf  =[]
+        for line in buf:
+            if ('stdlistplane' not in line ) and ('StdListPlane' not in line):
+                newbuf.append(line)
+        f = open ( fname, 'w+')
+        f.writelines ( newbuf )
+        f.close()
+       
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
     
