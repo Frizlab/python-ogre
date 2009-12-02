@@ -510,23 +510,21 @@ class scons(module):
 
 class boost(module):
     """Boost module, also included bjam."""
-    if Config._SVN:
-        version = "1.41r57399"
-    else:
-        version = "1.40"
+    #if Config._SVN:
+    #    version = "1.41r57399"
+    #else:
+    version = "1.41.0"
     ModuleName = ""
 
     if isWindows():
         PATH_LIB_THREAD = Config.PATH_LIB_Thread_STATIC
         PATH_LIB_DATETIME = Config.PATH_LIB_date_time_STATIC
-        base = 'boost_1_40_0'
+        base = 'boost_1_41_0'
         lib = 'boost_python-vc90-mt-1_41'
-        versionBase = '1_40' ## the version used on the library name
-        if Config._SVN:
-            versionBase = '1_41' ## the version used on the library name
+        versionBase = '1_41' ## the version used on the library name
     else:
-        base = 'boost_1_40_0'
-        versionBase = '1_40' ## the version used on the library name
+        base = 'boost_1_41_0'
+        versionBase = '1_41' ## the version used on the library name
 
     if isLinux():
         bjambuildset = 'gcc'
@@ -542,10 +540,9 @@ class boost(module):
             [wget, 'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1-linuxx86.tgz', downloadPath],
             # this isn't used unless building from source -- however small download :)
             [wget, 'http://downloads.sourceforge.net/boost/boost-jam-3.1.17.tgz', downloadPath],
-            ## boost 1.40 is broken with python 2.6 so need the svn
-            #[wget, 'http://downloads.sourceforge.net/boost/' + base + '.tar.gz', downloadPath],
+            [wget, 'http://downloads.sourceforge.net/boost/' + base + '.tar.gz', downloadPath],
             ## only doing an export not a co to save bandwidth
-            [svn, ' export http://svn.boost.org/svn/boost/trunk boost-trunk',os.getcwd()]
+            ##[svn, ' export http://svn.boost.org/svn/boost/trunk boost-trunk',os.getcwd()]
         ]
 
         buildCmds = [
@@ -667,7 +664,7 @@ class ogre(pymodule):
         ]
         try:
             if Config._SVN:
-                version="1.7.r9326"
+                version="1.7.r9354"
         except:
             pass
         # requirements to build a precompiled header on the fly
@@ -2151,7 +2148,7 @@ if ogre.version.startswith ("1.7"):
             Config.PATH_LIB_Ogre_OgreMain,
             Config.PATH_LIB_OIS
         ]
-        libs = [boost.lib, 'OgreMain' ]
+        libs = [boost.lib, 'OgreMain', 'OIS_static', 'User32']
         ModuleName = "ogresdksample"
         descText = "OgreSDKSample: New SDK Sample Framework in Ogre"       
  

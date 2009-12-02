@@ -386,6 +386,7 @@ def ManualExclude ( mb ):
               '::Ogre::vector<Ogre::ProgressiveMesh::PMWorkingData',
               '::Ogre::vector<Ogre::SceneManager::LightInfo',
               
+ 
               
               ]
 #===============================================================================
@@ -451,9 +452,25 @@ def ManualExclude ( mb ):
                       '::Ogre::SceneManager::_resumeRendering',
                       #'::Ogre::CompositorManager::getCustomCompositionPass',
                       '::Ogre::NedPoolingPolicy::deallocateBytes',
+                      
+                      # these need the source patched -- they are implemented in the header file not the cpp one
+                      '::Ogre::Mesh::unnameSubMesh',
+                      '::Ogre::OverlayManager::hasOverlayElementImpl',
+                      '::Ogre::OverlayManager::hasOverlayElement',
+                      '::Ogre::Rectangle2D::setCorners',
+                      #'::Ogre::RenderSystem::getVertexWindingInverted',
+                      #'::Ogre::RenderSystem::getVertexWindingInverted'
+                      '::Ogre::TextureUnitState::setCompositorReference',
+                      '::Ogre::TextureUnitState::getReferencedMRTIndex',
+                      '::Ogre::TextureUnitState::getReferencedTextureName',
+                      '::Ogre::TextureUnitState::getReferencedCompositorName',
                       ]
         for c in excludelist:
-            main_ns.member_functions(c).exclude()
+            try:
+                main_ns.member_functions(c).exclude()
+                print "Excluded:", c
+            except:
+                print "ERROR: Unable to exclude:", c
 
 
 ####################b########################################

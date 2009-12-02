@@ -63,6 +63,17 @@ namespace OgreBulletCollisions
             mRayResultCallback = 0;
         }
     }
+    
+    btCollisionWorld::RayResultCallback * CollisionRayResultCallback::getBulletRay() const 
+    {
+        return mRayResultCallback;
+    }
+    
+    const Ogre::Ray & CollisionRayResultCallback::getRay() const 
+    {
+        return mRay;
+    }
+  
     Ogre::Vector3 CollisionRayResultCallback::getRayStartPoint() const
     {
       return mRay.getOrigin();
