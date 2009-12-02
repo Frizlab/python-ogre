@@ -70,26 +70,26 @@ namespace OgreBulletCollisions
         virtual void _updateRenderQueue(Ogre::RenderQueue* queue);
 
 
-        inline const Ogre::Vector3 &getWorldPosition() const {return mRootNode->_getDerivedPosition();};
-		inline const Ogre::Quaternion &getWorldOrientation() const {return mRootNode->_getDerivedOrientation();};
+        virtual  const Ogre::Vector3 &getWorldPosition() const;// {return mRootNode->_getDerivedPosition();};
+		virtual  const Ogre::Quaternion &getWorldOrientation() const;// {return mRootNode->_getDerivedOrientation();};
 
-        inline void setPosition(const Ogre::Vector3 &p) {mRootNode->setPosition (p);};
-        inline void setOrientation(const Ogre::Quaternion &q)  {return mRootNode->setOrientation (q);};
+        virtual  void setPosition(const Ogre::Vector3 &p);// {mRootNode->setPosition (p);};
+        virtual  void setOrientation(const Ogre::Quaternion &q);//  {return mRootNode->setOrientation (q);};
 
-        inline void setPosition(const Ogre::Real x, const Ogre::Real y, const Ogre::Real z) {mRootNode->setPosition (x,y,z);};
-        inline void setOrientation(const Ogre::Real x, const Ogre::Real y, const Ogre::Real z, const Ogre::Real w)  {return mRootNode->setOrientation (x,y,z,w);};
+        virtual  void setPosition(const Ogre::Real x, const Ogre::Real y, const Ogre::Real z);// {mRootNode->setPosition (x,y,z);};
+        virtual  void setOrientation(const Ogre::Real x, const Ogre::Real y, const Ogre::Real z, const Ogre::Real w);//  {return mRootNode->setOrientation (x,y,z,w);};
 
         virtual void setPosition(const btVector3 &pos);
         virtual void setOrientation(const btQuaternion &quat);
         virtual void setTransform(const btVector3 &pos, const btQuaternion &quat);
         virtual void setTransform(const btTransform& worldTrans);
 
-        inline btCollisionObject*  getBulletObject() const { return mObject;};
-        inline btCollisionWorld*  getBulletCollisionWorld() const { return mWorld->getBulletCollisionWorld ();};
-        inline CollisionsWorld*  getCollisionWorld() const { return mWorld;};
+        virtual  btCollisionObject*  getBulletObject(void) const; // { return mObject;};
+        virtual  btCollisionWorld*  getBulletCollisionWorld(void) const;// { return mWorld->getBulletCollisionWorld ();};
+        virtual  CollisionsWorld*  getCollisionWorld(void) const;// { return mWorld;};
         
-        inline CollisionShape *getShape() const{ return mShape;};
-        inline DebugCollisionShape* getDebugShape() const{ return mDebugShape;};
+        virtual  CollisionShape *getShape() const;//{ return mShape;};
+        virtual  DebugCollisionShape* getDebugShape() const;//{ return mDebugShape;};
 
         void setShape(CollisionShape *shape, 
             const Ogre::Vector3 &pos, 

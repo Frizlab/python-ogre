@@ -40,7 +40,7 @@ namespace OgreBulletCollisions
 		CollisionRayResultCallback(const Ogre::Ray &ray, CollisionsWorld *world, Ogre::Real max_distance, bool init = true);
 	    virtual ~CollisionRayResultCallback();
 
-        btCollisionWorld::RayResultCallback *getBulletRay() const {return mRayResultCallback;}
+        btCollisionWorld::RayResultCallback *getBulletRay() const;// {return mRayResultCallback;}
 
 		bool doesCollide () const;
 
@@ -48,7 +48,7 @@ namespace OgreBulletCollisions
 		void setWorld(CollisionsWorld *world);
 		void setMaxDistance(Ogre::Real max_distance);
 
-        inline const Ogre::Ray &getRay() const;
+        const Ogre::Ray & getRay() const;
 		Ogre::Vector3 getRayStartPoint() const;
 		Ogre::Vector3 getRayEndPoint() const;
 
@@ -61,11 +61,6 @@ namespace OgreBulletCollisions
 
     };
     // -------------------------------------------------------------------------
-    // basic CollisionRay inline methods
-    inline const Ogre::Ray &CollisionRayResultCallback ::getRay() const 
-    {
-        return mRay;
-    }
     // -------------------------------------------------------------------------
     //  CollisionClosestRay
     class CollisionClosestRayResultCallback : public CollisionRayResultCallback
@@ -78,7 +73,7 @@ namespace OgreBulletCollisions
 		Ogre::Vector3 getCollisionPoint() const;
 		Ogre::Vector3 getCollisionNormal() const;
 
-        inline btCollisionWorld::ClosestRayResultCallback *getBulletClosestRayResultCallback() const 
+          btCollisionWorld::ClosestRayResultCallback *getBulletClosestRayResultCallback() const 
         {
             return static_cast <btCollisionWorld::ClosestRayResultCallback * > (mRayResultCallback);
         }

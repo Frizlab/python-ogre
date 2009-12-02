@@ -176,6 +176,10 @@ class SkyxApplication(sf.Application):
         # Create our text area for display SkyX parameters
         self.createTextArea()
 
+        print "****************"
+        print self.sceneManager
+        print self.camera
+        print "****************"
         # Create SkyX
         self.SkyX = skyx.SkyX(self.sceneManager, self.camera)
         self.SkyX.create()

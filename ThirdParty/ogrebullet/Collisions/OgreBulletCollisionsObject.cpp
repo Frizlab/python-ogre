@@ -82,6 +82,25 @@ namespace OgreBulletCollisions
         delete mDebugShape;
     }
     //-----------------------------------------------------------------------
+    
+    btCollisionObject*  Object::getBulletObject(void) const { return mObject;};
+    btCollisionWorld*  Object::getBulletCollisionWorld() const { return mWorld->getBulletCollisionWorld ();};
+    CollisionsWorld*  Object::getCollisionWorld() const { return mWorld;};
+
+    CollisionShape * Object::getShape() const{ return mShape;};
+    DebugCollisionShape* Object::getDebugShape() const{ return mDebugShape;};
+    const Ogre::Vector3 & Object::getWorldPosition() const {return mRootNode->_getDerivedPosition();};
+    const Ogre::Quaternion & Object::getWorldOrientation() const {return mRootNode->_getDerivedOrientation();};
+
+    void Object::setPosition(const Ogre::Vector3 &p) {mRootNode->setPosition (p);};
+    void Object::setOrientation(const Ogre::Quaternion &q)  {return mRootNode->setOrientation (q);};
+
+    void Object::setPosition(const Ogre::Real x, const Ogre::Real y, const Ogre::Real z) {mRootNode->setPosition (x,y,z);};
+    void Object::setOrientation(const Ogre::Real x, const Ogre::Real y, const Ogre::Real z, const Ogre::Real w)  {return mRootNode->setOrientation (x,y,z,w);};
+
+    
+    
+    
     void Object::showDebugShape(bool show)
     {
         if (show && mDebugShape == 0 && mShape)

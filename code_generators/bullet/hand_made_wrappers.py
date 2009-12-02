@@ -1,6 +1,30 @@
 import os
 import environment
 
+WRAPPER_DEFINITION_btCollisionObject=\
+"""
+void
+btCollisionObject_setUserPointer ( ::btCollisionObject & body, PyObject * data ) {
+    body.setUserPointer ( data );
+    }
+    
+PyObject *
+btCollisionObject_getUserPointer ( ::btCollisionObject & body) {
+    void *  data = body.getUserPointer (  );
+    Py_INCREF( (PyObject *) data );     // I'm passing a reference to this object so better inc the ref :)
+    return  (PyObject *) data;
+    }
+"""
+
+
+WRAPPER_REGISTRATION_btCollisionObject =[
+    'def ("setUserData", &::btCollisionObject_setUserPointer );',
+    'def ("getUserData", &::btCollisionObject_getUserPointer );'
+    ]
+
+
+
+
 WRAPPER_WRAPPER_getName =\
 """
     virtual const char * getName(  ) const {
@@ -237,6 +261,10 @@ def apply( mb ):
     rt = mb.class_( 'btCollisionWorld' )  
     rt.add_declaration_code( WRAPPER_DEFINITION_btCollisionWorld )
     apply_reg (rt,  WRAPPER_REGISTRATION_btCollisionWorld )
+
+    rt = mb.class_( 'btCollisionObject' )  
+    rt.add_declaration_code( WRAPPER_DEFINITION_btCollisionObject )
+    apply_reg (rt,  WRAPPER_REGISTRATION_btCollisionObject )
 
     rt = mb.class_( 'btPersistentManifold' )  
     rt.add_declaration_code( WRAPPER_DEFINITION_btPersistentManifold )

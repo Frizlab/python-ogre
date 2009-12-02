@@ -18,8 +18,8 @@ LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-#PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_40_0' ) #-trunk')
-PATH_Boost =        os.path.join(BASE_DIR, 'boost_svn')
+PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_41_0' ) #-trunk')
+#PATH_Boost =        os.path.join(BASE_DIR, 'boost_svn')
 
 
 ## Path to your boost_pythonxxxx lib file

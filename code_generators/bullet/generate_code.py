@@ -120,6 +120,8 @@ def ManualExclude ( mb ):
             ,'::btSequentialImpulseConstraintSolver::resolveSplitPenetrationImpulseCacheFriendly'       
             
             ,'::btCollisionShape::getName'
+            ,'::btCollisionObject::getUserPointer'
+            ,'::btCollisionObject::setUserPointer'
             
             # new in .74
             ,'::btSliderConstraint::testLinLimits2'

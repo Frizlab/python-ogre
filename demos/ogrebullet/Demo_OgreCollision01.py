@@ -116,17 +116,28 @@ class OgreCollideListener(sf.FrameListener):
         """ called each frame (at the start), check if it's time to do collision checking and 
         if so do it, otherwise pass through"""
         self.frametime += frameEvent.timeSinceLastFrame 
-        print dir (self.parent.world.getBulletCollisionWorld()       )
-        sys.exit()
+ #       print dir (self.parent.world.getBulletCollisionWorld()       )
+        #sys.exit()
         # for performance reasons lets check for collisions about 5 times a second 
         if self.frametime > 0.2:
             self.ResetBoxes()
             if BULLET:
                 if not ( self.paused or self.doOnestep):
                     self.parent.world.getBulletCollisionWorld().performDiscreteCollisionDetection()
-#                     objs = self.parent.world.getBulletCollisionWorld().getCollidingObjects()
-#                     if len(objs) > 0:
-#                         print "Colliding", objs
+                    objs = self.parent.world.getBulletCollisionWorld().getCollidingObjects()
+                    for a,b,count in objs:
+                        print count, "\n"
+                        print a, b, "\n"
+                        print dir(a), "\n"
+                        print a.StaticObject, "\n"
+                        print a.CollisionFlags, "\n"
+                        print a.CompanionId, "\n"
+                        print a.getCollisionShape().getUserPointer(), "\n"
+                        print b.getCollisionShape().getUserPointer(), "\n"
+
+#                        print a.getUserData()
+#                        print b.getUserData()
+                        sys.exit()
             else:
                 self.intersectSceneQuery.execute( self.querylistener )
             self.frametime = 0
@@ -193,6 +204,7 @@ class OgreCollideListener(sf.FrameListener):
         self._bBodies = []
         self.objects=[]
         self.shapes=[]
+        self.ref=[]
         self.mSpeed = .000001
         self.mAmplitude = .5
         for i in range ( self.numBoxes ):
@@ -220,7 +232,7 @@ class OgreCollideListener(sf.FrameListener):
     
 # # # #             entity.setMaterialName(material)
             
-
+            count =0
             if BULLET:
                 shape = bulletC.StaticMeshToShapeConverter( entity )
                 if entityname == 'WoodPalletNONE':
@@ -228,17 +240,26 @@ class OgreCollideListener(sf.FrameListener):
                 else:
                     shape = shape.createCylinder()
 
-                shape = bulletC.BoxCollisionShape(size)                    
+                shape = bulletC.BoxCollisionShape(size)    
+                shape.getBulletShape().setUserPointer ( count )
+                count += 1
+                
                 bBody = bulletC.Object( "BulletObject" + str(i), self.parent.world, True)
-                print "Setting bbody shape", bBody,shape, position, q
-                print dir ( bBody )
-                print "Calling setShape"
-# #                 bBody.setShape ( shape, position, q)
-                print "\n1111"
+                 #print "Setting bbody shape", bBody,shape, position, q
+                #print dir ( bBody )
+                #sys.exit()
+#                print "Calling setShape"
+                bBody.setShape ( shape, position, q)
+                print bBody.getShape ().getBulletShape()
+                print dir (bBody.getShape ().getBulletShape())
+                
+                self.ref.append ( count )
+                sys.exit()
+#                print "\n1111"
                 node = bBody.getRootNode() ##self.sceneManager.getRootSceneNode().createChildSceneNode()
                 node.attachObject(entity)
                 self.parent.world.addObject ( bBody )
-                print "ADDED SHAPE"
+#                print "ADDED SHAPE"
             node.setScale (size.x * 0.1,size.y * 0.1,size.z * 0.1) 
             node.setPosition (position)
             # we need access to the entity and nodes to reset the material           
@@ -247,6 +268,7 @@ class OgreCollideListener(sf.FrameListener):
             self.objects.append (bBody)
             self.shapes.append ( shape )
             self.mBoxTime.append ( 10.0*random.random() )
+#            print "\n\nOK"
         
     def ResetBoxes(self):
         """ set the objects back to their original materials
