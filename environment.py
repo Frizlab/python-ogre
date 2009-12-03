@@ -925,7 +925,7 @@ class ogrenewt(pymodule):
     ModuleName = 'OgreNewt'
     
 class ogrenewt2(pymodule):
-    version = "2.10"
+    version = "r2760_2.11"
     parent = "ogre/physics"
     base = 'ogreaddons/ogrenewt2'
     if isWindows():
