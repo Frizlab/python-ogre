@@ -94,8 +94,15 @@ def ManualInclude ( mb ):
     if MAIN_NAMESPACE:
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
-        main_ns = global_ns    
-        
+        main_ns = global_ns 
+    if False:    
+        c = main_ns.class_('::OgreNewt::Contact')
+        c.operator(' bool').include()
+        for o in c.operators():
+            print o.name
+            if o.name == 'operator bool':
+                o.include()
+    
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped

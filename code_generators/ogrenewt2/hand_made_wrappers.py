@@ -94,7 +94,22 @@ WRAPPER_REGISTRATION_EventCallback = [
     'def ("setCustomForceAndTorqueCallback", &::Body_setCustomForceAndTorqueCallback); ',
     'def ("addBouyancyForce", &::Body_addBouyancyForce); ',
     ]
+    
+WRAPPER_DEFINITION_Contact = \
+"""    
+// operator bool is used to indicate the end of a contact chain and we need to support this in Python
+bool Contact_Bool ( ::OgreNewt::Contact * self )
+{
+    if ( self) return true;
+    return false;
+    //return (self->m_contact != NULL);
+}
+"""
+# NOTE: this needs to be __bool__ for python 3.x
+WRAPPER_REGISTRATION_Contact = [
+    'def( "__nonzero__", &OgreNewt::Contact::operator bool );'
 
+    ]
 #################################################################################################
 #################################################################################################      
 
@@ -106,6 +121,10 @@ def apply( mb ):
     cs = mb.class_( 'Body' )
     cs.add_declaration_code( WRAPPER_DEFINITION_EventCallback )
     apply_reg (cs,  WRAPPER_REGISTRATION_EventCallback )
+    
+    cs = mb.class_('Contact')
+    #cs.add_declaration_code( WRAPPER_DEFINITION_Contact )
+    apply_reg (cs,  WRAPPER_REGISTRATION_Contact )
 
 
     

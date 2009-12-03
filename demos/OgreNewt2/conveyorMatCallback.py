@@ -27,7 +27,8 @@ class conveyorMatCallback ( OgreNewt.ContactCallback ):
         thedir = belt.getGlobalDir()
         count = contactJoint.getContactCount()
         contact = contactJoint.getFirstContact()
-        for x in range (count):
+        #for x in range ( count ):
+        while (contact):
             contact.rotateTangentDirections( thedir )
             contactPos = Ogre.Vector3()
             contactNorm = Ogre.Vector3()
@@ -39,8 +40,7 @@ class conveyorMatCallback ( OgreNewt.ContactCallback ):
             result_accel = belt.getSpeed() - thedir.dotProduct(objectContactPointVel)
             result_accel *= 10; # looks nicer
             contact.setTangentAcceleration( result_accel, 0 )
-            if x < (count - 1): # don't call getNext on last pass as causes crash
-                contact = contact.getNext()
+            contact = contact.getNext()
         return
         
     def onAABBOverlap( self,  body0, body1, threadIndex ):
