@@ -8,7 +8,7 @@ sys.path.insert(0,'..')
 import PythonOgreConfig
 
 import ogre.renderer.OGRE as Ogre
-import ogre.physics.OgreNewt as OgreNewt
+import ogre.physics.ogrenewt2 as OgreNewt
 import ogre.io.OIS as OIS
 import ogre.gui.CEGUI as CEGUI
 import random
@@ -54,22 +54,50 @@ class OgreNewtonApplication (sf.Application):
 
 
     def _createScene ( self ):
+        print "\n\n1a"
+        sceneManager = self.sceneManager
+        sceneManager.ambientLight = Ogre.ColourValue(0.5, 0.5, 0.5)
 
-        ## setup CEGUI
-        self.GUIRenderer = CEGUI.OgreCEGUIRenderer( self.renderWindow, 
-                Ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager )
-        self.GUIsystem = CEGUI.System( self.GUIRenderer )
+        ## Create a skydome
+        self.sceneManager.setSkyDome(True, "Examples/CloudySky", 5, 8) 
+
+        ## Create a light
+        l = self.sceneManager.createLight("MainLight") 
+        ## Accept default settings: point light, white diffuse, just set position
+        ## NB I could attach the light to a SceneNode if I wanted it to move automatically with
+        ##  other objects, but I don't
+        l.setPosition(20,80,50) 
+        print "\n\n1a"
+       ## setup GUI system
+        if CEGUI.Version__.startswith ("0.6"):
+            self.GUIRenderer = CEGUI.OgreRenderer(self.renderWindow, 
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager) 
+            self.GUIsystem = CEGUI.System(self.GUIRenderer) 
+        else:
+            print "****"
+            self.GUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            print "@@@@@"
+            self.GUIsystem = CEGUI.System.getSingleton()
+            print "SSSSS"
+        print "\n\n1b"
+            
         ## load up CEGUI stuff...
         CEGUI.Logger.getSingleton().setLoggingLevel( CEGUI.Informative )
-#         CEGUI.SchemeManager.getSingleton().loadScheme("WindowsLook.scheme") #../../Media/GUI/schemes/WindowsLook.scheme")
-#         self.GUIsystem.setDefaultMouseCursor("WindowsLook", "MouseArrow")
-#         self.GUIsystem.setDefaultFont("Commonwealth-10")
-        CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
+        print "\n\n1c"
+        ## load scheme and set up defaults
+        if CEGUI.Version__.startswith ("0.6"):
+            CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
+        else:
+            CEGUI.SchemeManager.getSingleton().create("TaharezLookSkin.scheme") 
+        print "\n\n1d"
+
         self.GUIsystem.setDefaultMouseCursor("TaharezLook",  "MouseArrow") 
         self.GUIsystem.setDefaultFont( "BlueHighway-12") 
+        print "\n\n1"
         
-        sheet = CEGUI.WindowManager.getSingleton().createWindow( "DefaultWindow", "root_wnd" )
+        sheet = CEGUI.WindowManager.getSingleton().createWindow( ) #"DefaultWindow" ) #, "root_wnd" )
         CEGUI.System.getSingleton().setGUISheet( sheet )
+        print "\n\n1"
     
         ## sky box.
         self.sceneManager.setSkyBox(True, "Examples/CloudyNoonSkyBox")
@@ -90,7 +118,7 @@ class OgreNewtonApplication (sf.Application):
         del col
         
         ##floornode.setScale( siz )
-        bod.attachToNode( floornode )
+        bod.attachNode( floornode )
         bod.setPositionOrientation( Ogre.Vector3(0.0,-10.0,0.0), Ogre.Quaternion().IDENTITY )
         self.bodies.append(bod)
     
@@ -159,7 +187,7 @@ class OgreNewtonApplication (sf.Application):
         bod = OgreNewt.Body( self.World, col )
         del col
                     
-        bod.attachToNode( box1node )
+        bod.attachNode( box1node )
         bod.setMassMatrix( mass, inertia )
         bod.setStandardForceCallback()
     
