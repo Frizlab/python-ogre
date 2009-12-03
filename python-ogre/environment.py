@@ -301,9 +301,25 @@ class install(module):
         [0, "python setup.py install --prefix=%s" % PREFIX, os.path.join(os.getcwd(), 'python-ogre')],
     ]
 
+class newton2 ( module ):
+    source_version = "2.11"
+    if isLinux():
+        source = [
+            [wget, "http://www.newtondynamics.com/downloads/NewtonLinux-32-2.11.tar.gz", downloadPath],
+        ]
+
+        buildCmds = [
+            [0, "tar zxf " + os.path.join(downloadPath, "NewtonLinux-32-2.11.tar.gz"), ''],
+            #[0, "patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
+            [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt", ''],
+        ]
+
+
+    
 class newton(module):
     source_version = "1.53"
-
     if isLinux():
         source = [
             [wget, "http://www.newtondynamics.com/downloads/newtonLinux-1.53.tar.gz", downloadPath],
