@@ -125,11 +125,14 @@ def ManualExclude ( mb ):
             
             # new in .74
             ,'::btSliderConstraint::testLinLimits2'
+            ,'::btDynamicsWorld::setInternalTickCallback' # linux
             ]
     for e in excludes:
-        print "excluding function", e
-        global_ns.member_functions(e).exclude()
-        
+        try:
+            global_ns.member_functions(e).exclude()
+            print "excluding function", e
+        except:
+            print "Unable to exclude function:", e    
         
     excludes = []
     for e in excludes:
@@ -158,6 +161,8 @@ def ManualExclude ( mb ):
             ,'::btAlignedAllocator< btRaycastVehicle*, 16u >'
             ,'::btThreadSupportInterface'
             ,'::btAlignedAllocator< btRigidBody*, 16u >'
+            ,'::btAlignedAllocator< PosixThreadSupport::btSpuStatus, 16u >' # linux 
+            ,'::btAlignedObjectArray< PosixThreadSupport::btSpuStatus >'
             ]
             
 

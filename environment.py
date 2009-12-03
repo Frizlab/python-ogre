@@ -1656,11 +1656,11 @@ class bullet(pymodule):
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
-    libs = [boost.lib, 'LibBulletCollision', 'LibBulletDynamics', 'LibBulletSoftBody', 'LibBulletMultiThreaded']
+    libs = [boost.lib, 'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody', 'libBulletMultiThreaded']
     if isWindows():
         libs.append('libbulletMath')
     else:
-        libs.append('LibLinearMath')
+        libs.append('libLinearMath')
 
     lib_dirs = [
         boost.PATH_LIB,
@@ -1697,11 +1697,11 @@ class ogrebulletc(pymodule):
     version = "r2684"
     parent = "ogre/physics"
     libs = [boost.lib, 'OgreMain',
-        'LibBulletCollision', 'LibBulletDynamics', 'LibBulletMultiThreaded',
-        'LibBulletSoftBody', 'libconvexdecomposition'
+        'libBulletCollision', 'libBulletDynamics', 'libBulletMultiThreaded',
+        'libBulletSoftBody', 'libConvexDecomposition'
         ]
     if isLinux():
-       libs.append('LibLinearMath')
+       libs.append('libLinearMath')
     else:
        libs.append('libbulletmath')
     include_dirs = [
@@ -1733,13 +1733,13 @@ class ogrebulletd(pymodule):
     parent = "ogre/physics"
 
     libs = [boost.lib, 'OgreMain',
-        'LibBulletCollision', 'LibBulletDynamics', 'LibBulletSoftBody',
-        'LibBulletMultiThreaded', 'libconvexdecomposition'
+        'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody',
+        'libBulletMultiThreaded', 'libConvexDecomposition'
         ]
     if isWindows():
         libs.append('libbulletMath')
     else:
-        libs.append('LibLinearMath')
+        libs.append('libLinearMath')
 
     include_dirs = [
         boost.PATH,
