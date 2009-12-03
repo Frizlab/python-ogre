@@ -33,18 +33,20 @@ THE SOFTWARE.
 #include "OgreStringConverter.h"
 
 #if OGRE_VERSION_MINOR < 7
-	
-template <typename T, typename A = STLAllocator<T, GeneralAllocPolicy> > 
+#include <OgreMemorySTLAllocator.h>
+#include <OgreMemoryAllocatorConfig.h>
+template <typename T, typename A = Ogre::STLAllocator<T, Ogre::GeneralAllocPolicy> > 
 	struct vector 
 	{ 
 #if OGRE_CONTAINERS_USE_CUSTOM_MEMORY_ALLOCATOR
 		typedef typename std::vector<T, A> type;    
 #else
 		typedef typename std::vector<T> type;    
-#endif
+#endif // OGRE_CONTAINERS_USE_CUSTOM_MEMORY_ALLOCATOR
 	}; 
-
-#endif
+#else // OGRE_VERSION_MINOR < 7
+using Ogre::vector;
+#endif // OGRE_VERSION_MINOR < 7
 
 namespace QuickGUI
 {
@@ -438,7 +440,7 @@ namespace QuickGUI
 	ColourValue StringConverter::parseColourValue(const std::string& s)
 	{
 		Ogre::String ogreString(s);
-		Ogre::vector<Ogre::String>::type vs = Ogre::StringUtil::split(ogreString," ");
+		vector<Ogre::String>::type vs = Ogre::StringUtil::split(ogreString," ");
 
 		ColourValue cv;
 
@@ -546,7 +548,7 @@ namespace QuickGUI
 	Point StringConverter::parsePoint(const std::string& s)
 	{
 		Ogre::String ogreString(s);
-		Ogre::vector<Ogre::String>::type vs = Ogre::StringUtil::split(ogreString," ");
+		vector<Ogre::String>::type vs = Ogre::StringUtil::split(ogreString," ");
 
 		Point p;
 
@@ -608,7 +610,7 @@ namespace QuickGUI
 	Rect StringConverter::parseRect(const std::string& s)
 	{
 		Ogre::String ogreString(s);
-		Ogre::vector<Ogre::String>::type vs = Ogre::StringUtil::split(ogreString," ");
+		vector<Ogre::String>::type vs = Ogre::StringUtil::split(ogreString," ");
 
 		Rect r;
 
@@ -647,7 +649,7 @@ namespace QuickGUI
 	Size StringConverter::parseSize(const std::string& s)
 	{
 		Ogre::String ogreString(s);
-		Ogre::vector<Ogre::String>::type vs = Ogre::StringUtil::split(ogreString," ");
+		vector<Ogre::String>::type vs = Ogre::StringUtil::split(ogreString," ");
 
 		Size size;
 
