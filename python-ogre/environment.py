@@ -944,24 +944,25 @@ class ogrenewt2(pymodule):
     version = "r2760_2.11"
     parent = "ogre/physics"
     base = 'ogreaddons/ogrenewt2'
+    baseDir = os.path.join(os.getcwd(), base)
+
     if isWindows():
         libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
     elif isLinux():
         libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
+        buildCmds = [
+            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
+            [0, "make", baseDir],
+            [0, "make install", baseDir]
+            ]
+        CCFLAGS = ' -D_OGRENEWT_DYNAMIC -DOIS_NONCLIENT_BUILD '
     else:
         libs = ['Newton32', boost.lib, 'OgreMain']
 
     source = [
         [svn, " co http://svn.ogre3d.org/svnroot/ogreaddons/branches/ogrenewt/newton20 " + base, os.getcwd()]
     ]
-    baseDir = os.path.join(os.getcwd(), base)
-    buildCmds = [
-     #   [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
-     #   [0, rm + " -rf ./OgreNewt_Main/inc/boost", baseDir],
-     #   [0, 'cp SConscript OgreNewt_Main', baseDir],
-     #   [0, "scons prefix=%s boost=%s/include/boost-1_37 build" % (PREFIX, PREFIX), baseDir], ##WARNING -- boost include dir name is different than  build name (dash not underscore)
-     #   [0, "scons prefix=%s boost=%s/include/boost-1_37 install" % (PREFIX, PREFIX), baseDir],
-    ]
+    
 
     if isWindows():
         buildCmds = [
@@ -1001,7 +1002,6 @@ class ogrenewt2(pymodule):
             Config.PATH_LIB_Ogre_OgreMain,
         ]
 
-    if isMac():
         LINKFLAGS = ' -framework OIS '
 
     ModuleName = 'ogrenewt2'
@@ -1972,7 +1972,11 @@ class canvas(pymodule):
         include_dirs.append (os.path.join(Config.PATH_THIRDPARTY, 'freetype', 'include'))
         lib_dirs.append (os.path.join(Config.PATH_THIRDPARTY, 'freetype', 'lib'))
         
-    libs = [boost.lib, 'OgreMain', 'freetype235']
+        libs = [boost.lib, 'OgreMain', 'freetype235']
+    else:
+        libs = [boost.lib, 'OgreMain', 'freetype']
+        include_dirs.append ('/usr/include/freetype2')
+
     ModuleName = "canvas"
     descText = "Canvas GUI System"
     descLink = "http://www.ogre3d.org/phpBB2/viewtopic.php?t=41365&postdays=0&postorder=asc&start=0&sid=6578000180a935734beb03d548b900a4"

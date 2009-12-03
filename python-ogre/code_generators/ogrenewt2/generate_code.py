@@ -237,9 +237,10 @@ def generate_code():
 
     defined_symbols = [ 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE',
                         '_OGRENEWT_DYNAMIC','OIS_NONCLIENT_BUILD',
-                        'WIN32']
+                        ]
     defined_symbols.append( 'VERSION_' + environment.ogrenewt2.version )  
-    
+    if environment.isWindows():
+        defined_symbols.append ('WIN32')
     #
     # build the core Py++ system from the GCCXML created source
     #    

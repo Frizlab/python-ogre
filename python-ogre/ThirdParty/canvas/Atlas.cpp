@@ -382,10 +382,13 @@ void Atlas::guessDimensions(const ComputationVector& rectangles)
 	dimensions.second = Ogre::Bitwise::firstPO2From(std::max(squareRoot, maxHeight));
 }
 
+bool compareit (ComputationRect* a, ComputationRect* b){ return(a->area > b->area); }
+
 void Atlas::pack(ComputationVector& rectangles)
 {
-	struct compare { bool operator()(ComputationRect* a, ComputationRect* b){ return(a->area > b->area); }};
-	std::sort(rectangles.begin(), rectangles.end(), compare());
+	//struct compare { bool operator()(ComputationRect* a, ComputationRect* b){ return(a->area > b->area); }};
+
+	std::sort(rectangles.begin(), rectangles.end(), compareit);
 
 	while(true)
 	{
