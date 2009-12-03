@@ -561,11 +561,11 @@ class boost(module):
             [0, cp + " bjam %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase, bjambuilddir)],
 
             ## and now boost
-           ## [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
+            [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
            ## [0, 'chmod -R +rw *', os.path.join(os.getcwd(), base)],
             ##[0, PREFIX + '/bin/bjam release install --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), base) ],
             ##[0, PREFIX + '/bin/bjam release install --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), 'boost-trunk') ],
-            [0, PREFIX + '/bin/bjam -j%i release install --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, PREFIX), os.path.join(os.getcwd(), 'boost-trunk') ], 
+            [0, PREFIX + '/bin/bjam -j%i release install --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, PREFIX), os.path.join(os.getcwd(), base) ], 
            # [0, 'make', os.path.join(os.getcwd(), base)],
            # [0, 'make install', os.path.join(os.getcwd(), base)],
         ]
@@ -1107,7 +1107,7 @@ class ode(pymodule):
     ]
 
     ModuleName = 'ODE'
-    baseDir = os.path.join(os.getcwd(), "ode-0.10.1")
+    baseDir = os.path.join(os.getcwd(), "ode-0.11")
     if not isWindows():
         source = [
             [wget, "http://downloads.sourceforge.net/opende/ode-0.11.tar.gz", downloadPath]
@@ -1115,7 +1115,7 @@ class ode(pymodule):
 
         buildCmds = [
             # FIXME: Should this untar not use the unTarGz method mentioned above?
-            [0, 'tar  zxf ' + os.path.join(downloadPath, "ode-0.10.1.tar.gz"), ''],
+            [0, 'tar  zxf ' + os.path.join(downloadPath, "ode-0.11.tar.gz"), ''],
             [0, "chmod +x autogen.sh", baseDir],
             [0, "./autogen.sh", baseDir],
             [0, "./configure --prefix=%s --includedir=%s/include" % (PREFIX, PREFIX), baseDir],
@@ -1673,24 +1673,25 @@ class bullet(pymodule):
 
     if not isWindows():
         source = [
-            [wget, "http://bullet.googlecode.com/files/" + base + "-sp1.tgz", downloadPath]
+            [wget, "http://bullet.googlecode.com/files/" + base + ".tgz", downloadPath]
         ]
         buildCmds = [
-            [0, "tar zxf " + os.path.join(downloadPath, base) + "-sp1.tgz", ''],
+            [0, "tar zxf " + os.path.join(downloadPath, base) + ".tgz", ''],
             [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
             [0, "make", baseDir],
             [0, "find . -name *.a -execdir cp {} %s/lib \;" % PREFIX, baseDir]
         ]
+        CCFLAGS = ' -D"NDEBUG" -D"_CONSOLE" -D"_MBCS"  '
     else:
         source = [
-            [wget, "http://bullet.googlecode.com/files/" + base + "-sp1.zip", downloadPath]
+            [wget, "http://bullet.googlecode.com/files/" + base + ".zip", downloadPath]
         ]
         buildCmds = [
-            [0, unzip + os.path.join(downloadPath, base) + "-sp1.zip", ''],
+            [0, unzip + os.path.join(downloadPath, base) + ".zip", ''],
         ]
+        CCFLAGS = ' -D"NDEBUG" -D"_CONSOLE"  -D"WIN32" -D"_MBCS" /fp:fast /Gy /GF '
 
     ModuleName = 'bullet'
-    CCFLAGS = ' /D "NDEBUG" /D "_CONSOLE"  /D "WIN32" /D "_MBCS" /fp:fast /Gy /GF '
 
 class ogrebulletc(pymodule):
     version = "r2684"
