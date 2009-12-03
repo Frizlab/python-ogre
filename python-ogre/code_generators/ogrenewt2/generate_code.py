@@ -75,11 +75,14 @@ def ManualExclude ( mb ):
             ,'::OgreNewt::Body::setCustomTransformCallback'
             ,'::OgreNewt::BodyInAABBIterator::go'
             ,'::OgreNewt::World::setLeaveWorldCallback'
-            
             ]
     for e in exclude:
         main_ns.member_functions(e).exclude()
-
+        
+    for c in main_ns.classes():
+        if '_DestructorCallback' in c.name:
+            print "Excluding Class", c
+            c.exclude()
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
