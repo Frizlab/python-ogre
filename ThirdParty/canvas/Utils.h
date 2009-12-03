@@ -24,6 +24,7 @@
 
 #include <string>
 #include <sstream>
+#include <typeinfo>
 #include "OgreColourValue.h"
 using namespace Ogre;
 

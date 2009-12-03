@@ -209,10 +209,11 @@ def generate_code():
                         os.path.join( environment.canvas.root_dir, "python_canvas.h" )
                         , environment.canvas.cache_file )
 
-    defined_symbols = ['WIN32','OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', '__PYTHONOGRE_BUILD_CODE'] 
+    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', '__PYTHONOGRE_BUILD_CODE'] 
     
     defined_symbols.append( 'VERSION_' + environment.canvas.version )  
-    
+    if environment.isWindows():
+        defined_symbols.append ('WIN32')
     if environment._USE_THREADS:
         defined_symbols.append('BOOST_HAS_THREADS')
         if environment.isWindows():
