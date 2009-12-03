@@ -63,11 +63,16 @@ def ManualExclude ( mb ):
         main_ns = global_ns    
 
     Exclude= ['::Forests::PagedGeometry::_addDetailLevel'
-            ,'::Forests::TreeRef::getScale'    
+            ,'::Forests::TreeRef::getScale'  
+            ,'::Forests::GrassLoader::setHeightFunction'  # need to force for linux
+            ,'::Forests::TreeLoader2D::setHeightFunction'
             ]
     for c in Exclude:
-        print "Excluding:",c
-        main_ns.member_functions( c ).exclude()
+        try:
+            main_ns.member_functions( c ).exclude()
+            print "Excluding:",c
+        except:
+            print "Unable to exclude:", c
             
 ############################################################
 ##

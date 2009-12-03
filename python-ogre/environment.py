@@ -1899,8 +1899,9 @@ class hydrax(pymodule):
     ModuleName = "hydrax"
     descText = "Fantastic water/ocean effects"
 
-    CCFLAGS = " /fp:fast "
-    LINKFLAGS = "  /LTCG /DYNAMICBASE:NO /MACHINE:X86 "
+    if isWindows():
+        CCFLAGS = " /fp:fast "
+        LINKFLAGS = "  /LTCG /DYNAMICBASE:NO /MACHINE:X86 "
 
     # testing dll linkage..
     if False:
