@@ -86,6 +86,9 @@ namespace QuickGUI
 
 		LabelDesc* ld = dynamic_cast<LabelDesc*>(d);
 
+		mDesc->text_defaultColor = ld->text_defaultColor;
+		mDesc->text_defaultFontName = ld->text_defaultFontName;
+
 		setSkinType(d->widget_skinTypeName);
 
 		// Make a copy of the Text Desc.  The Text object will
