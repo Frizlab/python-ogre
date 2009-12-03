@@ -72,7 +72,7 @@ class OgreNewtonApplication (sf.Application):
         floor.setCastShadows( False )
     
         ##Ogre.Vector3 siz(100.0, 10.0, 100.0)
-        col = OgreNewt.TreeCollision( self.World, floornode, True )
+        col = OgreNewt.TreeCollision( self.World, floor, True, 0)
         bod = OgreNewt.Body( self.World, col )
         
         ##floornode.setScale( siz )
@@ -133,7 +133,9 @@ class OgreNewtonFrameListener(sf.FrameListener):
         self.bodies=[]
         self.basicframelistener = NewtonListener
         self.Debug = False
-      
+     
+    def __del__ ( self ):
+        del self.bodies
     
     def frameStarted(self, frameEvent):
 
@@ -185,14 +187,14 @@ class OgreNewtonFrameListener(sf.FrameListener):
                 
                 ent.setMaterialName( "Examples/RustySteel" )
                 
-                col =OgreNewt.Box( self.World, size )
+                col =OgreNewt.Box( self.World, size, 0 )
                 body = OgreNewt.Body( self.World, col )
                 inertia = Ogre.Vector3()
                 offset = Ogre.Vector3()
                 col.calculateInertialMatrix(inertia, offset)
 
                 del col
-                body.setMassMatrix( mass, inertia )
+                body.setMassMatrix( mass, mass*inertia )
                 body.attachNode( node )
                 body.setStandardForceCallback()
                 body.setPositionOrientation( Ogre.Vector3(-5,8,0), Ogre.Quaternion().IDENTITY )

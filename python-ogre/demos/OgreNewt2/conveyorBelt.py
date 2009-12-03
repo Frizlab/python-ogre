@@ -32,7 +32,7 @@ class conveyorBelt:
         self.Body.setMassMatrix( 0.0, Ogre.Vector3(0,0,0) )
         self.Body.attachNode( self.Node )
         self.Body.setMaterialGroupID( conveyorMat )
-        self.Body.setUserData( self )
+        self.Body.setUserData( Ogre.Any(self) )
         self.Body.setPositionOrientation( pos, orient )
         
         self.bodies.append( self.Body )
@@ -44,7 +44,10 @@ class conveyorBelt:
     def getGlobalDir(self):
         ret = self.Node.getOrientation() * self.mDir
         return ret
-    
+        
+    def getSpeed(self ):
+        return self.Speed
+        
     def killme(self):
         ## first destroy the rigid body.
         del self.Body
