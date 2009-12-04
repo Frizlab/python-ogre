@@ -1008,7 +1008,7 @@ class ogrenewt2(pymodule):
     
 class cegui(pymodule):
     parent = "ogre/gui"
-    version = "0.6.2b"
+    version = "0.7.1"
         
     if isWindows():
         version = "0.7.1"
@@ -1040,18 +1040,18 @@ class cegui(pymodule):
         libs = [boost.lib, 'OgreMain' ]
 
     if isLinux() or isMac():
-        base = "CEGUI-0.6.2"
+        base = "CEGUI-0.7.1"
         source = [
-            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.6.2b.tar.gz?download", downloadPath]
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.1.tar.gz?download", downloadPath]
         ]
 
     if isLinux() :
         buildCmds = [
-            [0, tar + " zxf " + os.path.join(downloadPath, base) + "b.tar.gz --overwrite", os.getcwd() ],
-            [0, "echo 'EMPTY' >>./INSTALL", os.path.join(os.getcwd(), base)],
-            [0, "echo 'EMPTY' >>./NEWS", os.path.join(os.getcwd(), base)],
+            [0, tar + " zxf " + os.path.join(downloadPath, base) + ".tar.gz --overwrite", os.getcwd() ],
+            #[0, "echo 'EMPTY' >>./INSTALL", os.path.join(os.getcwd(), base)],
+            #[0, "echo 'EMPTY' >>./NEWS", os.path.join(os.getcwd(), base)],
             [0, "./bootstrap", os.path.join(os.getcwd(), base)],
-            [0, "./configure --prefix=%s --enable-freeimage=yes --with-default-xml-parser=TinyXMLParser --disable-samples --without-ogre-renderer --includedir=%s/include" % (PREFIX, PREFIX), os.path.join(os.getcwd(), base)],
+            [0, "./configure --prefix=%s --enable-freeimage=yes --enable-ogre-renderer=yes --with-default-xml-parser=TinyXMLParser  --includedir=%s/include" % (PREFIX, PREFIX), os.path.join(os.getcwd(), base)],
             [0, 'make', os.path.join(os.getcwd(), base)],
             [0, 'make install', os.path.join(os.getcwd(), base)]
         ]
