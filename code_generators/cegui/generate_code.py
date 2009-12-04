@@ -179,6 +179,19 @@ def filter_declarations( mb ):
     global_ns.namespace( 'Ogre' ).class_('SceneManager').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('RenderWindow').include(already_exposed=True)
     global_ns.namespace( 'Ogre' ).class_('TexturePtr').include(already_exposed=True)
+
+    if environment.isLinux():
+        for c in CEGUI_ns.classes():
+            if c.name.endswith ('Exception') and c.name != 'Exception' :
+                c.exclude()
+                print "Excluded:", c
+
+        e = ['::CEGUI::OgreRenderer::destroyOgreImageCodec',
+        #     '::CEGUI::FileIOException',
+            ]
+        for c in e:
+            global_ns.member_functions(c).exclude()
+            
             
     
 def set_call_policies( mb ):
