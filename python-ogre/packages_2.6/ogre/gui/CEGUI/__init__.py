@@ -9,7 +9,7 @@ if sys.platform == 'win32':
 elif sys.platform == "linux2":
     ## We need to import the library 
     import ctypes
-    ctypes.CDLL("libCEGUIBase.so.1", ctypes.RTLD_GLOBAL)
+    ctypes.CDLL("libCEGUIBase-0.7.1.so", ctypes.RTLD_GLOBAL)
 
 from _cegui_ import *
 ## Make sure we are using a sane XML parser
