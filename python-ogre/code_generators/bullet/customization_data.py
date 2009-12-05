@@ -19,7 +19,7 @@ def header_files( version ):
     elif os.name == 'nt':
         ret.append('BulletMultiThreaded/Win32ThreadSupport.h')
         ret.append('BulletMultiThreaded/SpuNarrowPhaseCollisionTask/SpuGatheringCollisionTask.h')
-    elif os.name == 'linux':
+    elif os.name == 'posix':
         ret.append('BulletMultiThreaded/PosixThreadSupport.h')
         ret.append('BulletMultiThreaded/SpuNarrowPhaseCollisionTask/SpuGatheringCollisionTask.h')
     return ret
