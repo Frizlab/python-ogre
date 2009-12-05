@@ -161,8 +161,8 @@ def ManualExclude ( mb ):
             ,'::btAlignedAllocator< btRaycastVehicle*, 16u >'
             ,'::btThreadSupportInterface'
             ,'::btAlignedAllocator< btRigidBody*, 16u >'
-            ,'::btAlignedAllocator< PosixThreadSupport::btSpuStatus, 16u >' # linux 
-            ,'::btAlignedObjectArray< PosixThreadSupport::btSpuStatus >'
+#            ,'::btAlignedAllocator< PosixThreadSupport::btSpuStatus, 16u >' # linux 
+#            ,'::btAlignedObjectArray< PosixThreadSupport::btSpuStatus >'
             ]
             
 
@@ -203,7 +203,9 @@ def ManualExclude ( mb ):
                 o.exclude()
     global_ns.class_('btQuaternion').operators("operator-", arg_types=[]).exclude()
     
-    
+    noncopy = ['btDbvtBroadphase']
+    for c in noncopy:
+        main_ns.class_(c).noncopyable = True
     
 ############################################################
 ##
@@ -413,6 +415,8 @@ def generate_code():
                         '__MINGW32__'   # needed to turn off allocator allignment which boost can't do..
                         ]
     defined_symbols.append( 'VERSION_' + environment.bullet.version )  
+    if sys.platform.startswith ( 'linux' ):
+        defined_symbols.append('USE_PTHREADS')
     
     #
     # build the core Py++ system from the GCCXML created source
