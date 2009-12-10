@@ -14,12 +14,82 @@
 
 import ctypes as ctypes
 import math
-import ogre.renderer.OGRE as Ogre
-import random
+import ogre.renderer.OGRE as ogre
+import array as array
+
+PLANE_SIZE =3000.0
+
+CIRCLES_MATERIAL ="Examples/Water/Circles"
+class buffer( object ):
+    def __init__ (self, buffer):
+        self.buffer = buffer
+        try: #aaume it's an index buffer
+            self.type = buffer.getType()  # 16 or 32 bit indicies 
+            self.numItems = buffer.getNumIndexes()
+            self.itemSize = buffer.getIndexSize()  # size in bytes, 2 or 4
+            self.buffType = 1
+        except: # must be a vertex buffer
+            self.numItems = buffer.getNumVertices()
+            self.itemSize = buffer.getVertexSize()  # size in bytes, 2 or 4
+            self.buffType = 0
+        
+    def lock (self, * args ) : # start, size, options):
+        if len ( args ) != 1 and len (args ) != 3:
+            print "ERROR IN ARG LIST", len (args), args
+            raise ValueError 
+            
+        if len (args) == 3:    
+            self.lock = self.buffer.lock(args[0], args[1], args[2] ) # this returns a void pointer
+        else:
+            self.lock = self.buffer.lock(args[0] ) # this returns a void pointer
+        self.buffAddress = ogre.castAsInt ( self.lock ) # and we store it as an unsigned long so was can get to it 
+        
+        # and now we make a ctypes byte array that points to the index buffer
+        if self.buffType == 1 : # index buffer so 'ints'
+            if self.itemSize == 4:
+                self.rawBuffer=(ctypes.c_uint32 * (self.numItems)).from_address(self.buffAddress)
+            elif self.itemSize == 2:
+                self.rawBuffer=(ctypes.c_ushort * (self.numItems)).from_address(self.buffAddress)
+        else: # assume it's a vertex buffer with floats
+            self.rawBuffer=(ctypes.c_float * (self.itemSize*self.numItems)).from_address(self.buffAddress)
+            
+        
+    def unlock ( self ):
+        self.buffer.unlock()
+        
+    def __getitem__ ( self, index ):
+        return self.rawBuffer[index]
+#        i = index * self.indexSize # need addres into ctypes array
+##        r = self.rawBuffer
+#        value = 0
+#        offset = 0
+#        if self.indexSize == 4:
+#            value = (r[i] << 24 ) + (r[i+1] << 16)
+#            offset = 2
+#        value = value + (r[i+offset] << 8) + (r[i+offset+1])
+#        return value
+        
+    
+    def __setitem__ ( self, index, value ):
+        self.rawBuffer[index] = value
+#        offset = 0
+#        if self.indexSize == 4: # 32 bit index -- needs 4 bytes
+#            uhb = value >> 24
+#            ulb = (value >> 16) & 255
+#            ctypes.memset ( self.buffAddress + index , uhb, 1 )
+#            ctypes.memset ( self.buffAddress + index + 1, ulb, 1 )
+#            offset = 2    
+            
+#        lhb = (value >> 8) & 255 # high order byte
+#        llb = value & 255
+##        ctypes.memset ( self.buffAddress + index + offset, lhb, 1 )
+#        ctypes.memset ( self.buffAddress + index + offset + 1 , llb, 1 )
+
 
 ANIMATIONS_PER_SECOND = 100.0
 class WaterMesh:
     def __init__ ( self, meshName, planeSize, complexity ):
+        self.dirty = True # need to refo calcs
         self.meshName = meshName  
         self.complexity =  complexity  
         self.numFaces = 2 * complexity * complexity 
@@ -38,133 +108,141 @@ class WaterMesh:
         ## allocate space for normal calculation
         self.vNormals=[]
         for x in range ( self.numVertices ):
-            self.vNormals.append(Ogre.Vector3() )
+            self.vNormals.append(ogre.Vector3().ZERO )
     
         ## create mesh and submesh
-        mesh = Ogre.MeshManager.getSingleton().createManual(meshName,
-                Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
-        subMesh = mesh.createSubMesh() 
-        subMesh.useSharedVertices=False 
+        self.mesh = ogre.MeshManager.getSingleton().createManual(meshName,
+                ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
+        self.subMesh = self.mesh.createSubMesh() 
+        self.subMesh.useSharedVertices=False 
     
         ## Vertex buffers
-        ##subMesh.vertexData = Ogre.VertexData() 
-        subMesh.vertexData = Ogre.createVertexData() 
-        subMesh.vertexData.vertexStart = 0 
-        subMesh.vertexData.vertexCount = self.numVertices 
+        ##self.subMesh.vertexData = ogre.VertexData() 
+        self.subMesh.vertexData = ogre.createVertexData() 
+        self.subMesh.vertexData.vertexStart = 0 
+        self.subMesh.vertexData.vertexCount = self.numVertices 
     
-        vdecl = subMesh.vertexData.vertexDeclaration 
-        vbind = subMesh.vertexData.vertexBufferBinding 
+        vdecl = self.subMesh.vertexData.vertexDeclaration 
+        vbind = self.subMesh.vertexData.vertexBufferBinding 
     
     
-        vdecl.addElement(0, 0, Ogre.VertexElementType.VET_FLOAT3, Ogre.VertexElementSemantic.VES_POSITION) 
-        vdecl.addElement(1, 0, Ogre.VertexElementType.VET_FLOAT3, Ogre.VertexElementSemantic.VES_NORMAL) 
-        vdecl.addElement(2, 0, Ogre.VertexElementType.VET_FLOAT2, Ogre.VertexElementSemantic.VES_TEXTURE_COORDINATES) 
+        vdecl.addElement(0, 0, ogre.VertexElementType.VET_FLOAT3, ogre.VertexElementSemantic.VES_POSITION) 
+        vdecl.addElement(1, 0, ogre.VertexElementType.VET_FLOAT3, ogre.VertexElementSemantic.VES_NORMAL) 
+        vdecl.addElement(2, 0, ogre.VertexElementType.VET_FLOAT2, ogre.VertexElementSemantic.VES_TEXTURE_COORDINATES) 
     
         ## Prepare buffer for positions - todo: first attempt, slow
         self.posVertexBuffer = \
-             Ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
+             ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
                 3 * ctypes.sizeof(ctypes.c_float),
                 self.numVertices,
-                Ogre.HardwareBuffer.HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE) 
+                ogre.HardwareBuffer.HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE) 
         vbind.setBinding(0, self.posVertexBuffer) 
     
+        
         ## Prepare buffer for normals - write only
         self.normVertexBuffer = \
-             Ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
+             ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
                 3*ctypes.sizeof(ctypes.c_float), 
                 self.numVertices,
-                Ogre.HardwareBuffer.HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE) 
+                ogre.HardwareBuffer.HBU_DYNAMIC_WRITE_ONLY_DISCARDABLE) 
         vbind.setBinding(1, self.normVertexBuffer) 
     
         ## Prepare texture coords buffer - static one
         ## todo: optimize to write directly into buffer
-        storageclass = ctypes.c_float * (self.numVertices*2)
-        texcoordsBufData=storageclass(1.1)
+        texcoordsBufData=array.array('f')
+        for x in range (self.numVertices*2):
+            texcoordsBufData.append(0)
         
         for y in range (complexity) :
             for x in range(complexity) :
-                texcoordsBufData[2*(y*(complexity+1)+x)+0] = x / complexity  
-                texcoordsBufData[2*(y*(complexity+1)+x)+1] = 1.0 - (y / (complexity))  
+                texcoordsBufData[2*(y*(complexity+1)+x)+0] = float(x) / complexity  
+                texcoordsBufData[2*(y*(complexity+1)+x)+1] = 1.0 - (float(y) / (complexity))  
     
     
         texcoordsVertexBuffer = \
-             Ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
+             ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
                 2*ctypes.sizeof(ctypes.c_float),
                 self.numVertices,
-                Ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY) 
+                ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY) 
         texcoordsVertexBuffer.writeData(0,
             texcoordsVertexBuffer.getSizeInBytes(),
-            ctypes.addressof(texcoordsBufData),
+            texcoordsBufData.buffer_info()[0],
             True)  ## true?
         vbind.setBinding(2, texcoordsVertexBuffer) 
     
         ## Prepare buffer for indices
         self.indexBuffer = \
-            Ogre.HardwareBufferManager.getSingleton().createIndexBuffer(
-                Ogre.HardwareIndexBuffer.IT_16BIT,
+            ogre.HardwareBufferManager.getSingleton().createIndexBuffer(
+                ogre.HardwareIndexBuffer.IT_16BIT,
                 3*self.numFaces,
-                Ogre.HardwareBuffer.HBU_STATIC, True) 
-                
-        ## AJM : this si where we could return a iterator into the buffer and use it as an array..
-        ## get the address of the self.indexBuffer
-        ## this gives us a void * to the buffer
-        faceVertexIndices = self.indexBuffer.lock(0, self.numFaces*3*2, Ogre.HardwareBuffer.HBL_DISCARD) 
-        ## this converts it to an address we can use as a base index
-        faceVertexIndices = Ogre.CastInt ( faceVertexIndices )
+                ogre.HardwareBuffer.HBU_STATIC, True) 
+               
+        # using a helper object to handle the ctypes implement
+        # Create a buffer object and then lock it
+        faceVertexIndices = buffer ( self.indexBuffer )
+        faceVertexIndices.lock (0, self.numFaces*3*2, ogre.HardwareBuffer.HBL_DISCARD) 
+        
         for y in range (complexity) :
             for  x in range (complexity ) :
-                twoface = faceVertexIndices + (y*complexity+x)*2*3 
+                twoface = (y*complexity+x)*2*3 # index into buffer
                 p0 = y*(complexity+1) + x  
                 p1 = y*(complexity+1) + x + 1  
                 p2 = (y+1)*(complexity+1) + x  
                 p3 = (y+1)*(complexity+1) + x + 1 
                 # write a series of bytes
-                ctypes.memset ( twoface + 0, p2, 1 )
-                ctypes.memset ( twoface + 1, p1, 1 )
-                ctypes.memset ( twoface + 2, p0, 1 )
-                ctypes.memset ( twoface + 3, p2, 1 )
-                ctypes.memset ( twoface + 4, p3, 1 )
-                ctypes.memset ( twoface + 5, p1, 1 )
+                faceVertexIndices [ twoface + 0]= p2
+                faceVertexIndices [ twoface + 1]= p1
+                faceVertexIndices [ twoface + 2]= p0
+                faceVertexIndices [ twoface + 3]= p2
+                faceVertexIndices [ twoface + 4]= p3
+                faceVertexIndices [ twoface + 5]= p1
+                
         self.indexBuffer.unlock() 
         ## Set index buffer for self submesh
-        subMesh.indexData.indexBuffer = self.indexBuffer 
-        subMesh.indexData.indexStart = 0 
-        subMesh.indexData.indexCount = 3*self.numFaces 
+        self.subMesh.indexData.indexBuffer = self.indexBuffer 
+        self.subMesh.indexData.indexStart = 0 
+        self.subMesh.indexData.indexCount = 3*self.numFaces 
     
     #  prepare vertex positions
     #  note - we use 3 vertex buffers, since algorighm uses two last phases
     #  to calculate the next one
     
     # we need 2 floats, and are going through the loop three times 
-        storageclass2 = ctypes.c_float * (self.numVertices*3* 3 )
-        self.vertexBuffers = storageclass2 (1.1)
+        #storageclass2 = ctypes.c_float * (self.numVertices *3 * 3 *2 )
+        #self.vertexBuffers = storageclass2 (1.1)
+        #
+        # Change here to use an 'array' for the buffers
+        self.vertexBuffers = []
+        for x in range (3):
+            self.vertexBuffers.append( array.array('f') )
+            for y in range (self.numVertices *3):
+                self.vertexBuffers[x].append(0)
         
         
         ## Note that in the C++ code self.vertexBuffers is a float * array[3], whcih indexes into float*numverticies*3
         ## we have made a single array bige nough to cope
-        self.vertexIndexSize = self.numVertices*3
+        #self.vertexIndexSize = self.numVertices*3
         
         for b in range(3) :
             for y in range(complexity) :
                 for x in range (complexity) :
                     numPoint = y*(complexity+1) + x  
-# #                     vertex = self.vertexBuffers[b] + 3.0*numPoint  
-                    VertexPos = (self.vertexIndexSize * b) + 3 * numPoint
-                    self.vertexBuffers[VertexPos + 0] = x / complexity * planeSize 
-                    self.vertexBuffers[VertexPos + 1] = 0
-                    self.vertexBuffers[VertexPos + 2] = y / complexity * planeSize  
+                    VertexPos = 3 * numPoint
+                    self.vertexBuffers[b][VertexPos + 0] = float(x) / float(complexity) * float(planeSize)
+                    self.vertexBuffers[b][VertexPos + 1] = 0
+                    self.vertexBuffers[b][VertexPos + 2] = float(y) / float(complexity) * float(planeSize) 
                         
-        meshBounds = Ogre.AxisAlignedBox(0,0,0, planeSize,0, planeSize) 
-        mesh._setBounds(meshBounds) 
+        meshBounds = ogre.AxisAlignedBox(0,0,0, planeSize,0, planeSize) 
+        self.mesh._setBounds(meshBounds) 
     
         self.currentBufNumber = 0  
         self.posVertexBuffer.writeData(0,
             self.posVertexBuffer.getSizeInBytes(), ## size
-            ctypes.addressof(self.vertexBuffers) + self.currentBufNumber*self.vertexIndexSize, ## source
+            self.vertexBuffers[0].buffer_info()[0], 
             True)  ## discard?
     
-        mesh.load() 
-        mesh.touch() 
+        self.mesh.load() 
+        self.mesh.touch() 
     
     #  ========================================================================= 
     def __del__ (self):
@@ -179,37 +257,33 @@ class WaterMesh:
 #   */
 
     def push( self, x, y, depth, absolute=False):
-        buf = self.currentBufNumber*self.vertexIndexSize+1  
+        buf = self.currentBufNumber  
         ## scale pressure according to time passed
-        depth = depth * self.lastFrameTime * ANIMATIONS_PER_SECOND  
+        depth = depth * self.lastFrameTime * ANIMATIONS_PER_SECOND  *.3
         self._PREP(0,0, buf,x,y,depth,absolute) 
         self._PREP(0,1, buf,x,y,depth,absolute) 
         self._PREP(1,0, buf,x,y,depth,absolute) 
         self._PREP(1,1, buf,x,y,depth,absolute)
         
     def _PREP(self, addx,addy, buf,x,y,depth,absolute) :
-        vertex=buf+3*((int)(y+addy)*(self.complexity+1)+(int)(x+addx)) 
+        vertex=3*((int)(y+addy)*(self.complexity+1)+(int)(x+addx)) +1 #AJM +1 ???? 
         diffy = y - math.floor(y+addy)
         diffx = x - math.floor(x+addx)
         dist=math.sqrt(diffy*diffy + diffx*diffx)
-        power = 1 - dist
+        power = 1.0 - dist
         if (power<0):
             power = 0
         if (absolute):
-            self.vertexBuffers[vertex] = depth*power
+            self.vertexBuffers[buf][vertex] = depth*power
         else:
-            self.vertexBuffers[vertex] += depth*power
-    
-    def hat(self, _x,_y, buf):
-        return self.buf[3*(_y*(self.complexity+1)+(_x))]
-         
+            self.vertexBuffers[buf][vertex] += depth*power
     
     # /* ========================================================================= */
     # gets height at given x and y, takes average value of the closes nodes */
+    def hat(self, _x,_y, buf):
+        return self.vertexBuffers[self.currentBufNumber][3*(int(_y)*(self.complexity+1)+(int(_x)))]
 
     def getHeight(self,  x, y):
-    
-        self.buf = self.currentBufNumber*self.vertexIndexSize  
         xa = math.floor(x) 
         xb = xa + 1
         ya = math.floor(y) 
@@ -221,51 +295,60 @@ class WaterMesh:
     
 #     /* ========================================================================= */
     def calculateFakeNormals(self):
-        return ## AJM
-        buf = self.currentBufNumber*self.vertexIndexSize + 1 
+        buf=self.vertexBuffers[self.currentBufNumber]
         pNormals = self.normVertexBuffer.lock(
-            0,self.normVertexBuffer.getSizeInBytes(), Ogre.HardwareBuffer.HBL_DISCARD) 
+            0, self.normVertexBuffer.getSizeInBytes(), ogre.HardwareBuffer.HBL_DISCARD) 
+        #storageclass1=ctypes.c_float * (self.normVertexBuffer.getSizeInBytes()*3)
+        pNormalsAddress=(ctypes.c_float * (self.normVertexBuffer.getSizeInBytes()*3)).from_address(ogre.castAsInt(pNormals))
+   
         for y in range (self.complexity) :
-# # #             nrow = pNormals + 3*y*(complexity+1) 
-            row = buf + 3 * y * (self.complexity+1)  
-            rowup = buf + 3*(y-1)*(self.complexity+1)  
-            rowdown = buf + 3*(y+1)*(self.complexity+1)  
+            start = 3*y*(self.complexity+1)
+            nrow = pNormalsAddress[ start]
+            row = buf[3 * y * (self.complexity+1) +1]
+            rowup = buf [3*(y-1)*(self.complexity+1) +1]  
+            rowdown = buf [ 3*(y+1)*(self.complexity+1) +1]  
             for x in range (self.complexity) :
                 xdiff = row+ 3*x+3 - row +3*x-3  
                 ydiff = rowup + 3*x - rowdown+3*x-3  
-                norm = Ogre.Vector3(xdiff,30,ydiff) 
+                norm = ogre.Vector3(xdiff,30,ydiff) 
                 norm.normalise()
-                buf.append( norm.x ) 
-                buf.append( norm.y ) 
-                buf.append( norm.z ) 
-# # #                 nrow[3*x+0] = norm.x 
-# # #                 nrow[3*x+1] = norm.y 
-# # #                 nrow[3*x+2] = norm.z 
+                
+                pNormalsAddress[start+3*x+0] = norm.x 
+                pNormalsAddress[start+3*x+1] = norm.y 
+                pNormalsAddress[start+3*x+2] = norm.z 
     
-        Ogre.setUint16 ( pNormals, buf )
+        #ogre.setUint16 ( pNormals, buf )
         self.normVertexBuffer.unlock() 
     
 #     /* ========================================================================= */
     def calculateNormals(self):
-        buf = self.currentBufNumber*self.vertexIndexSize + 1 
+        #return  #AJM
+        buf = self.currentBufNumber # +1  #AJM
         ## zero normals
         
         for i in range(self.numVertices) :
-            self.vNormals.append( Ogre.Vector3().ZERO_Copy )
+            self.vNormals[i]=  ogre.Vector3().ZERO
         ## first, calculate normals for faces, add them to proper vertices
-        vindsPtr = self.indexBuffer.lock(
-            0, self.indexBuffer.getSizeInBytes(), Ogre.HardwareBuffer.HBL_READ_ONLY) 
-        storageclass=ctypes.c_ubyte * (self.indexBuffer.getSizeInBytes())
-        vinds=(ctypes.c_ubyte * (self.indexBuffer.getSizeInBytes())).from_address(Ogre.CastInt(vindsPtr))
+        
+        # use helper function
+        vinds = buffer ( self.indexBuffer)
+        vinds.lock (0, self.indexBuffer.getSizeInBytes(), ogre.HardwareBuffer.HBL_READ_ONLY)
+        
+        
         pNormals = self.normVertexBuffer.lock(
-            0, self.normVertexBuffer.getSizeInBytes(), Ogre.HardwareBuffer.HBL_DISCARD) 
+            0, self.normVertexBuffer.getSizeInBytes(), ogre.HardwareBuffer.HBL_DISCARD) 
+        #storageclass1=ctypes.c_float * (self.normVertexBuffer.getSizeInBytes()*3)
+        pNormalsAddress=(ctypes.c_float * (self.normVertexBuffer.getSizeInBytes()*3)).from_address(ogre.castAsInt(pNormals))
+       
+       
         for i in range(self.numFaces) :
             p0 = vinds[3*i]  
             p1 = vinds[3*i+1]  
             p2 = vinds[3*i+2]  
-            v0=Ogre.Vector3 (self.vertexBuffers[buf+3*p0], self.vertexBuffers[buf+3*p0+1], self.vertexBuffers[buf+3*p0+2]) 
-            v1 = Ogre.Vector3 (self.vertexBuffers[buf+3*p1], self.vertexBuffers[buf+3*p1+1], self.vertexBuffers[buf+3*p1+2]) 
-            v2 = Ogre.Vector3 (self.vertexBuffers[buf+3*p2], self.vertexBuffers[buf+3*p2+1], self.vertexBuffers[buf+3*p2+2]) 
+            #print p0, p1, p2
+            v0= ogre.Vector3 (self.vertexBuffers[buf][3*p0], self.vertexBuffers[buf][3*p0+1], self.vertexBuffers[buf][3*p0+2]) 
+            v1 = ogre.Vector3 (self.vertexBuffers[buf][3*p1], self.vertexBuffers[buf][3*p1+1], self.vertexBuffers[buf][3*p1+2]) 
+            v2 = ogre.Vector3 (self.vertexBuffers[buf][3*p2], self.vertexBuffers[buf][3*p2+1], self.vertexBuffers[buf][3*p2+2]) 
             diff1  = v2 - v1  
             diff2 = v0 - v1  
             fn = diff1.crossProduct(diff2) 
@@ -279,16 +362,27 @@ class WaterMesh:
                 numPoint = y*(self.complexity+1) + x  
                 n = self.vNormals[numPoint]  
                 n.normalise()  
-                normal = pNormals + 3*numPoint  
-                normal[0]=n.x 
-                normal[1]=n.y 
-                normal[2]=n.z 
+                pNormalsAddress [3*numPoint] = n.x
+                pNormalsAddress [3*numPoint+1] = n.y
+                pNormalsAddress [3*numPoint+2] = n.z
+#                normal[0]=n.x 
+#                normal[1]=n.y 
+#                normal[2]=n.z 
     
     
         self.indexBuffer.unlock() 
         self.normVertexBuffer.unlock() 
     
 #     /* ======================================================================== */
+    def calcs ( self ):
+        C = self.PARAM_C  ## ripple speed
+        D = self.PARAM_D  ## distance
+        U = self.PARAM_U  ## viscosity
+        T = self.PARAM_T  ## time
+        self.TERM1 = ( 4.0 - 8.0*C*C*T*T/(D*D) ) / (U*T+2)  
+        self.TERM2 = ( U*T-2.0 ) / (U*T+2.0)  
+        self.TERM3 = ( 2.0 * C*C*T*T/(D*D) ) / (U*T+2)  
+        
     def updateMesh(self, timeSinceLastFrame):
         self.lastFrameTime = timeSinceLastFrame  
         self.lastTimeStamp += timeSinceLastFrame  
@@ -298,39 +392,43 @@ class WaterMesh:
     
             ## switch buffer numbers
             self.currentBufNumber = (self.currentBufNumber + 1) % 3  
-            
-#             buf = self.vertexBuffers[self.currentBufNumber*self.vertexIndexSize] + 1   ## +1 for Y coordinate
 
-            buf = self.currentBufNumber*self.vertexIndexSize + 1
-            buf1 = (((self.currentBufNumber+2)%3) * self.vertexIndexSize) + 1  
-            buf2 = (((self.currentBufNumber+1)%3) * self.vertexIndexSize) + 1 
+            buf = self.vertexBuffers[self.currentBufNumber]
+            buf1 = self.vertexBuffers[((self.currentBufNumber+2)%3)]  
+            buf2 = self.vertexBuffers[((self.currentBufNumber+1)%3)]
     
     #       /* we use an algorithm from
     #        * http:##collective.valve-erc.com/index.php?go=water_simulation
     #        * The params could be dynamically changed every frame ofcourse
     #        */
-            C = self.PARAM_C  ## ripple speed
-            D = self.PARAM_D  ## distance
-            U = self.PARAM_U  ## viscosity
-            T = self.PARAM_T  ## time
-            TERM1 = ( 4.0 - 8.0*C*C*T*T/(D*D) ) / (U*T+2)  
-            TERM2 = ( U*T-2.0 ) / (U*T+2.0)  
-            TERM3 = ( 2.0 * C*C*T*T/(D*D) ) / (U*T+2)  
+            if self.dirty:
+                self.calcs()
+                self.dirty = False
+#            C = self.PARAM_C  ## ripple speed
+#            D = self.PARAM_D  ## distance
+#            U = self.PARAM_U  ## viscosity
+##            T = self.PARAM_T  ## time
+#            TERM1 = ( 4.0 - 8.0*C*C*T*T/(D*D) ) / (U*T+2)  
+#            TERM2 = ( U*T-2.0 ) / (U*T+2.0)  
+#            TERM3 = ( 2.0 * C*C*T*T/(D*D) ) / (U*T+2)  
             for y in range(self.complexity) : ## don't do anything with border values
-                row = buf + 3*y*(self.complexity+1)  
-                row1 = buf1 + 3*y*(self.complexity+1)  
-                row1up = buf1 + 3*(y-1)*(self.complexity+1)  
-                row1down = buf1 + 3*(y+1)*(self.complexity+1)  
-                row2 = buf2 + 3*y*(self.complexity+1)  
+                row = 3*y*(self.complexity+1) + 1 
+                row1 = row
+                row1up = 3*(y-1)*(self.complexity+1) +1
+                row1down = 3*(y+1)*(self.complexity+1) +1 
+                row2 = row 
                 for x in range (self.complexity) :
-                    self.vertexBuffers[row+(3*x)] =\
-                        TERM1 * self.vertexBuffers[row1 + 3*x ] +\
-                        TERM2 * self.vertexBuffers[row2 + 3*x ] +\
-                        TERM3 * ( self.vertexBuffers[row1 + 3*x -3] +\
-                                    self.vertexBuffers[row1 + 3*x +3] +\
-                                    self.vertexBuffers[row1up + 3*x] +\
-                                    self.vertexBuffers[row1down + 3*x]
+                    _inc = 3*x
+                    buf[row+(_inc)] =\
+                        self.TERM1 * buf1[row1 + _inc ] +\
+                        self.TERM2 * buf2[row2 + _inc ] +\
+                        self.TERM3 * ( buf1[row1 + _inc -3] +\
+                                    buf1[row1 + _inc +3] +\
+                                    buf1[row1up + _inc] +\
+                                    buf1[row1down + _inc]
                                     )
+                                    
+                                    
             self.lastAnimationTimeStamp += (1.0 / ANIMATIONS_PER_SECOND) 
     
         if (self.useFakeNormals):
@@ -341,6 +439,140 @@ class WaterMesh:
         ## set vertex buffer
         self.posVertexBuffer.writeData(0,
             self.posVertexBuffer.getSizeInBytes(), ## size
-            ctypes.addressof (self.vertexBuffers) + self.currentBufNumber*self.vertexIndexSize, ## source
+            self.vertexBuffers[self.currentBufNumber].buffer_info()[0], ## source
             True)  ## discard?
+
+#/* =========================================================================*/
+#/*               WaterCircle class                                          */
+#/* =========================================================================*/
+
+class WaterCircle :
+    CIRCLE_SIZE = 500.0
+    CIRCLE_TIME = 0.5
+    # some buffers shared by all circles
+    _posnormVertexBuffer = None
+    _indexBuffer = None
+    _texcoordsVertexBuffers = []
+    _first = True
+    
+    def __init__ ( self, name, x, y,sm,COMPLEXITY ):
+        global PLANE_SIZE, CIRCLES_MATERIAL
+        self.sceneManager = sm
+        self.name = name
+        self._prepareMesh ()
+        self.node = sm.getRootSceneNode().createChild(name).castAsSceneNode()
+        self.node.translate(x*(PLANE_SIZE/COMPLEXITY), 10, y*(PLANE_SIZE/COMPLEXITY))
+        self.entity = sm.createEntity(name, name)
+        self.entity.setMaterialName(CIRCLES_MATERIAL)
+        self.node.attachObject(self.entity)
+        self.tm = 0
+        self.lvl = 0
+        self.setTextureLevel()
+		
+    
+    def _prepareMesh(self):
+        
+        self.mesh = ogre.MeshManager.getSingleton().createManual(self.name,
+            ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
+        self.subMesh = self.mesh.createSubMesh()
+        self.subMesh.useSharedVertices=False
+
+        numVertices = 4
+
+        if (WaterCircle._first) : # first Circle, create some static common data
+            WaterCircle._first = False
+
+            #static buffer for position and normals
+            WaterCircle._posnormVertexBuffer =\
+                ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
+                6*ctypes.sizeof(ctypes.c_float), #size of one vertex data
+                4, # number of vertices
+                ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, # usage
+                False) # no shadow buffer
+                    
+            posnormBufData = buffer ( WaterCircle._posnormVertexBuffer )
+            print "!!!"
+            posnormBufData.lock(ogre.HardwareBuffer.HBL_DISCARD)
+            
+            for i in range (numVertices):
+                posnormBufData[6*i+0]=(float(i%2)-0.5)*WaterCircle.CIRCLE_SIZE; # pos X
+                posnormBufData[6*i+1]=0; # pos Y
+                posnormBufData[6*i+2]=(float(i/2)-0.5)*WaterCircle.CIRCLE_SIZE; # pos Z
+                posnormBufData[6*i+3]=0 ; # normal X
+                posnormBufData[6*i+4]=1 ; # normal Y
+                posnormBufData[6*i+5]=0 ; # normal Z
+                
+            posnormBufData.unlock()
+
+            #static buffers for 16 sets of texture coordinates
+            for lvl in range ( 16 ):
+                WaterCircle._texcoordsVertexBuffers.append(
+                    ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
+                    2*ctypes.sizeof(ctypes.c_float), # size of one vertex data
+                    numVertices, # number of vertices
+                    ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, # usage
+                    False)) # no shadow buffer
+                texcoordsBufData = buffer( WaterCircle._texcoordsVertexBuffers[lvl])
+                print "2222"
+                texcoordsBufData.lock(ogre.HardwareBuffer.HBL_DISCARD)
+                x0 = float(lvl % 4) * 0.25 
+                y0 = float(lvl / 4) * 0.25
+                y0 = 0.75-y0  # upside down
+                for i in range (4):
+                    texcoordsBufData[i*2 + 0]=x0 + 0.25 * float(i%2)
+                    texcoordsBufData[i*2 + 1]=y0 + 0.25 * float(i/2)
+                texcoordsBufData.unlock()
+
+#			Index buffer for 2 faces
+            faces = array.array('H',[2,1,0,2,3,1]) # unsigned short array
+            WaterCircle._indexBuffer =\
+				ogre.HardwareBufferManager.getSingleton().createIndexBuffer(
+					ogre.HardwareIndexBuffer.IT_16BIT,
+					6,
+					ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY)
+            WaterCircle._indexBuffer.writeData(0,
+				WaterCircle._indexBuffer.getSizeInBytes(),
+				faces.buffer_info()[0],
+				True); # true?
+
+#		Initialize vertex data
+        self.subMesh.vertexData = ogre.createVertexData()
+        self.subMesh.vertexData.vertexStart = 0
+        self.subMesh.vertexData.vertexCount = 4
+        #first, set vertex buffer bindings
+        vbind = self.subMesh.vertexData.vertexBufferBinding 
+        vbind.setBinding(0, WaterCircle._posnormVertexBuffer)
+        vbind.setBinding(1, WaterCircle._texcoordsVertexBuffers[0])
+        #now, set vertex buffer declaration
+        vdecl = self.subMesh.vertexData.vertexDeclaration
+        vdecl.addElement(0, 0, ogre.VertexElementType.VET_FLOAT3, ogre.VertexElementSemantic.VES_POSITION);
+        vdecl.addElement(0, 3*ctypes.sizeof(ctypes.c_float), ogre.VertexElementType.VET_FLOAT3, ogre.VertexElementSemantic.VES_NORMAL);
+        vdecl.addElement(1, 0, ogre.VertexElementType.VET_FLOAT2, ogre.VertexElementSemantic.VES_TEXTURE_COORDINATES);
+
+        #		Initialize index data
+        self.subMesh.indexData.indexBuffer = WaterCircle._indexBuffer
+        self.subMesh.indexData.indexStart = 0
+        self.subMesh.indexData.indexCount = 6
+
+        #		set mesh bounds
+        circleBounds = ogre.AxisAlignedBox (-WaterCircle.CIRCLE_SIZE/2.0, 0, -WaterCircle.CIRCLE_SIZE/2.0,
+            WaterCircle.CIRCLE_SIZE/2.0, 0, WaterCircle.CIRCLE_SIZE/2.0)
+        self.mesh._setBounds(circleBounds)
+        self.mesh.load()
+        self.mesh.touch()
+
+    def setTextureLevel(self):
+        self.subMesh.vertexData.vertexBufferBinding.setBinding(1, WaterCircle._texcoordsVertexBuffers[self.lvl])
+        
+    def __del__ ( self ):   
+        ogre.MeshManager.getSingleton().remove(self.mesh.getHandle())
+        self.sceneManager.destroyEntity(self.entity.getName())
+        self.sceneManager.getRootSceneNode().castAsSceneNode().removeChild(self.node.getName())
+
+    def animate(self, timeSinceLastFrame):
+        lastlvl = self.lvl
+        self.tm += timeSinceLastFrame
+        self.lvl = int( float(self.tm)/WaterCircle.CIRCLE_TIME * 16 )
+        if (self.lvl<16 and self.lvl!=lastlvl):
+            self.setTextureLevel()
 

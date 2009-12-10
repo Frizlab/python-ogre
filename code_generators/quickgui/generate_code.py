@@ -265,8 +265,9 @@ def generate_code():
                         os.path.join( environment.quickgui.root_dir, "python_quickgui.h" )
                         , environment.quickgui.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE',
-                'WIN32', 'NDEBUG', 'WINDOWS' , '_PRECOMP']  
+    defined_symbols = environment.defined_symbols
+    for x in [ 'WIN32', 'NDEBUG', 'WINDOWS' , '_PRECOMP']:
+        defined_symbols.append ( x)
 
     defined_symbols.append( 'VERSION_' + environment.quickgui.version )  
     

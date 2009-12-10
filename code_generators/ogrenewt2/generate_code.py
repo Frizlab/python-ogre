@@ -75,6 +75,7 @@ def ManualExclude ( mb ):
             ,'::OgreNewt::Body::setCustomTransformCallback'
             ,'::OgreNewt::BodyInAABBIterator::go'
             ,'::OgreNewt::World::setLeaveWorldCallback'
+            ,'::OgreNewt::BasicRaycast::getInfoAt'
             ]
     for e in exclude:
         main_ns.member_functions(e).exclude()
@@ -235,9 +236,9 @@ def generate_code():
                         os.path.join( environment.ogrenewt2.root_dir, "python_ogrenewt2.h" )
                         , environment.ogrenewt2.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD','__PYTHONOGRE_BUILD_CODE',
-                        '_OGRENEWT_DYNAMIC','OIS_NONCLIENT_BUILD',
-                        ]
+    defined_symbols = environment.defined_symbols
+    defined_symbols.append ('_OGRENEWT_DYNAMIC')
+    defined_symbols.append ('OIS_NONCLIENT_BUILD')
     defined_symbols.append( 'VERSION_' + environment.ogrenewt2.version )  
     if environment.isWindows():
         defined_symbols.append ('WIN32')

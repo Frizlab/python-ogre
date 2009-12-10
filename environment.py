@@ -56,7 +56,7 @@ def numCores():
 ## set this to True if you compiled Ogre with Threads enabled and setting a static boost link
 ##
 if isWindows():
-    _USE_THREADS = False
+    _USE_THREADS = True
     BOOST_STATIC = False
 else:
     _USE_THREADS = False
@@ -197,6 +197,16 @@ else:
     ROOT = os.path.join(os.getcwd(), 'root')
     PREFIX = os.path.join(os.getcwd(), 'root', 'usr')
 
+# set a default set of symbols for gccxml to use when generating code
+# put it here do to the changes that threading makes
+defined_symbols = ['OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', '__PYTHONOGRE_BUILD_CODE' ]
+if _USE_THREADS:
+    defined_symbols.append('BOOST_HAS_THREADS')
+    if isWindows():
+        defined_symbols.append('BOOST_HAS_WINTHREADS')
+if Config._SVN: # building Ogre 1.7
+        defined_symbols.append ('HAVE_OGRE_BUILDSETTINGS_H') # it uses the cmake buildsettings include
+    
 
 def unTarGz(base, source):
     """ a complete hack to cope with untar gziping a source file in the downloads directory into it's own directory
@@ -680,7 +690,7 @@ class ogre(pymodule):
         ]
         try:
             if Config._SVN:
-                version="1.7.r9354"
+                version="1.7.r9398"
         except:
             pass
         # requirements to build a precompiled header on the fly
@@ -941,7 +951,7 @@ class ogrenewt(pymodule):
     ModuleName = 'OgreNewt'
     
 class ogrenewt2(pymodule):
-    version = "r2760_2.11"
+    version = "r2764_2.11"
     parent = "ogre/physics"
     base = 'ogreaddons/ogrenewt2'
     baseDir = os.path.join(os.getcwd(), base)

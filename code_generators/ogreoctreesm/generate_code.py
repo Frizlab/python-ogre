@@ -231,7 +231,7 @@ def generate_code():
                         os.path.join( environment.ogreoctreesm.root_dir, "python_ogreoctreesm.h" )
                         , environment.ogreoctreesm.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', '__PYTHONOGRE_BUILD_CODE']
+    defined_symbols = environment.defined_symbols
     defined_symbols.append( 'VERSION_' + environment.ogreoctreesm.version )  
     
     #
