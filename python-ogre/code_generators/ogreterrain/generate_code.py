@@ -223,8 +223,9 @@ def generate_code():
                         os.path.join( environment.ogreterrain.root_dir, "python_ogreterrain.h" )
                         , environment.ogreterrain.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 
-                        '__PYTHONOGRE_BUILD_CODE', 'OGRE_TERRAIN_EXPORTS']
+    defined_symbols = environment.defined_symbols
+                        
+    defined_symbols.append( 'OGRE_TERRAIN_EXPORTS' )
     defined_symbols.append( 'VERSION_' + environment.ogreterrain.version )  
     
     #

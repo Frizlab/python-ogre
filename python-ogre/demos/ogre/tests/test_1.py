@@ -13,5 +13,8 @@ renderWindow = root.initialise(True, "OGRE Render Window")
 sceneManager = root.createSceneManager(ogre.ST_GENERIC, "ExampleSMInstance") 
 pssm = ogre.LiSPSMShadowCameraSetup() 
 sceneManager.setShadowCameraSetup(pssm) 
-
+r1 = ogre.Root.getSingleton()
+print root
+print r1
+print dir(r1)
 print "Hey, it worked." 

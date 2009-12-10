@@ -20,11 +20,12 @@ import PythonOgreConfig
 
 import ogre.renderer.OGRE as Ogre
 import ogre.io.OIS as OIS
-import ogre.addons.watermesh as WaterMesh
+import WaterMesh as WaterMesh
 import math
 import SampleFramework as sf
 import random
 import ctypes as ctypes
+import array as array
 
 # AnimationState* self.mAnimState 
 
@@ -33,24 +34,23 @@ MESH_NAME ="WaterMesh"
 ENTITY_NAME ="waterEntity"
 MATERIAL_PREFIX ="Examples/Water"
 MATERIAL_NAME ="Examples/Water0"
-COMPLEXITY =64      ## watch out - number of polys is 2*ACCURACY*ACCURACY !
+COMPLEXITY =32     ## watch out - number of polys is 2*ACCURACY*ACCURACY !
 PLANE_SIZE =3000.0
 
 RAIN_HEIGHT_RANDOM = 5
 RAIN_HEIGHT_CONSTANT = 5
 
-circles_MATERIAL ="Examples/Water/Circles"
+CIRCLES_MATERIAL ="Examples/Water/Circles"
 
 ##
 ## Note that this function makes use of CTypes and def ptr casting to access Ogre Library functions
 ##
 def prepareCircleMaterial():
-    global circles_MATERIAL
+    global CIRCLES_MATERIAL
+    bmap = array.array('B')  # unsigned char -- int in python
+    for x in range (256*256*4):
+        bmap.append(127)
     
-    storageclass = ctypes.c_byte * (256 * 256 * 4)
-    bmap=storageclass(1) # you just need to put some value in this to get it started...
-    ctypes.memset ( bmap, 127, 256 * 256 * 4 )
-       
     for  b in range(16):
         x0 = b % 4  
         y0 = b >> 2  
@@ -59,193 +59,31 @@ def prepareCircleMaterial():
             for y in range (64) :
                 dist = math.sqrt((x-32)*(x-32)+(y-32)*(y-32))  ## 0..ca.45
                 dist = math.fabs(dist-radius-2) / 2.0  
-                dist = dist * 255 
+                dist = dist * 255.0 
+                
                 if (dist>255):
                     dist=255  
-                colour = 255-dist  
-                colour = int (((15-b))/15.0 * colour )
-
+                colour = 255- int(dist)
+                colour = int (float(15-b)/15.0 * colour )
                 bmap[4*(256*(y+64*y0)+x+64*x0)+0]=colour  
-                bmap[4*(256*(y+64*y0)+x+64*x0)+1]=colour  
-                bmap[4*(256*(y+64*y0)+x+64*x0)+2]=colour  
-                bmap[4*(256*(y+64*y0)+x+64*x0)+3]=colour  
+                bmap[4*(256*(y+64*y0)+x+64*x0)+1]=colour 
+                bmap[4*(256*(y+64*y0)+x+64*x0)+2]=colour 
+                bmap[4*(256*(y+64*y0)+x+64*x0)+3]=colour 
                 
     ### Need to  pass the address to MemoryDataStream
     ##  
-    imgstream = Ogre.MemoryDataStream(pMem=Ogre.CastVoidPtr(ctypes.addressof(bmap)),  size = int(256 * 256 *4) )  
-    print dir (imgstream)
-    print imgstream.size()
-    Ogre.TextureManager.getSingleton().loadRawData(circles_MATERIAL,
+    imgstream = Ogre.MemoryDataStream(pMem=Ogre.castAsVoidPtr(bmap.buffer_info()[0]),  size = 256 * 256 *4 )  
+    Ogre.TextureManager.getSingleton().loadRawData(CIRCLES_MATERIAL,
         Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME,
         imgstream, 256, 256  , Ogre.PixelFormat.PF_A8R8G8B8 ) 
-                    
-    material = Ogre.MaterialManager.getSingleton().create( circles_MATERIAL,
+    material = Ogre.MaterialManager.getSingleton().create( CIRCLES_MATERIAL,
         Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME) 
-    texLayer = material.getTechnique(0).getPass(0).createTextureUnitState( circles_MATERIAL ) 
+    texLayer = material.getTechnique(0).getPass(0).createTextureUnitState( CIRCLES_MATERIAL ) 
     texLayer.setTextureAddressingMode( Ogre.TextureUnitState.TAM_CLAMP ) 
     material.setSceneBlending( Ogre.SceneBlendType.SBT_ADD ) 
     material.setDepthWriteEnabled( False )  
     material.load() 
 
-
-
-# # # # /* =========================================================================*/
-# # # # /*               WaterCircle class                                          */
-# # # # /* =========================================================================*/
-# # # CIRCLE_SIZE = 500.0
-# # # CIRCLE_TIME = 0.5
-# # # class WaterCircle:
-# # # 
-# # # 
-# # #     def _prepareMesh(self ):
-# # #     
-# # #         mesh = Ogre.MeshManager.getSingleton().createManual(self.name,
-# # #                 Ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)  
-# # #         subMesh = mesh.createSubMesh() 
-# # #         subMesh.useSharedVertices=False 
-# # #         numVertices = 4  
-# # #         first = True
-# # #         
-# # #         if (first) : ## first Circle, create some static common data:
-# # #             first = False  
-# # #     
-# # #             ## static buffer for position and normals
-# # #             size = 2 * Ogre.VertexElement.getTypeSize(Ogre.VertexElementType.VET_FLOAT3)    ## 6 * float
-# # #             posnormVertexBuffer = \
-# # #                 Ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
-# # #                     size, ## size of one vertex data 6 * float
-# # #                     4, ## number of vertices
-# # #                     Ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ## usage
-# # #                     False)  ## no shadow buffer
-# # #             posnormBufData = posnormVertexBuffer.lock(Ogre.HardwareBuffer.HBL_DISCARD) 
-# # #             
-# # #             buf=[]
-# # #             for i in range(numVertices):
-# # #                 buf.append(((i%2)-0.5)*CIRCLE_SIZE ) ## pos X
-# # #                 buf.append(0)  ## pos Y
-# # #                 buf.append(((i/2)-0.5)*CIRCLE_SIZE ) ## pos Z
-# # #                 buf.append(0)   ## normal X
-# # #                 buf.append(1)   ## normal Y
-# # #                 buf.append(0)   ## normal Z
-# # #             Ogre.setFloat( posnormBufData , buf )    # write unsigned ints...
-# # #             posnormVertexBuffer.unlock() 
-# # # 
-# # #             ## static buffers for 16 sets of texture coordinates
-# # #             texcoordsVertexBuffers = [] 
-# # #             for lvl in range (16):
-# # #                 texcoordsVertexBuffers.append(
-# # #                     Ogre.HardwareBufferManager.getSingleton().createVertexBuffer(
-# # #                         Ogre.VertexElement.getTypeSize(Ogre.VertexElementType.VET_FLOAT2), ## size of one vertex data
-# # #                         numVertices, ## number of vertices
-# # #                         Ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ## usage
-# # #                         False)  ## no shadow buffer
-# # #                         )
-# # #                 texcoordsBufData = texcoordsVertexBuffers[lvl].lock(Ogre.HardwareBuffer.HBL_DISCARD) 
-# # #                 x0 = (lvl % 4) * 0.25  
-# # #                 y0 = (lvl / 4) * 0.25  
-# # #                 y0 = 0.75-y0   ## upside down
-# # # # # # #                 for i in range (4):
-# # # # # # #                     texcoordsBufData[i*2 + 0]= \
-# # # # # # #                         x0 + 0.25 * (i%2)  
-# # # # # # #                     texcoordsBufData[i*2 + 1]= \
-# # # # # # #                         y0 + 0.25 * (i/2)  
-# # # 
-# # #                 texcoordsVertexBuffers[lvl].unlock() 
-# # # 
-# # # 
-# # #             ## Index buffer for 2 faces
-# # #             faces = [] 
-# # #             faces[:]= (2,1,0,2,3,1)
-# # #             indexBuffer = \
-# # #                 Ogre.HardwareBufferManager.getSingleton().createIndexBuffer(
-# # #                     Ogre.HardwareIndexBuffer.IT_16BIT,
-# # #                     6,
-# # #                     Ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY) 
-# # # # # # #             indexBuffer.writeData(0,
-# # # # # # #                 indexBuffer.getSizeInBytes(),
-# # # # # # #                 faces,
-# # # # # # #                 True)  ## true?
-# # # 
-# # #     
-# # #             ## Initialize vertex data
-# # #             subMesh.vertexData = Ogre.VertexData() 
-# # #             subMesh.vertexData.vertexStart = 0 
-# # #             subMesh.vertexData.vertexCount = 4 
-# # #             ## first, set vertex buffer bindings
-# # #             vbind = subMesh.vertexData.vertexBufferBinding  
-# # #             vbind.setBinding(0, posnormVertexBuffer) 
-# # #             vbind.setBinding(1, texcoordsVertexBuffers[0]) 
-# # #             ## now, set vertex buffer declaration
-# # #             vdecl = subMesh.vertexData.vertexDeclaration  
-# # #             vdecl.addElement(0, 0, Ogre.VET_FLOAT3, Ogre.VES_POSITION) 
-# # #             vdecl.addElement(0, 3*4, Ogre.VET_FLOAT3, Ogre.VES_NORMAL) 
-# # #             vdecl.addElement(1, 0, Ogre.VET_FLOAT2, Ogre.VES_TEXTURE_COORDINATES) 
-# # #     
-# # #             ## Initialize index data
-# # #             subMesh.indexData.indexBuffer = indexBuffer 
-# # #             subMesh.indexData.indexStart = 0 
-# # #             subMesh.indexData.indexCount = 6 
-# # #     
-# # #             ## set mesh bounds
-# # #             circleBounds= Ogre.AxisAlignedBox (-CIRCLE_SIZE/2.0, 0, -CIRCLE_SIZE/2.0,
-# # #                 CIRCLE_SIZE/2.0, 0, CIRCLE_SIZE/2.0) 
-# # #             mesh._setBounds(circleBounds) 
-# # #             mesh.load() 
-# # #             mesh.touch() 
-# # # 
-# # #     def setTextureLevel():
-# # #         subMesh.vertexData.vertexBufferBinding.setBinding(1, texcoordsVertexBuffers[lvl]) 
-# # # 
-# # #     def __init__( self, name,  x,  y):
-# # # #         static HardwareVertexBufferSharedPtr posnormVertexBuffer  
-# # # #         static HardwareIndexBufferSharedPtr indexBuffer   ## indices for 2 faces
-# # # #         static HardwareVertexBufferSharedPtr *texcoordsVertexBuffers  
-# # #     
-# # #         self.headNode  = None
-# # #         self.waterOverlay  = None
-# # #         self.particleSystem  = None
-# # #         self.particleEmitter  = None
-# # #         self.sceneMgr  = None
-# # #         self.name = name  
-# # #         self._prepareMesh() 
-# # #         
-# # #         node = self.sceneMgr.getRootSceneNode().createChild(name)
-# # #         node.translate(x*(PLANE_SIZE/COMPLEXITY), 10, y*(PLANE_SIZE/COMPLEXITY)) 
-# # #         entity = self.sceneMgr.createEntity(name, name) 
-# # #         entity.setMaterialName(self.circles_MATERIAL) 
-# # #         node.attachObject(entity) 
-# # #         tm = 0  
-# # #         lvl = 0  
-# # #         setTextureLevel() 
-# # # 
-# # #     def __del__(self, ):
-# # #         Ogre.MeshManager.getSingleton().remove(mesh.getHandle()) 
-# # #         self.sceneMgr.destroyEntity(entity.getName()) 
-# # #         self.sceneMgr.getRootSceneNode().removeChildnode.getName()
-# # # 
-# # #     def animate(self, timeSinceLastFrame):
-# # #         lastlvl = lvl  
-# # #         tm += timeSinceLastFrame  
-# # #         lvl = (int) ( (Real)(tm)/CIRCLE_TIME * 16 ) 
-# # #         if (lvl<16 and lvl!=lastlvl) :
-# # #             setTextureLevel() 
-# # # 
-# # # 
-# # #     def clearStaticBuffers(self):
-# # #         posnormVertexBuffer = Ogre.HardwareVertexBufferSharedPtr()  
-# # #         indexBuffer = Ogre.HardwareIndexBufferSharedPtr()  
-# # #         for i in range (16):
-# # #             texcoordsVertexBuffers[i] = Ogre.HardwareVertexBufferSharedPtr()  
-# # # 
-# # #         del texcoordsVertexBuffers 
-# # # 
-# # # 
-# # # # bool WaterCircle.first = True  
-# # # # HardwareVertexBufferSharedPtr WaterCircle.posnormVertexBuffer =
-# # # #     HardwareVertexBufferSharedPtr()  
-# # # # HardwareIndexBufferSharedPtr WaterCircle.indexBuffer =
-# # # #     HardwareIndexBufferSharedPtr()  
-# # # # HardwareVertexBufferSharedPtr* WaterCircle.texcoordsVertexBuffers = 0  
 
 # /* =========================================================================*/
 # /*               WaterListener class                                          */
@@ -254,45 +92,21 @@ def prepareCircleMaterial():
 class WaterListener(sf.FrameListener):
 
     def processcircles(self,timeSinceLastFrame):
-        for  i in self.circles :
+        for i in self.circles :
             i.animate(timeSinceLastFrame) 
-        found = False
-        while not found:
-            for count in range (len(self.circles)):
-                if self.circles[count].lvl >= 16:
-                    c = self.circles[count]
-                    del self.circles[count]
-                    del c
-                    found = True
-                    break
-        
-# # #         do :
-# # #             found = False  
-# # #             for it = self.circles :
-# # #                     it != self.circles.end() 
-# # #                     ++it) {
-# # #                 if ((*it).lvl>=16) {:
-# # #                     delete (*it) 
-# # #                     self.circles.erase(it) 
-# # #                     found = True  
-# # #                     break  
-
-
-# # #         while (found)  
-
+        for count in range (len(self.circles)-1,0,-1):
+            if self.circles[count].lvl >= 16:
+                c = self.circles[count]
+                del c
+                del self.circles[count]
+                #break
+            
 
     def processParticles(self):
         global PLANE_SIZE, COMPLEXITY, RAIN_HEIGHT_RANDOM, RAIN_HEIGHT_CONSTANT
-                
-        ## Sorry this isn't currently supported by ogre - haven't exposed Ogre::ParticleIterator
-        
-# # #         print self.app.particleSystem
-# # #         print dir(self.app.particleSystem)
-# # #         
-# # #         pit = self.app.particleSystem._getIterator()  
-# # #         while not pit.end():
-        for particle in self.app.particleSystem.getParticles():
-# #             particle = pit.getNext() 
+###        for particle in self.app.particleSystem.getParticles(): # note that this helper function returns copies
+        for x in range (self.app.particleSystem.getNumParticles()):
+            particle = self.app.particleSystem.getParticle(x)
             ppos = particle.position 
             if ppos.y<=0 and particle.timeToLive>0 : ## hits the water!:
                 ## delete particle
@@ -300,26 +114,19 @@ class WaterListener(sf.FrameListener):
                 ## push the water
                 x = ppos.x / PLANE_SIZE * COMPLEXITY  
                 y = ppos.z / PLANE_SIZE * COMPLEXITY  
-                h = random.random() % RAIN_HEIGHT_RANDOM + RAIN_HEIGHT_CONSTANT  
-                if (x<1): 
-                    x=1 
-                if (x>COMPLEXITY-1):
-                    x=COMPLEXITY-1 
-                if (y<1):
-                     y=1 
-                if (y>COMPLEXITY-1):
-                    y=COMPLEXITY-1
+                h = random.uniform(0,RAIN_HEIGHT_RANDOM-1) + RAIN_HEIGHT_CONSTANT  
+                if (x<1): x=1 
+                if (x>COMPLEXITY-1): x=COMPLEXITY-1 
+                if (y<1): y=1 
+                if (y>COMPLEXITY-1): y=COMPLEXITY-1
                 self.WaterMesh.push(x,y,-h)  
-                circle = WaterMesh.WaterCircle( "Circle#"+str(self.pindex), x, y, self.app.sceneManager)
+                circle = WaterMesh.WaterCircle( "Circle#"+str(self.pindex), x, y, self.app.sceneManager, COMPLEXITY)
                 self.pindex+=1 
                 self.circles.append(circle) 
-
-
-
-
+                
     ## Head animation */
     def animateHead(self, timeSinceLastFrame):
-
+        #return
         ## sine track? :)
         for i in range(4):
             self.sines[i]+=self.adds[i]*timeSinceLastFrame 
@@ -336,7 +143,6 @@ class WaterListener(sf.FrameListener):
         self.oldPos = newPos  
         self.app.headNode.translate(newPos) 
         self.app.headNode.rotate(headRotation) 
-
 
     ## GUI updaters
     def updateInfoParamC(self):
@@ -414,7 +220,7 @@ class WaterListener(sf.FrameListener):
         self.waterEntity = waterEntity  
         self.materialNumber = 8 
         self.timeoutDelay = 0.0 
-        self.headDepth = 2.0 
+        self.headDepth = 1.7 
         self.skyBoxOn = False  
         RAIN_HEIGHT_RANDOM = 5
         RAIN_HEIGHT_CONSTANT = 5
@@ -422,7 +228,6 @@ class WaterListener(sf.FrameListener):
         self.adds=[0.3,-1.6,1.1,0.5] 
         self.oldPos = Ogre.Vector3().UNIT_Z 
         self.pindex = 0  
-        self.headDepth  =0.0
         self.circles = []
         
         self.updateMaterial() 
@@ -445,13 +250,13 @@ class WaterListener(sf.FrameListener):
             del (self.circles[i]) 
 
 
-    def frameStarted(self, frameEvent):
-        result = sf.FrameListener.frameStarted(self,frameEvent)
+    def frameRenderingQueued(self, frameEvent):
+        result = sf.FrameListener.frameRenderingQueued(self,frameEvent)
         evt = frameEvent
         
         if( result == False ):
             ## check if we are exiting, if so, clear static HardwareBuffers to adef segfault
-            WaterCircle.clearStaticBuffers() 
+            #WaterCircle.clearStaticBuffers() 
             return False 
 
         self.app.mAnimState.addTime(evt.timeSinceLastFrame) 
@@ -487,18 +292,15 @@ class WaterListener(sf.FrameListener):
                 if (_value<=_minVal):
                      _value = _minVal
                 _macro 
+            return _value
 
 
-#         ADJUST_RANGE(self.headDepth, OIS.KC_U, OIS.KC_J, 0, 10, 0.5*changeSpeed, self.updateInfoHeadDepth()) 
-# 
-#         ADJUST_RANGE(self.WaterMesh.PARAM_C, OIS.KC_2, OIS.KC_1, 0, 10, 0.1*changeSpeed, self.updateInfoParamC())  
-# 
-#         ADJUST_RANGE(self.WaterMesh.PARAM_D, OIS.KC_4, OIS.KC_3, 0.1, 10, 0.1*changeSpeed, self.updateInfoParamD())  
-# 
-#         ADJUST_RANGE(self.WaterMesh.PARAM_U, OIS.KC_6, OIS.KC_5, -2, 10, 0.1*changeSpeed, self.updateInfoParamU())  
-# 
-#         ADJUST_RANGE(self.WaterMesh.PARAM_T, OIS.KC_8, OIS.KC_7, 0, 10, 0.1*changeSpeed, self.updateInfoParamT())  
-# 
+        self.headDepth=ADJUST_RANGE(self.headDepth, OIS.KC_U, OIS.KC_J, 0, 10, 0.5*changeSpeed, self.updateInfoHeadDepth()) 
+        self.WaterMesh.PARAM_C=ADJUST_RANGE(self.WaterMesh.PARAM_C, OIS.KC_2, OIS.KC_1, 0, 10, 0.1*changeSpeed, self.updateInfoParamC())  
+        self.WaterMesh.PARAM_D=ADJUST_RANGE(self.WaterMesh.PARAM_D, OIS.KC_4, OIS.KC_3, 0.1, 10, 0.1*changeSpeed, self.updateInfoParamD())  
+        self.WaterMesh.PARAM_U=ADJUST_RANGE(self.WaterMesh.PARAM_U, OIS.KC_6, OIS.KC_5, -2, 10, 0.1*changeSpeed, self.updateInfoParamU())  
+        self.WaterMesh.PARAM_T=ADJUST_RANGE(self.WaterMesh.PARAM_T, OIS.KC_8, OIS.KC_7, 0, 10, 0.1*changeSpeed, self.updateInfoParamT())  
+
         self.timeoutDelay-=evt.timeSinceLastFrame  
         if (self.timeoutDelay<=0):
             self.timeoutDelay = 0 
@@ -510,13 +312,10 @@ class WaterListener(sf.FrameListener):
                 _macro ()
 
         SWITCH_VALUE(OIS.KC_N, 0.5, self.switchNormals) 
-
         SWITCH_VALUE(OIS.KC_M, 0.5, self.switchMaterial) 
-
         SWITCH_VALUE(OIS.KC_B, 0.5, self.switchSkyBox) 
         
         self.animateHead(evt.timeSinceLastFrame) 
-
         self.WaterMesh.updateMesh(evt.timeSinceLastFrame) 
 
         return True 
@@ -573,9 +372,9 @@ class WaterApplication(sf.Application,Ogre.RenderTargetListener):
         for  ff in range (1,20):
             key = track.createNodeKeyFrame(ff) 
             lpos = Ogre.Vector3(
-                random.random()%PLANE_SIZE , ##- PLANE_SIZE/2,
-                random.random()%300+100,
-                random.random()%PLANE_SIZE ##- PLANE_SIZE/2
+                random.uniform(0,PLANE_SIZE-1) , ##- PLANE_SIZE/2,
+                random.uniform(0,299)+100,
+                random.uniform(0,PLANE_SIZE-1) ##- PLANE_SIZE/2
                 ) 
             key.setTranslate(lpos) 
 
@@ -600,11 +399,10 @@ class WaterApplication(sf.Application,Ogre.RenderTargetListener):
         rNode.translate(PLANE_SIZE/2.0, 3000, PLANE_SIZE/2.0) 
         rNode.attachObject(self.particleSystem) 
         ## Fast-forward the rain so it looks more natural
-        self.particleSystem.fastForward(20) 
+        #self.particleSystem.fastForward(20) 
         ## It can't be set in .particle file, and we need it  )
         self.particleSystem.getRenderer().setBillboardOrigin(Ogre.BBO_BOTTOM_CENTER) 
-
-        WaterMesh.prepareCircleMaterial() 
+        prepareCircleMaterial() 
         
 
 #     ## Create new frame listener

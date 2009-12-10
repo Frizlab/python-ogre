@@ -347,7 +347,7 @@ def generate_code():
                         , environment.ogrevideoffmpeg.cache_file )
 
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD' ]
+    defined_symbols = environment.defined_symbols
 
     defined_symbols.append( 'VERSION_' + environment.ogrevideoffmpeg.version )  
     

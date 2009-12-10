@@ -444,6 +444,10 @@ Ogre::Any * General_createAny ( boost::python::list listin ) {
             outany= new Ogre::Any(out);
             return outany;
             }
+        if (intype == "P" ){
+            unsigned int pointer =  boost::python::extract<unsigned int> (listin[1]);
+            return (Ogre::Any * ) pointer;
+            }
         if (intype == "p")  {
             boost::python::object t = boost::python::extract<boost::python::object>(listin[1]);
             PyObject * out = t.ptr();
@@ -644,7 +648,32 @@ Utility_CastInt ( void * address )
 {
     return (unsigned long) address;
     }
+
+// Othertimes we need the address the void * points to
+unsigned long
+Utility_CastUnsignedLong ( void * address )
+{
+    return (unsigned long) address;
+    }    
+// Othertimes we need the address the void * points to
+unsigned long
+Utility_getAddress ( PyObject * in )
+{
+    return (unsigned long) in;
+    }
     
+Ogre::Any *
+Utility_CastAsAny ( unsigned long address )
+{
+    return (Ogre::Any *) address;
+    }    
+
+PyObject *
+Utility_castAsObject ( unsigned long address )
+{
+        return (PyObject *) address;
+}
+ 
 boost::python::object 
 Utility_CastResourceToNative(Ogre::ResourcePtr& r){
    if( dynamic_cast< Ogre::Texture* >( r.get() ) ){
@@ -786,16 +815,35 @@ WRAPPER_REGISTRATION_General = [
                 Input: void *, size\\n\\
                 Ouput: Python List\\n\\
                 The list is populated with ints from memory starting at the pointer" );""",                
-    """bp::def( "CastVoidPtr", &Utility_CastVoidPtr,
+    """bp::def( "castAsVoidPtr", &Utility_CastVoidPtr,
                 bp::return_value_policy< bp::return_opaque_pointer >(),
                 "Python-Ogre Helper Function: Casts a number to a void *.\\n\\
                 Input: numeric value (typically CTypes.addressof(xx) )\\n\\
                 Output: A void pointer with the input address");""",
-    """bp::def( "CastInt", &Utility_CastInt,
+    """bp::def( "castAsInt", &Utility_CastInt,
                 "Python-Ogre Helper Function: Returns an interger reflecting the void pointer adddress.\\n\\
                 Input: void * \\n\\
                 Output: A number representing the input address");""",
-    """bp::def( "CastResourceToNative", &Utility_CastResourceToNative,
+    """bp::def( "castAsUnsignedLong", &Utility_CastUnsignedLong,
+                "Python-Ogre Helper Function: Returns an interger reflecting the void pointer adddress.\\n\\
+                Input: void * \\n\\
+                Output: A number representing the input address");""",
+    """bp::def( "getAddress", &Utility_getAddress,
+                "Python-Ogre Helper Function: Returns an interger reflecting the python object adddress.\\n\\
+                Input: python object \\n\\
+                Output: A number representing the address");""",
+    """bp::def( "castAsObject", &Utility_castAsObject,
+                "Python-Ogre Helper Function: creates a pyobject to an adddress.\\n\\
+                Input: address \\n\\
+                Output: A python object");
+               // bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+    """bp::def("castAsAny", &Utility_CastAsAny,
+                "Python-Ogre Helper Function: Returns an Ogre.Any reflecting the given adddress.\\n\\
+                Input: address of object \\n\\
+                Output: An OgreAny object",
+                bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >());""",
+    
+    """bp::def( "castResourceToNative", &Utility_CastResourceToNative,
                "Python-Ogre Helper Function: Casts a Resource to it\'s native type.\\n\\
                 Input: Resource Object\\n\\
                 Output: \'Native\' Object (Texture, Font, Mesh, etc)\\n\\

@@ -239,8 +239,8 @@ def generate_code():
                         os.path.join( environment.ogrertshadersystem.root_dir, "python_ogrertshadersystem.h" )
                         , environment.ogrertshadersystem.cache_file )
 
-    defined_symbols = [ 'OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', 
-                        '__PYTHONOGRE_BUILD_CODE', 'OGRE_RTSHADERSYSTEM_EXPORTS']
+    defined_symbols = environment.defined_symbols 
+    defined_symbols .append('OGRE_RTSHADERSYSTEM_EXPORTS')
     defined_symbols.append( 'VERSION_' + environment.ogrertshadersystem.version )  
     
     #

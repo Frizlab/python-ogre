@@ -208,12 +208,8 @@ def generate_code():
                         os.path.join( environment.ogresdksample.root_dir, "python_ogresdksample.h" )
                         , environment.ogresdksample.cache_file )
 
-    defined_symbols = ['OGRE_NONCLIENT_BUILD', 'OGRE_GCC_VISIBILITY', '__PYTHONOGRE_BUILD_CODE'
-                        ]
+    defined_symbols = environment.defined_symbols 
     defined_symbols.append( 'VERSION_' + environment.ogresdksample.version )  
-    
-    if environment.Config._SVN: # building Ogre 1.7
-        defined_symbols.append ('HAVE_OGRE_BUILDSETTINGS_H') # it uses the cmake buildsettings include
     
     #
     # build the core Py++ system from the GCCXML created source

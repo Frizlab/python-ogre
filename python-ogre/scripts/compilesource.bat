@@ -9,8 +9,8 @@ cd %_ROOT%\\ogre_svn
 cd %_ROOT%\\NxOgre\\build\\msvc
 %_VCBUILD% /useenv NxOgre.VC9.sln "Release|Win32"
 
-rem cd %_ROOT%\\ogreaddons\\ogreode\\scripts\\vc8
-rem %_VCBUILD% /useenv OgreOde_SDK.sln "Release|Win32"
+cd %_ROOT%\\ogreaddons\\ogreode\\scripts\\vc8
+%_VCBUILD% /useenv OgreOde_SDK.sln "Release|Win32"
 
 cd %_ROOT%\\ogreaddons\\ogrenewt
 %_VCBUILD% /useenv OgreNewt_vc71.sln "Release|Win32"
