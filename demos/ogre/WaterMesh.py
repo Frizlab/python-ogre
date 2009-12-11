@@ -12,10 +12,19 @@
 # -----------------------------------------------------------------------------
 # */
 
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   sys.exit()
+   pass
 import ctypes as ctypes
 import math
 import ogre.renderer.OGRE as ogre
 import array as array
+
+
+USE_ARRAY = True  # use array instead of ctypes
 
 PLANE_SIZE =3000.0
 
@@ -107,8 +116,8 @@ class WaterMesh:
     
         ## allocate space for normal calculation
         self.vNormals=[]
-        for x in range ( self.numVertices ):
-            self.vNormals.append(ogre.Vector3().ZERO )
+        for x in range ( self.numVertices * 3 ):
+            self.vNormals.append(0)
     
         ## create mesh and submesh
         self.mesh = ogre.MeshManager.getSingleton().createManual(meshName,
@@ -208,16 +217,19 @@ class WaterMesh:
     #  to calculate the next one
     
     # we need 2 floats, and are going through the loop three times 
-        #storageclass2 = ctypes.c_float * (self.numVertices *3 * 3 *2 )
+        floatStorage = ctypes.c_float * (self.numVertices * 3 )
         #self.vertexBuffers = storageclass2 (1.1)
         #
         # Change here to use an 'array' for the buffers
         self.vertexBuffers = []
         for x in range (3):
-            self.vertexBuffers.append( array.array('f') )
-            for y in range (self.numVertices *3):
-                self.vertexBuffers[x].append(0)
-        
+            if USE_ARRAY:
+                self.vertexBuffers.append( array.array('f') )
+                for y in range (self.numVertices *3):
+                    self.vertexBuffers[x].append(0)
+            else:
+                self.vertexBuffers.append( floatStorage(1.1) )
+            
         
         ## Note that in the C++ code self.vertexBuffers is a float * array[3], whcih indexes into float*numverticies*3
         ## we have made a single array bige nough to cope
@@ -235,12 +247,17 @@ class WaterMesh:
         meshBounds = ogre.AxisAlignedBox(0,0,0, planeSize,0, planeSize) 
         self.mesh._setBounds(meshBounds) 
     
-        self.currentBufNumber = 0  
-        self.posVertexBuffer.writeData(0,
-            self.posVertexBuffer.getSizeInBytes(), ## size
-            self.vertexBuffers[0].buffer_info()[0], 
-            True)  ## discard?
-    
+        self.currentBufNumber = 0 
+        if USE_ARRAY:
+            self.posVertexBuffer.writeData(0,
+                self.posVertexBuffer.getSizeInBytes(), ## size
+                self.vertexBuffers[0].buffer_info()[0], 
+                True)  ## discard?
+        else:
+            self.posVertexBuffer.writeData(0,
+                self.posVertexBuffer.getSizeInBytes(), ## size
+                ctypes.addressof(self.vertexBuffers[0]), 
+                True)  ## discard?
         self.mesh.load() 
         self.mesh.touch() 
     
@@ -259,7 +276,7 @@ class WaterMesh:
     def push( self, x, y, depth, absolute=False):
         buf = self.currentBufNumber  
         ## scale pressure according to time passed
-        depth = depth * self.lastFrameTime * ANIMATIONS_PER_SECOND  *.3
+        depth = depth * self.lastFrameTime * ANIMATIONS_PER_SECOND  
         self._PREP(0,0, buf,x,y,depth,absolute) 
         self._PREP(0,1, buf,x,y,depth,absolute) 
         self._PREP(1,0, buf,x,y,depth,absolute) 
@@ -298,18 +315,17 @@ class WaterMesh:
         buf=self.vertexBuffers[self.currentBufNumber]
         pNormals = self.normVertexBuffer.lock(
             0, self.normVertexBuffer.getSizeInBytes(), ogre.HardwareBuffer.HBL_DISCARD) 
-        #storageclass1=ctypes.c_float * (self.normVertexBuffer.getSizeInBytes()*3)
-        pNormalsAddress=(ctypes.c_float * (self.normVertexBuffer.getSizeInBytes()*3)).from_address(ogre.castAsInt(pNormals))
+        pNormalsAddress=(ctypes.c_float * (self.normVertexBuffer.getSizeInBytes())).from_address(ogre.castAsInt(pNormals))
    
         for y in range (self.complexity) :
             start = 3*y*(self.complexity+1)
-            nrow = pNormalsAddress[ start]
-            row = buf[3 * y * (self.complexity+1) +1]
-            rowup = buf [3*(y-1)*(self.complexity+1) +1]  
-            rowdown = buf [ 3*(y+1)*(self.complexity+1) +1]  
+            nrow = start
+            row = 3 * y * (self.complexity+1) +1
+            rowup = 3*(y-1)*(self.complexity+1) +1 
+            rowdown =  3*(y+1)*(self.complexity+1) +1  
             for x in range (self.complexity) :
-                xdiff = row+ 3*x+3 - row +3*x-3  
-                ydiff = rowup + 3*x - rowdown+3*x-3  
+                xdiff = buf[row+ 3*x+3] - buf[row +3*x-3]  
+                ydiff = buf[rowup + 3*x] - buf[rowdown+3*x-3]  
                 norm = ogre.Vector3(xdiff,30,ydiff) 
                 norm.normalise()
                 
@@ -322,52 +338,80 @@ class WaterMesh:
     
 #     /* ========================================================================= */
     def calculateNormals(self):
-        #return  #AJM
-        buf = self.currentBufNumber # +1  #AJM
         ## zero normals
-        
-        for i in range(self.numVertices) :
-            self.vNormals[i]=  ogre.Vector3().ZERO
+        for i in range(self.numVertices*3) :
+            self.vNormals[i]=  0
+            
         ## first, calculate normals for faces, add them to proper vertices
         
         # use helper function
         vinds = buffer ( self.indexBuffer)
         vinds.lock (0, self.indexBuffer.getSizeInBytes(), ogre.HardwareBuffer.HBL_READ_ONLY)
         
-        
         pNormals = self.normVertexBuffer.lock(
             0, self.normVertexBuffer.getSizeInBytes(), ogre.HardwareBuffer.HBL_DISCARD) 
-        #storageclass1=ctypes.c_float * (self.normVertexBuffer.getSizeInBytes()*3)
         pNormalsAddress=(ctypes.c_float * (self.normVertexBuffer.getSizeInBytes()*3)).from_address(ogre.castAsInt(pNormals))
        
-       
-        for i in range(self.numFaces) :
-            p0 = vinds[3*i]  
-            p1 = vinds[3*i+1]  
-            p2 = vinds[3*i+2]  
-            #print p0, p1, p2
-            v0= ogre.Vector3 (self.vertexBuffers[buf][3*p0], self.vertexBuffers[buf][3*p0+1], self.vertexBuffers[buf][3*p0+2]) 
-            v1 = ogre.Vector3 (self.vertexBuffers[buf][3*p1], self.vertexBuffers[buf][3*p1+1], self.vertexBuffers[buf][3*p1+2]) 
-            v2 = ogre.Vector3 (self.vertexBuffers[buf][3*p2], self.vertexBuffers[buf][3*p2+1], self.vertexBuffers[buf][3*p2+2]) 
-            diff1  = v2 - v1  
-            diff2 = v0 - v1  
-            fn = diff1.crossProduct(diff2) 
-            self.vNormals[p0] += fn  
-            self.vNormals[p1] += fn  
-            self.vNormals[p2] += fn  
+        # make life easier (and faster) by using a local variables
+        buf = self.vertexBuffers[self.currentBufNumber]
+        vNormals = self.vNormals
+        
+        ## AJM so here's a case where accessing a C++ object from python shows a performance hit !!
+        ## in this case we look through and the original C++ code creates and access ovre.Vector3 objects
+        ## multiple times on each pass.
+        for count in range(self.numFaces) :
+            p0 = vinds[3*count]  
+            p1 = vinds[3*count+1]  
+            p2 = vinds[3*count+2]  
+            # this is slow
+            # v0= ogre.Vector3 (self.vertexBuffers[buf][3*p0], self.vertexBuffers[buf][3*p0+1], self.vertexBuffers[buf][3*p0+2]) 
+            # v1 = ogre.Vector3 (self.vertexBuffers[buf][3*p1], self.vertexBuffers[buf][3*p1+1], self.vertexBuffers[buf][3*p1+2]) 
+            # v2 = ogre.Vector3 (self.vertexBuffers[buf][3*p2], self.vertexBuffers[buf][3*p2+1], self.vertexBuffers[buf][3*p2+2]) 
+            
+            # so use python arrays instead of Vector3's
+            i0 = 3*p0
+            i1 = 3*p1
+            i2 = 3*p2
+            v0 = [buf[i0], buf[i0+1], buf[i0+2]]
+            v1 = [buf[i1], buf[i1+1], buf[i1+2]] 
+            v2 = [buf[i2], buf[i2+1], buf[i2+2]] 
+            
+            # Do the vector subtraction by 'hand' instead of original
+            # diff2 = v0 - v1  
+            diff1  = [v2[0]-v1[0],v2[1]-v2[1],v2[2]-v2[2]]  
+            diff2  = [v0[0]-v1[0],v0[1]-v2[1],v0[2]-v2[2]]  
+            
+            # and now we need to do a crossProduct by hand..
+            # fn = ogre.Vector3(*diff1).crossProduct(ogre.Vector3(*diff2)) 
+            fn = [diff1[1] * diff2[2] - diff1[2] * diff2[1],
+                diff1[2] * diff2[0] - diff1[0] * diff2[2],
+                diff1[0] * diff2[1] - diff1[1] * diff2[0]]
+            # And of course now add the values into the normals
+            # self.vNormals[p0] += fn  
+            # self.vNormals[p1] += fn  
+            # self.vNormals[p2] += fn  
+            vNormals[i0] += fn[0] 
+            vNormals[i0+1] += fn[1] 
+            vNormals[i0+2] += fn[2] 
+            vNormals[i1] += fn[0] 
+            vNormals[i1+1] += fn[1] 
+            vNormals[i1+2] += fn[2] 
+            vNormals[i2] += fn[0] 
+            vNormals[i2+1] += fn[1] 
+            vNormals[i2+2] += fn[2] 
     
         ## now normalize vertex normals
-        for y in range(self.complexity) :
-            for x in range(self.complexity) :
-                numPoint = y*(self.complexity+1) + x  
-                n = self.vNormals[numPoint]  
+        complexity = self.complexity
+        for y in range(complexity) :
+            for x in range(complexity) :
+                numPoint = y*(complexity+1) + x  
+                v = 3*numPoint
+                n = ogre.Vector3(vNormals[v],vNormals[v+1],vNormals[v+2])  
                 n.normalise()  
-                pNormalsAddress [3*numPoint] = n.x
-                pNormalsAddress [3*numPoint+1] = n.y
-                pNormalsAddress [3*numPoint+2] = n.z
-#                normal[0]=n.x 
-#                normal[1]=n.y 
-#                normal[2]=n.z 
+                v = 3*numPoint
+                pNormalsAddress [v] = n.x
+                pNormalsAddress [v+1] = n.y
+                pNormalsAddress [v+2] = n.z
     
     
         self.indexBuffer.unlock() 
@@ -437,10 +481,16 @@ class WaterMesh:
             self.calculateNormals() 
     
         ## set vertex buffer
-        self.posVertexBuffer.writeData(0,
-            self.posVertexBuffer.getSizeInBytes(), ## size
-            self.vertexBuffers[self.currentBufNumber].buffer_info()[0], ## source
-            True)  ## discard?
+        if USE_ARRAY:
+            self.posVertexBuffer.writeData(0,
+                self.posVertexBuffer.getSizeInBytes(), ## size
+                self.vertexBuffers[self.currentBufNumber].buffer_info()[0], ## source
+                True)  ## discard?
+        else:
+            self.posVertexBuffer.writeData(0,
+                self.posVertexBuffer.getSizeInBytes(), ## size
+                ctypes.addressof(self.vertexBuffers[self.currentBufNumber]), ## source
+                True)  ## discard?
 
 #/* =========================================================================*/
 #/*               WaterCircle class                                          */
@@ -491,7 +541,6 @@ class WaterCircle :
                 False) # no shadow buffer
                     
             posnormBufData = buffer ( WaterCircle._posnormVertexBuffer )
-            print "!!!"
             posnormBufData.lock(ogre.HardwareBuffer.HBL_DISCARD)
             
             for i in range (numVertices):
@@ -513,7 +562,6 @@ class WaterCircle :
                     ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, # usage
                     False)) # no shadow buffer
                 texcoordsBufData = buffer( WaterCircle._texcoordsVertexBuffers[lvl])
-                print "2222"
                 texcoordsBufData.lock(ogre.HardwareBuffer.HBL_DISCARD)
                 x0 = float(lvl % 4) * 0.25 
                 y0 = float(lvl / 4) * 0.25
