@@ -491,7 +491,7 @@ class cmake(module):
         base = 'cmake-2.8.0-Darwin-universal'
         buildCmds = [
             [0, tar + " xzf " + os.path.join(downloadPath, base) + ".tar.gz", ''],
-            [0, cp + r"-R  CMake\ 2.8.0.app/Contents/* " + PREFIX, os.path.join(os.getcwd(), base) ],
+            [0, cp + r"-R  CMake\ 2.8-0.app/Contents/* " + PREFIX, os.path.join(os.getcwd(), base) ],
         ]
         source = [
             [wget, "http://www.cmake.org/files/v2.8/"+base+".tar.gz", downloadPath],
@@ -602,21 +602,23 @@ class boost(module):
         bjambuildset = 'darwin'
 
         source = [
-            [wget, 'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1-macosxx86.tgz', downloadPath],
+            #[wget, 'http://downloads.sourceforge.net/boost/boost-jam-3.1.17-1-macosxx86.tgz', downloadPath],
             [wget, 'http://downloads.sourceforge.net/boost/' + base + '.tar.gz', downloadPath]
         ]
 
         buildCmds = [
-            ## first handle bjam
-            [0, tar + ' zxf ' + os.path.join(downloadPath, bjambase) + '.tgz --overwrite', ''],
-            [0, cp + " bjam %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase)], ## may need to change on 64 bit systems
+            ## first handle bjam ## REMOVED as using bootstrap instead
+            ##[0, tar + ' zxf ' + os.path.join(downloadPath, bjambase) + '.tgz', ''],
+            ##[0, cp + " bjam %s/bin/" % PREFIX, os.path.join(os.getcwd(), bjambase)], ## may need to change on 64 bit systems
 
             ## and now boost
             [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
-            [0, 'chmod -R +rw *', os.path.join(os.getcwd(), base) ],
-            [0, "./configure --with-toolset=darwin --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam" % PREFIX, os.path.join(os.getcwd(), base)],
-            [0, 'make', os.path.join(os.getcwd(), base)],
-            [0, 'make install', os.path.join(os.getcwd(), base)],
+            #[0, 'chmod -R +rw *', os.path.join(os.getcwd(), base) ],
+            [0, './bootstrap.sh  --without-icu --with-libraries=python,thread,date_time --prefix=%s' %( PREFIX), os.path.join(os.getcwd(), base) ], 
+            [0, './bjam -j%i release install --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, PREFIX), os.path.join(os.getcwd(), base) ], 
+#            [0, "./configure --with-toolset=darwin --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam" % PREFIX, os.path.join(os.getcwd(), base)],
+#            [0, 'make', os.path.join(os.getcwd(), base)],
+#            [0, 'make install', os.path.join(os.getcwd(), base)],
         ]
 
     if isWindows():
@@ -750,8 +752,8 @@ class ogre(pymodule):
 
 
     elif isMac():
-        version = "1.6.1"
-        base = "ogre-v1-6-1"
+        version = "1.6.4"
+        base = "ogre-v1-6-4"
         basedep = "OgreDependencies_OSX_Eihort_20080115"
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/" + base + ".tar.bz2", downloadPath],
@@ -762,7 +764,7 @@ class ogre(pymodule):
             [0, unzip + os.path.join(downloadPath, basedep) + ".zip ", os.path.join(os.getcwd(), 'ogre') ],
             [0, "mkdir ~/Library/Frameworks", ''], ## Note that this will fail if the directory exists !!!
             [0, 'mv OgreDependencies_OSX_Eihort_20080115/Dependencies .', os.path.join(os.getcwd(), 'ogre')],
-            [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.1.patch -p0 ", os.getcwd()],
+            [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.4.patch -p0 ", os.getcwd()],
             [0, "mkdir Ogre", os.path.join(os.getcwd(), 'ogre', 'OgreMain', 'include') ],
             # need copies of these in an 'Ogre/..' directory due to includes in the OSX directory -- or get the framework right
             [0, "cp OgreRoot.h Ogre", os.path.join(os.getcwd(), 'ogre', 'OgreMain', 'include') ],
