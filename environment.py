@@ -86,6 +86,14 @@ elif isMac(): ## it's Mac OS X
     version = pathlist[pathlist.index('Versions') + 1]
     python_include_dirs = '/'.join(pathlist[:pathlist.index('Versions') + 2]) + '/include/python' + version
     python_lib_dirs = ''
+    sdks=[]
+    base='/Developer/SDKs'
+    for x in os.listdir(base):
+         if os.path.isdir(os.path.join(base, x)):
+            sdks.append(os.path.join(base,x))
+    sdks.sort()
+    MAC_SDK=sdks[-1]
+
 else:
     raise (SystemExit, "Don't know what this system is (checked for Windows, Linux and Mac)!")
     
@@ -405,7 +413,7 @@ class cg(module):
 
     if isLinux():
         if is64():
-            base = 'Cg-2.0_May2008_x86_64'
+            base = 'Cg-2.2_October2009_x86_64'
         else:
             base = 'Cg-2.2_October2009_x86'
         source = [
@@ -613,7 +621,7 @@ class boost(module):
 
             ## and now boost
             [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
-            #[0, 'chmod -R +rw *', os.path.join(os.getcwd(), base) ],
+            [0, 'chmod -R +rw *', os.path.join(os.getcwd(), base) ],
             [0, './bootstrap.sh  --without-icu --with-libraries=python,thread,date_time --prefix=%s' %( PREFIX), os.path.join(os.getcwd(), base) ], 
             [0, './bjam -j%i release install --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, PREFIX), os.path.join(os.getcwd(), base) ], 
 #            [0, "./configure --with-toolset=darwin --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam" % PREFIX, os.path.join(os.getcwd(), base)],
@@ -760,7 +768,7 @@ class ogre(pymodule):
             [wget, "http://downloads.sourceforge.net/ogre/" + basedep + ".zip", downloadPath],
         ]
         buildCmds = [
-            [0, tar + " jxf " + os.path.join(downloadPath, base) + ".tar.bz2 --overwrite", os.getcwd() ],
+            [0, tar + " jxf " + os.path.join(downloadPath, base) + ".tar.bz2 ", os.getcwd() ],
             [0, unzip + os.path.join(downloadPath, basedep) + ".zip ", os.path.join(os.getcwd(), 'ogre') ],
             [0, "mkdir ~/Library/Frameworks", ''], ## Note that this will fail if the directory exists !!!
             [0, 'mv OgreDependencies_OSX_Eihort_20080115/Dependencies .', os.path.join(os.getcwd(), 'ogre')],
@@ -770,8 +778,8 @@ class ogre(pymodule):
             [0, "cp OgreRoot.h Ogre", os.path.join(os.getcwd(), 'ogre', 'OgreMain', 'include') ],
             [0, "cp OgreRenderSystem.h Ogre", os.path.join(os.getcwd(), 'ogre', 'OgreMain', 'include') ],
             [0, "cp OgrePrerequisites.h Ogre", os.path.join(os.getcwd(), 'ogre', 'OgreMain', 'include') ],
-            [0, "xcodebuild -project ogre/Mac/Ogre/Ogre.xcodeproj -configuration Release", ''],
-            [0, "xcodebuild -project ogre/Mac/Samples/Samples.xcodeproj -configuration Release", ''],
+            [0, "xcodebuild -project ogre/Mac/Ogre/Ogre.xcodeproj -configuration Release -sdk %s" % (MAC_SDK), ''],
+            [0, "xcodebuild -project ogre/Mac/Samples/Samples.xcodeproj -configuration Release -sdk %s" %(MAC_SDK), ''],
             [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd(), 'ogre', "Mac", "build", "Release") ],
             [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd(), 'ogre', "Dependencies") ]
         ]
@@ -796,7 +804,7 @@ class ois(pymodule):
             [cvs, "-z3 -d:pserver:anonymous@wgois.cvs.sourceforge.net:/cvsroot/wgois co -D 01Jan2009 -P ois", os.getcwd()]
         ]
         buildCmds = [
-            [0, "xcodebuild -project ois/Mac/XCode-2.2/OIS.xcodeproj -configuration Release", ''],
+            [0, "xcodebuild -project ois/Mac/XCode-2.2/OIS.xcodeproj -configuration Release -sdk %s " %(MAC_SDK), ''],
             [0, 'cp -R ois/Mac/XCode-2.2/build/Release/OIS.Framework ~/Library/Frameworks ', '']
         ]
 
