@@ -478,28 +478,28 @@ class freeimage(module):
 
 class cmake(module):
     if isLinux() :
-        base = 'cmake-2.6.4-Linux-i386'
+        base = 'cmake-2.8.0-Linux-i386'
         buildCmds = [
             [0, tar + " xzf " + os.path.join(downloadPath, base) + ".tar.gz --overwrite", ''],
             [0, cp + "-R  * " + PREFIX, os.path.join(os.getcwd(), base) ],
         ]
         source = [
-            [wget, "http://www.cmake.org/files/v2.6/" + base + ".tar.gz", downloadPath],
+            [wget, "http://www.cmake.org/files/v2.8/" + base + ".tar.gz", downloadPath],
         ]
 
     elif isMac():
-        base = 'cmake-2.6.4-Darwin-universal'
+        base = 'cmake-2.8.0-Darwin-universal'
         buildCmds = [
             [0, tar + " xzf " + os.path.join(downloadPath, base) + ".tar.gz", ''],
-            [0, cp + r"-R  CMake\ 2.6-2.app/Contents/* " + PREFIX, os.path.join(os.getcwd(), base) ],
+            [0, cp + r"-R  CMake\ 2.8.0.app/Contents/* " + PREFIX, os.path.join(os.getcwd(), base) ],
         ]
         source = [
-            [wget, "http://www.cmake.org/files/v2.6/" + base + ".tar.gz", downloadPath],
+            [wget, "http://www.cmake.org/files/v2.8/"+base+".tar.gz", downloadPath],
         ]
 
     elif isWindows(): 
         source = [
-            [wget, "http://www.cmake.org/files/v2.6/cmake-2.6.4-win32-x86.exe", downloadPath]
+            [wget, "http://www.cmake.org/files/v2.8/cmake-2.8.0-win32-x86.exe", downloadPath]
         ]
 
         buildCmds = [
