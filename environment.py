@@ -429,7 +429,9 @@ class cg(module):
         source = [
             [wget, "http://developer.download.nvidia.com/cg/Cg_2.2/Cg-2.2_October2009.dmg", downloadPath ]
         ]
-        buildCmds = []
+        buildCmds = [
+            [0,'open '+ os.path.join(downloadPath,'Cg-2.2_October2009.dmg'), os.getcwd()]
+        ]
 
 
 class zziplib(module):
@@ -526,7 +528,7 @@ class scons(module):
         buildCmds = [
             [0, tar + " zxf " + os.path.join(downloadPath, base) + ".tar.gz --overwrite", '' ],
             # note fix here as scons defaults to adding bundle to command line which stops us building dynamiclibs!!
-            [0, 'sed -i s/-bundle// applelink.py', os.path.join(os.getcwd(), base, 'engine', 'SCons', 'Tool')   ],
+            #[0, 'sed -i s/-bundle// applelink.py', os.path.join(os.getcwd(), base, 'engine', 'SCons', 'Tool')   ],
             [0, "python setup.py install  --prefix=%s" % PREFIX, os.path.join(os.getcwd(), base) ]
         ]
     elif isMac():
