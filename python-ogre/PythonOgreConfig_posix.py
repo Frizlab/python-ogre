@@ -20,12 +20,10 @@ PATH_LIB_Boost = LOCAL_LIB
 PATH_LIB_Thread_STATIC = LOCAL_LIB
 PATH_LIB_date_time_STATIC = LOCAL_LIB
 ## and the name of the boost python library
-LIB_Boost = None
-
-LIB_Boost = "libboost_python"
+LIB_Boost = None # "libboost_python"
 
 # in Linux we need to code in the Relative path for the library
-RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\'' 
+RPATH=os.path.join('\\$$ORIGIN',os.pardir,os.pardir, 'lib') #+ '\''
 
 # We need to know where to find gccxml......
 gccxml_bin = os.path.join(BASE_DIR,'gccxml-build/bin')
@@ -42,20 +40,19 @@ if os.sys.platform == 'darwin':  # for the Mac
              -I. \
              -F/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks \
              -DBOOST_PYTHON_NO_PY_SIGNATURES -DBOOST_PYTHON_MAX_ARITY=19  \
-             -I' + os.path.join(module_dir,'code_generators','ogre') + ' ' 
+             -I' + os.path.join(module_dir,'code_generators','ogre') + ' '
    MAC_AdditionalFrameWorks=[ os.path.abspath(os.path.join(BASE_DIR,'ogre/Mac/build/Release')),  # this one can be removed as Ogr eis now copied to the user frameworks area
                              os.path.abspath(os.path.join(os.path.expanduser('~'), 'Library','Frameworks'))]
-   LIB_Boost = 'libboost_python-xgcc42-mt'
-   
-   
+
+
 #    SDK = True
 #    FRAMEWORK_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'Library','Frameworks'))   ## need this for the Mac
-#    MAC_SDK_INCLUDE= '/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/CFMCarbon' 
+#    MAC_SDK_INCLUDE= '/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/CFMCarbon'
 #    MAC_CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19 -D_POSIX_C_SOURCE -DCF_OPEN_SOURCE'
 #    MAC_cflags = ' --gccxml-cxxflags "-DCF_OPEN_SOURCE -D_POSIX_C_SOURCE -isysroot /Developer/SDKs/MacOSX10.4u.sdk"'
 
-    
-    
+
+
 # # ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR,'ogre')
@@ -68,8 +65,9 @@ if SDK:
     PATH_OIS =          os.path.join(BASE_DIR, 'ogre','Dependencies')
 if isMAC:
     PATH_CEGUI =        os.path.join(BASE_DIR, 'ogre','Dependencies')
-   
-    
+    #PATH_OIS = os.path.join(BASE_DIR, 'ogre','Dependencies')
+
+
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
 PATH_Newton2 =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.11')
@@ -95,7 +93,7 @@ PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_NxOgre=        os.path.join(PATH_THIRDPARTY, 'nxogre')
 PATH_NxOgre_09=        os.path.join(PATH_THIRDPARTY, 'nxogre_0.9')
 # PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre/NxOgre')
-PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.75') 
+PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.75')
 ###PATH_PhysX=         os.path.join(BASE_DIR, 'Physx/v2.7.3/SDKs')
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(BASE_DIR, 'ffmpeg')
@@ -121,13 +119,13 @@ PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'Release')
 ###
 ### these paths assume you've left all the directory structure as standard
 ### Override anything that is different
-###        
+###
 PATH_LIB_Ogre_CEGUIRenderer =    os.path.join( LOCAL_LIB ) #, 'Samples/Common/CEGUIRenderer/lib')
 PATH_LIB_Ogre_OgreMain=         os.path.join( LOCAL_LIB ) # PATH_Ogre, 'OgreMain/lib/Release' )
 PATH_LIB_Ogre_Dependencies =    os.path.join( LOCAL_LIB ) # , 'Dependencies/lib/Release')
 PATH_LIB_OgreRefApp =           os.path.join( LOCAL_LIB ) # PATH_Ogre, 'ReferenceApplication/ReferenceAppLayer/lib/Release')
-PATH_LIB_OgreNewt =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release') 
-PATH_LIB_OgreNewt2 =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release') 
+PATH_LIB_OgreNewt =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release')
+PATH_LIB_OgreNewt2 =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release')
 PATH_LIB_Newton =               os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
 PATH_LIB_Newton2 =               os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
 
@@ -140,12 +138,13 @@ if SDK:
 
 if isMAC:
     PATH_LIB_OIS =                  os.path.join( PATH_OIS,'Mac', 'XCode-2.2', 'build', 'Release' ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
+    #PATH_LIB_OIS = 				os.path.join(PATH_OIS,'lib','Release')
     PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI,'lib', 'Release' ) #PATH_Ogre, r'Dependencies/lib/Release' )
-   
+
 PATH_LIB_ODE =                  os.path.join( LOCAL_LIB ) #PATH_ODE, 'lib/releasedll')## probable releaselib for posix
-PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE ) 
-PATH_LIB_OgreOde =              os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'lib/Release') 
-# PATH_LIB_OgreBullet =              os.path.join( PATH_OgreBullet, 'lib/Release') 
+PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE )
+PATH_LIB_OgreOde =              os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'lib/Release')
+# PATH_LIB_OgreBullet =              os.path.join( PATH_OgreBullet, 'lib/Release')
 PATH_LIB_OgreOdePrefab =        os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'prefab/lib/Release' )
 PATH_LIB_OgreOdeLoader =        os.path.join( LOCAL_LIB ) #PATH_OgreOde, 'loader/lib/Release' )
 PATH_LIB_OgreAL =               os.path.join( LOCAL_LIB ) #PATH_OGREAL, 'lib/Release' )
@@ -169,7 +168,7 @@ PATH_LIB_plsm2 = PATH_plsm2
 PATH_LIB_OPENAL=  PATH_OPENAL ## ????????????????
 
 
-PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include') 
+PATH_INCLUDE_Ogre=          os.path.join(LOCAL_INCLUDE,'OGRE')  # os.path.join(PATH_Ogre,'OgreMain/include')
 PATH_INCLUDE_Ogre_Dependencies =    PATH_INCLUDE_Ogre #      os.path.join( PATH_Ogre, 'Dependencies/include')
 
 PATH_INCLUDE_OIS =          os.path.join(LOCAL_INCLUDE,'OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
@@ -180,22 +179,22 @@ PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_Ogre,'Components','RTShade
 PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
 PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
-    
-    
+
+
 if SDK :
     PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'include','OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
     PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI,'include','CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
-    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
+    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include')
     PATH_INCLUDE_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/include')
-    
+
 if isMAC:
     PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
     PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'Dependencies','include', 'CEGUI' ) #PATH_CEGUI,'include','CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
-    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain','include') 
+    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain','include')
     PATH_INCLUDE_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies','include')
 
 
-PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
+PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include')
 PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_OgreNewt2 =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_ODE =          os.path.join(LOCAL_INCLUDE,'ode') #os.path.join( PATH_ODE, 'include')
@@ -206,7 +205,7 @@ PATH_INCLUDE_OPENAL =       os.path.join( LOCAL_INCLUDE ) #os.path.join( PATH_OP
 PATH_INCLUDE_OGG=           os.path.join( LOCAL_INCLUDE,'ogg' ) #os.path.join( PATH_OGG, 'include' )
 PATH_INCLUDE_VORBIS=        os.path.join( LOCAL_INCLUDE,'vorbis' ) #os.path.join( PATH_VORBIS, 'include' )
 
-# PATH_INCLUDE_OgreBullet =   [ 
+# PATH_INCLUDE_OgreBullet =   [
 #                         os.path.join( PATH_OgreBullet,'Collisions','include')
 #                         ,os.path.join( PATH_OgreBullet,'Dynamics','include')
 #                         ]
@@ -231,7 +230,7 @@ PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
 PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include')
 PATH_INCLUDE_plib =         PATH_plib
 PATH_INCLUDE_navi =     os.path.join (PATH_navi,'include')
-PATH_INCLUDE_noise = PATH_noise 
+PATH_INCLUDE_noise = PATH_noise
 PATH_INCLUDE_ogredshow =    PATH_ogredshow
 PATH_INCLUDE_ogreforests =         PATH_ogreforests
 PATH_INCLUDE_particleuniverse = os.path.join(PATH_particleuniverse, 'include' )
@@ -256,7 +255,7 @@ PATH_INCLUDE_opensteer_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
 PATH_INCLUDE_ogrepcz = os.path.join(PATH_ogrepcz,'include')
 PATH_INCLUDE_hydrax=        PATH_hydrax
 PATH_INCLUDE_hikari = os.path.join(PATH_hikari ) #, 'include')
-PATH_INCLUDE_mygui = os.path.join(PATH_mygui,'MyGUIEngine','include') 
+PATH_INCLUDE_mygui = os.path.join(PATH_mygui,'MyGUIEngine','include')
 PATH_INCLUDE_canvas=        PATH_canvas
 PATH_INCLUDE_plsm2 = PATH_plsm2
 
