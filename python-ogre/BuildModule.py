@@ -78,6 +78,7 @@ def spawnTask ( task, cwdin = '', getoutput=None ):
             env["CXXFLAGS"]="-I"+PREFIX+"/include -L"+PREFIX+"/lib"
             ##env["LDFLAGS"]="-Wl,-rpath='\$\$ORIGIN/../../lib' -Wl,-rpath='\$\$ORIGIN' -Wl,-z,origin"  ### Mac GCC 4.0.1 doesn't support rpath
             env["PYTHONPATH"]=PREFIX+"/lib/python"+environment.PythonVersionString+"/site-packages"
+            env["CCFLAGS"]=" "+env["CFLAGS"]
         else:
             for FLAGS in "CFLAGS", "CXXFLAGS", "CCFLAGS", "LDFLAGS":
                 if not FLAGS in env:
