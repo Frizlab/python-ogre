@@ -11,7 +11,7 @@ OIS::Mouse * createInputObjectMouse(OIS::InputManager& im, OIS::Type iType, bool
 	OIS::Mouse * mMouse = (OIS::Mouse * ) im.createInputObject( iType, bufferMode );
 	return mMouse;
 	}
-#if !defined __APPLE_CC__
+//#if !defined __APPLE_CC__
 OIS::JoyStick * createInputObjectJoyStick(OIS::InputManager& im, OIS::Type iType, bool bufferMode ) {
 	OIS::JoyStick * mJoyStick = (OIS::JoyStick * ) im.createInputObject( iType, bufferMode );
 	return mJoyStick;
@@ -19,7 +19,7 @@ OIS::JoyStick * createInputObjectJoyStick(OIS::InputManager& im, OIS::Type iType
 void destroyInputObjectJoyStick( OIS::InputManager& im, OIS::JoyStick* obj ) {
      im.destroyInputObject( (OIS::Object*) obj );
      }
-#endif
+//#endif
 void destroyInputObjectKeyboard( OIS::InputManager& im, OIS::Keyboard* obj ) {
      im.destroyInputObject( (OIS::Object*) obj );
      }
@@ -52,10 +52,10 @@ WRAPPER_REGISTRATION_InputManager = \
     InputManager_exposer.def( "createInputObjectMouse", &createInputObjectMouse,  bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >() );
     InputManager_exposer.def( "destroyInputObjectKeyboard", &destroyInputObjectKeyboard);
     InputManager_exposer.def( "destroyInputObjectMouse", &destroyInputObjectMouse);
-#if !defined __APPLE_CC__
+//#if !defined __APPLE_CC__
     InputManager_exposer.def( "destroyInputObjectJoyStick", &destroyInputObjectJoyStick);
     InputManager_exposer.def( "createInputObjectJoyStick", &createInputObjectJoyStick,  bp::return_value_policy< bp::reference_existing_object, bp::default_call_policies >() );
-#endif
+//#endif
 """
 WRAPPER_REGISTRATION_General = \
 """
