@@ -69,18 +69,31 @@ def ManualExclude ( mb ):
     for e in excludes:
         main_ns.variable(e).exclude()
     if environment.isMac():
+        print dir ( main_ns.class_('::OIS::JoyStick'))
         for c in main_ns.classes():
-            if 'JoyStick' in c.name:
-                print "excluding:", c
-                c.exclude()
+            if not c.exportable:
+                print "Excluding Class", c
+###                c.exclude()
+#            if c.access_type != 'public':
+#                c.exclude()
+  #          if 'JoyStick' in c.name:
+  #              print "excluding:", c
+  #              c.exclude()#
         for c in main_ns.member_functions():
-            if 'JoyStick' in c.name:
-                print "excluding:", c
-                c.exclude()
+            if not c.exportable or c.access_type == 'private':
+                print "Excuding func", c
+ ###               c.exclude()
+ ##           if 'JoyStick' in c.name:
+ #               print "excluding:", c
+ #               c.exclude()
         for c in main_ns.variables():
-            if 'JoyStick' in c.name:
-                print "excluding:", c
-                c.exclude()
+            if c.access_type != 'public':
+                print "Excluding var:", c
+###                c.exclude()
+#            if 'JoyStick' in c.name:
+#                print "excluding:", c
+#                c.exclude()
+
 
 ############################################################
 ##

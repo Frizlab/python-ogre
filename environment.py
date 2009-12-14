@@ -36,8 +36,8 @@ def is64():
     return False
 
 def numCores():
- if isMac():
-    return 1
+ #if isMac():
+ #   return 1
  if hasattr(os, "sysconf"):
      # Linux
      if os.sysconf_names.has_key("SC_NPROCESSORS_ONLN"):
@@ -95,6 +95,11 @@ elif isMac(): ## it's Mac OS X
             sdks.append(os.path.join(base,x))
     sdks.sort()
     MAC_SDK=sdks[-1]
+    MAC_ARCH = os.uname()[4] # need to force the architecture on the compile and link
+    MAC_ARCH_b = 'x86' # FIX -- need to detect if on ppc and change this for boost build
+    MAC_ADDR = '32' # default to 32 bit
+    if '64' in MAC_ARCH:
+        MAC_ADDR = '64' # need to build the right boost libraries FIX = guessing here
 
 else:
     raise (SystemExit, "Don't know what this system is (checked for Windows, Linux and Mac)!")
@@ -629,7 +634,7 @@ class boost(module):
             [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
             [0, 'chmod -R +rw *', os.path.join(os.getcwd(), base) ],
             [0, './bootstrap.sh  --without-icu --with-libraries=python,thread,date_time --prefix=%s' %( PREFIX), os.path.join(os.getcwd(), base) ],
-            [0, './bjam -j%i release install --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, PREFIX), os.path.join(os.getcwd(), base) ],
+            [0, './bjam -j%i release install architecture=%s address-model=%s --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, MAC_ARCH_b, MAC_ADDR, PREFIX), os.path.join(os.getcwd(), base) ],
 #            [0, "./configure --with-toolset=darwin --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam" % PREFIX, os.path.join(os.getcwd(), base)],
 #            [0, 'make', os.path.join(os.getcwd(), base)],
 #            [0, 'make install', os.path.join(os.getcwd(), base)],
@@ -865,7 +870,7 @@ class ois(pymodule):
     ]
     ModuleName = 'OIS'
     if os.sys.platform == 'darwin':
-        pass # LINKFLAGS = '-framework OIS '
+        LINKFLAGS = '-framework IOKit '
 
 class ogrerefapp(pymodule):
     ## making this false as replaced by OgreODE etc..
