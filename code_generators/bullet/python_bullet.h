@@ -6,8 +6,10 @@
 
 #include "LinearMath/btStackAlloc.h"
 #include "LinearMath/btPoolAllocator.h"
+#include "BulletCollision/CollisionDispatch/btGhostObject.h"
 #include "BulletCollision/CollisionDispatch/btSimulationIslandManager.h"
 #include "BulletDynamics/Character/btCharacterControllerInterface.h"
+#include "BulletDynamics/Character/btKinematicCharacterController.h"
 #include "BulletCollision/BroadphaseCollision/btBroadphaseInterface.h"
 
 #include "BulletCollision/CollisionDispatch/btSphereSphereCollisionAlgorithm.h"
