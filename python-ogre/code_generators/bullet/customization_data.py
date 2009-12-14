@@ -5,7 +5,10 @@ def header_files( version ):
             ,'LinearMath/btStackAlloc.h'
             ,'LinearMath/btPoolAllocator.h'
             ,'BulletCollision/CollisionDispatch/btSimulationIslandManager.h'
+            ,'BulletCollision/CollisionDispatch/btGhostObject.h'
             ,'BulletDynamics/Character/btCharacterControllerInterface.h'
+            ,'BulletDynamics/Character/btKinematicCharacterController.h'
+
             ,'BulletCollision/BroadphaseCollision/btBroadphaseInterface.h'
             
             ,'BulletCollision/CollisionDispatch/btSphereSphereCollisionAlgorithm.h'
