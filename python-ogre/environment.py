@@ -1705,7 +1705,7 @@ class bullet(pymodule):
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
-    libs = [boost.lib, 'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody', 'libBulletMultiThreaded']
+    libs = [boost.lib, 'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody', 'libBulletMultiThreaded','libGIMPACTUtils']
     if isWindows():
         libs.append('libbulletMath')
     else:

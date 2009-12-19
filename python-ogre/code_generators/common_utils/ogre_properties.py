@@ -24,20 +24,24 @@ from pyplusplus import decl_wrappers
 class ogre_property_recognizer_t( decl_wrappers.name_based_recognizer_t ):
     def __init__( self ):
         decl_wrappers.name_based_recognizer_t.__init__( self )
+        self.extendedtypes=['Vector','ColourValue', 'Quaternion', 'Matrix']
+        
+    def addSetterType ( self, type_ ):
+        self.extendedtypes.append ( type_ )
         
     def __get_accessors( self, mem_funs ):
         getters = []
         setters = []
         for mem_fun in mem_funs:
-#             print "Checking", mem_fun
+#            print "Checking", mem_fun
             if not self.is_accessor( mem_fun ):
 #                 print "NOT ACCESSOR"
                 continue 
             elif self.is_getter( mem_fun ):
-#                 print "IS GETTER"
+ #               print "IS GETTER"
                 getters.append( mem_fun )
             elif self.is_setter( mem_fun ):
-#                 print "IS SETTER"
+#                print "IS SETTER"
                 setters.append( mem_fun )
             else:
 #                 print "CONTINUE"
@@ -45,25 +49,32 @@ class ogre_property_recognizer_t( decl_wrappers.name_based_recognizer_t ):
         return ( getters, setters ) 
                
     def check_type_compatibility( self, fget, fset ):
-        extendedtypes=['Vector','ColourValue', 'Quaternion', 'Matrix']
+#        print "*** IN check_type_compatibility", fset
         if decl_wrappers.name_based_recognizer_t.check_type_compatibility( self, fget, fset ):
+#            print "TRUE1"
             return True
+#        print fset.arguments[0].type.decl_string    
         t2 = fset.arguments[0].type
-        for t in extendedtypes:
+        for t in self.extendedtypes:
             if t in t2.decl_string:
+#                print "TRUE2"
                 return True
+#        print "FALSE"
         return False
             
     def is_setter( self, mem_fun ):
+#        print "IN IS_SETTER", mem_fun
         if len( mem_fun.arguments ) != 1:
             return False
         if not declarations.is_void( mem_fun.return_type ):
             return False
         if mem_fun.has_const:
             return False
+#        print "RETURNING TRUE"    
         return True
         
     def create_property( self, fget, fset ):
+#        print "**** IN Create Property"
         if not self.check_type_compatibility( fget, fset ):
             return None
         found = self.find_out_prefixes( fget.name, fset.name )
