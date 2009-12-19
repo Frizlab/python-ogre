@@ -107,6 +107,12 @@ for x in range (90):
     pos = Object.getMotionState().Position
     print x, "height: " + str(pos.y)
 
+v=bullet.btVector3(1.0,2.0,3)
+print v
+print v.X, v.Y, v.Z
+v.X=4.55
+print v.X, v.Y, v.Z
+    
 # note we need to delete the world before the Object as there are issues with the destructor on Objects causing
 # virtual functions being called errors
 del world

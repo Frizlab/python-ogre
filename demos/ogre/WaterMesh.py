@@ -29,9 +29,18 @@ USE_ARRAY = True  # use array instead of ctypes
 PLANE_SIZE =3000.0
 
 CIRCLES_MATERIAL ="Examples/Water/Circles"
+
+class specialVector3 ( object ):
+    __slots__ = ('x','y','z')
+    def __init__ (self):
+        self.x=0.0
+        self.y=0.0
+        self.z=0.0
+
 class buffer( object ):
     def __init__ (self, buffer):
         self.buffer = buffer
+        self.ro = False  #read only
         try: #aaume it's an index buffer
             self.type = buffer.getType()  # 16 or 32 bit indicies 
             self.numItems = buffer.getNumIndexes()
@@ -58,6 +67,14 @@ class buffer( object ):
             if self.itemSize == 4:
                 self.rawBuffer=(ctypes.c_uint32 * (self.numItems)).from_address(self.buffAddress)
             elif self.itemSize == 2:
+#                if len(args) == 3:
+#                    if args[2] == ogre.HardwareBuffer.HBL_READ_ONLY:
+#                        self.ro = True
+#                        temp= [0]*self.numItems
+##                        self.rawBuffer=array.array('H')
+#                        self.rawBuffer.fromlist(temp)
+#                        self.buffer.readData(args[0], args[1], self.rawBuffer.buffer_info()[0] )
+#                        return
                 self.rawBuffer=(ctypes.c_ushort * (self.numItems)).from_address(self.buffAddress)
         else: # assume it's a vertex buffer with floats
             self.rawBuffer=(ctypes.c_float * (self.itemSize*self.numItems)).from_address(self.buffAddress)
@@ -359,6 +376,118 @@ class WaterMesh:
         ## AJM so here's a case where accessing a C++ object from python shows a performance hit !!
         ## in this case we look through and the original C++ code creates and access ovre.Vector3 objects
         ## multiple times on each pass.
+        diff1=specialVector3()
+        diff2=specialVector3()
+        #fn=specialVector3()
+        
+        if True:
+            for count in range(self.numFaces) :
+                p0 = vinds[3*count]  
+                p1 = vinds[3*count+1]  
+                p2 = vinds[3*count+2]  
+                # this is slow
+                # v0= ogre.Vector3 (self.vertexBuffers[buf][3*p0], self.vertexBuffers[buf][3*p0+1], self.vertexBuffers[buf][3*p0+2]) 
+                # v1 = ogre.Vector3 (self.vertexBuffers[buf][3*p1], self.vertexBuffers[buf][3*p1+1], self.vertexBuffers[buf][3*p1+2]) 
+                # v2 = ogre.Vector3 (self.vertexBuffers[buf][3*p2], self.vertexBuffers[buf][3*p2+1], self.vertexBuffers[buf][3*p2+2]) 
+                
+                # so use python arrays instead of Vector3's
+                i0 = 3*p0
+                i1 = 3*p1
+                i2 = 3*p2
+                v0 = [buf[i0], buf[i0+1], buf[i0+2]]
+                v1 = [buf[i1], buf[i1+1], buf[i1+2]] 
+                v2 = [buf[i2], buf[i2+1], buf[i2+2]] 
+                
+                # Do the vector subtraction by 'hand' instead of original
+                # diff2 = v0 - v1  
+                diff1.x=v2[0]-v1[0]
+                diff1.y=v2[1]-v2[1]
+                diff1.z=v2[2]-v2[2]  
+                diff2.x=v0[0]-v1[0]
+                diff2.y=v0[1]-v2[1]
+                diff2.z=v0[2]-v2[2]  
+                
+                if False:
+                    # and now we need to do a crossProduct by hand..
+                    # fn = ogre.Vector3(*diff1).crossProduct(ogre.Vector3(*diff2)) 
+                    fn.x = diff1.y * diff2.z - diff1.z * diff2.y
+                    fn.y = diff1.z * diff2.x - diff1.x * diff2.z
+                    fn.z = diff1.x * diff2.y - diff1.y * diff2.x
+                    # And of course now add the values into the normals
+                    # self.vNormals[p0] += fn  
+                    # self.vNormals[p1] += fn  
+                    # self.vNormals[p2] += fn  
+                    vNormals[i0] += fn.x 
+                    vNormals[i0+1] += fn.y 
+                    vNormals[i0+2] += fn.z 
+                    vNormals[i1] += fn.x
+                    vNormals[i1+1] += fn.y 
+                    vNormals[i1+2] += fn.z 
+                    vNormals[i2] += fn.x
+                    vNormals[i2+1] += fn.y 
+                    vNormals[i2+2] += fn.z 
+     
+                fn = [diff1.y * diff2.z - diff1.z * diff2.y,
+                    diff1.z * diff2.x - diff1.x * diff2.z,
+                    diff1.x * diff2.y - diff1.y * diff2.x]
+                    #diff1[1] * diff2[2] - diff1[2] * diff2[1],
+                    #diff1[2] * diff2[0] - diff1[0] * diff2[2],
+                    #diff1[0] * diff2[1] - diff1[1] * diff2[0]]
+                # And of course now add the values into the normals
+                # self.vNormals[p0] += fn  
+                # self.vNormals[p1] += fn  
+                # self.vNormals[p2] += fn  
+                vNormals[i0] += fn[0] 
+                vNormals[i0+1] += fn[1] 
+                vNormals[i0+2] += fn[2] 
+                vNormals[i1] += fn[0] 
+                vNormals[i1+1] += fn[1] 
+                vNormals[i1+2] += fn[2] 
+                vNormals[i2] += fn[0] 
+                vNormals[i2+1] += fn[1] 
+                vNormals[i2+2] += fn[2] 
+ 
+        if True:
+            ## now normalize vertex normals
+            complexity = self.complexity
+            for y in range(complexity) :
+                for x in range(complexity) :
+                    numPoint = y*(complexity+1) + x  
+                    v = 3*numPoint
+                    n = ogre.Vector3(vNormals[v],vNormals[v+1],vNormals[v+2])  
+                    n.normalise()  
+                    v = 3*numPoint
+                    pNormalsAddress [v] = n.x
+                    pNormalsAddress [v+1] = n.y
+                    pNormalsAddress [v+2] = n.z
+        
+    
+        self.indexBuffer.unlock() 
+        self.normVertexBuffer.unlock() 
+
+
+    def calculateNormals1(self):
+        ## zero normals
+        for i in range(self.numVertices*3) :
+            self.vNormals[i]=  0
+            
+        ## first, calculate normals for faces, add them to proper vertices
+        
+        # use helper function
+        vinds = buffer ( self.indexBuffer)
+        vinds.lock (0, self.indexBuffer.getSizeInBytes(), ogre.HardwareBuffer.HBL_READ_ONLY)
+        
+        pNormals = self.normVertexBuffer.lock(
+            0, self.normVertexBuffer.getSizeInBytes(), ogre.HardwareBuffer.HBL_DISCARD) 
+        pNormalsAddress=(ctypes.c_float * (self.normVertexBuffer.getSizeInBytes()*3)).from_address(ogre.castAsInt(pNormals))
+       
+        # make life easier (and faster) by using a local variables
+        buf = self.vertexBuffers[self.currentBufNumber]
+        vNormals = self.vNormals
+        
+        ## AJM so here's a case where accessing a C++ object from python shows a performance hit !!
+        ## in this case we look through and the original C++ code creates and access ovre.Vector3 objects
+        ## multiple times on each pass.
         for count in range(self.numFaces) :
             p0 = vinds[3*count]  
             p1 = vinds[3*count+1]  
@@ -416,7 +545,7 @@ class WaterMesh:
     
         self.indexBuffer.unlock() 
         self.normVertexBuffer.unlock() 
-    
+        
 #     /* ======================================================================== */
     def calcs ( self ):
         C = self.PARAM_C  ## ripple speed

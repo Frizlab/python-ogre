@@ -103,12 +103,14 @@ def ManualExclude ( mb ):
             ,'::btSimpleBroadphase::createProxy'
             ,'::btDispatcher::getInternalManifoldPointer'
             
-            ## TOFIX Wheels seem broken ?? ## had to remove raycastcehicle all together
-            ,'::btRaycastVehicle::addWheel'
-            ,'::btRaycastVehicle::getWheelInfo'
-            ,'::btRaycastVehicle::updateWheelTransformsWS'
-            ,'::btRaycastVehicle::rayCast'
-    
+            ,'::btRaycastVehicle::setRaycastWheelInfo' ## only implemented in header, causes undefined symbol import 
+            ,'::btGImpactCollisionAlgorithm::getAverageTreeCollisionTime'
+            ,'::btGImpactCollisionAlgorithm::getAverageTriangleCollisionTime'
+            ,'::btGImpactBvh::getAverageTreeCollisionTime'
+            ,'::btGImpactBvh::getAverageTriangleCollisionTime'
+            ,'::btGImpactQuantizedBvh::getAverageTreeCollisionTime'
+            ,'::btSolve2LinearConstraint::resolveBilateralPairConstraint'
+            ,'::btSolve2LinearConstraint::resolveUnilateralPairConstraint'
             ## stuff in headers but not in library
             ,'::btCollisionAlgorithm::getDispatcherId'
             ,'::btAxisSweep3Internal<unsigned int>::processAllOverlappingPairs' 
@@ -157,15 +159,21 @@ def ManualExclude ( mb ):
             ,'::btAlignedObjectArray< void* >'
             ,'::btAlignedObjectArray< btMultiSapBroadphase::btBridgeProxy* >'
             ,'::btAlignedObjectArray< btMultiSapBroadphase::btMultiSapProxy* >'
-            ,'::btRaycastVehicle'
             ,'::btAlignedAllocator< btRaycastVehicle*, 16u >'
             ,'::btThreadSupportInterface'
             ,'::btAlignedAllocator< btRigidBody*, 16u >'
 #            ,'::btAlignedAllocator< PosixThreadSupport::btSpuStatus, 16u >' # linux 
 #            ,'::btAlignedObjectArray< PosixThreadSupport::btSpuStatus >'
+             ,'::btAlignedAllocator<btCollisionAlgorithm*,16u>'
+             ,'::btAlignedAllocator< btCollisionShape*, 16u >'
+             ,'::btAlignedAllocator< btGImpactMeshShapePart*, 16u >'
+             ,'::btAlignedAllocator< btHullTriangle*, 16u >'
+             ,'::btAlignedAllocator< btMaterial*, 16u >'
+             ,'::btAlignedAllocator< btPlane*, 16u >'
+             ,'::btGeometryUtil'
+
             ]
             
-
     for e in excludes:
       try:   
          global_ns.class_(e).exclude()
@@ -178,7 +186,8 @@ def ManualExclude ( mb ):
 #          c.exclude()
              
     excludes = ['::btPolyhedralConvexShape::m_optionalHull'  ## needs Hull from Extras
-                ,'::btRaycastVehicle::m_wheelInfo' ## TOFIX -- might be a bullet issue with wheels
+                #'::btRaycastVehicle::m_wheelInfo' ## TOFIX -- might be a bullet issue with wheels
+                ,'::btCompoundCollisionAlgorithm::m_childCollisionAlgorithms'
             ]
     for e in excludes:
       try:
@@ -203,7 +212,7 @@ def ManualExclude ( mb ):
                 o.exclude()
     global_ns.class_('btQuaternion').operators("operator-", arg_types=[]).exclude()
     
-    noncopy = ['btDbvtBroadphase']
+    noncopy = ['btDbvtBroadphase','btRaycastVehicle']
     for c in noncopy:
         main_ns.class_(c).noncopyable = True
     
@@ -220,7 +229,22 @@ def ManualInclude ( mb ):
     else:
         main_ns = global_ns    
     global_ns.enumerations('PHY_ScalarType').include()
-        
+    #auto include doesn't check for classes bt32***
+    main_ns.class_('bt32BitAxisSweep3').include()
+
+    namesp = ['::','btTransform']
+    operators = ['::btVector3','::btQuaternion','::btScalar','::btMatrix3x3','::btTransform','bool']
+    badOp=['::btQuaternion (*)( ::btQuaternion const & )']
+    ## to check on btAlignedAllocator equality operator
+
+    for o in global_ns.class_("::btQuaternion").operators():
+        print o, o.ignore, o.name, o.decl_string
+    for op in global_ns.operators():
+        if op.parent._name in namesp:
+            if op.return_type.decl_string in operators and op.decl_string not in badOp:
+                print "Including Main NameSpace Operators Name %s Return Type %s" %( op._name, op.return_type.decl_string)
+                op.include()
+  
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -240,8 +264,7 @@ def ManualFixes ( mb ):
             for a in c.arguments:
                 if a.default_value and "&0.0" in a.default_value:
                     a.default_value = "::btVector3( (0.0), (0.0), (0.0) )"
-     
-      
+   
     ## Bug ingccxml where it doesn't get the namespace for default values
     ## btCollisionWorld::addCollisionObject
     f=main_ns.class_('btCollisionWorld').mem_fun('addCollisionObject')
@@ -264,6 +287,12 @@ def ManualFixes ( mb ):
         for a in fun.arguments:
             if a.default_value and "&0.0" in a.default_value:
                 a.default_value = "::btVector3( (0.0), (0.0), (0.0) )"
+
+    f=main_ns.class_('btConvexPointCloudShape').mem_fun('setPoints')
+    for a in f.arguments:
+        if a._name == 'localScaling':
+            a.default_value= "::btVector3( (1.0), (1.0), (1.0) )"
+
             
 ############################################################
 ##
@@ -477,13 +506,27 @@ def generate_code():
     NoPropClasses = [""]
     for cls in main_ns.classes():
         if cls.name not in NoPropClasses:
-            cls.add_properties( recognizer=ogre_properties.ogre_property_recognizer_t() )
+            rec = ogre_properties.ogre_property_recognizer_t()
+            rec.addSetterType ( 'btScalar' ) # this type is a 'float/double' however we need to tell py++ such so it creates setters
+            cls.add_properties( recognizer=rec )
             
     common_utils.Auto_Document( mb, MAIN_NAMESPACE )
             
     ## add additional version information to the module to help identify it correctly 
     common_utils.addDetailVersion ( mb, environment, environment.bullet )
-                                      
+
+    mem_fun = main_ns.member_function('::btVector3::setX')
+    ##print "setter:", property_recognizer_i  (mem_fun)
+    if len( mem_fun.arguments ) != 1:
+        print 'False1'
+    if not declarations.is_void( mem_fun.return_type ):
+        print 'False2'
+    if mem_fun.has_const:
+        print 'False3'
+    if mem_fun.overloads:
+        print 'False4' 
+    print "OK"
+            
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.
@@ -505,16 +548,19 @@ def generate_code():
     mb.split_module(environment.bullet.generated_dir, huge_classes, use_files_sum_repository=False)
 
     ## now we need to ensure a series of headers and additional source files are
-    ## copied to the generated directory..
-    additional_dirs=[]
-    for d in additional_dirs:
-        for f in os.listdir(d):
-            if f.endswith('cpp') or f.endswith('.h'):
-                sourcefile = os.path.join(d, f)
-                destfile = os.path.join(environment.bullet.generated_dir, f ) 
-                if not common_utils.samefile( sourcefile ,destfile ):
-                    shutil.copy( sourcefile, environment.bullet.generated_dir )
-                    print "Updated ", f, "as it was missing or out of date"
+    ## copied to the generaated directory..
+    additional_files=[
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_bullet_masterlist.h' )
+            ]
+    for sourcefile in additional_files:
+        p,filename = os.path.split(sourcefile)
+        destfile = os.path.join(environment.bullet.generated_dir, filename )
+
+        if not common_utils.samefile( sourcefile ,destfile ):
+            shutil.copy( sourcefile, environment.bullet.generated_dir )
+            print "Updated ", filename, "as it was missing or out of date"
+
+
         
 if __name__ == '__main__':
     start_time = time.clock()
