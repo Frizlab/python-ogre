@@ -676,10 +676,10 @@ class boost(module):
                 lib="libboost_python"
             else:
                 import subprocess
-                #gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
-                #import re
-                #gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
-                #lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
+                gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
+                import re
+                gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
+                lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
         else:
             lib = Config.LIB_Boost
 
