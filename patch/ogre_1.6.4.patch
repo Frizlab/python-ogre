@@ -74,3 +74,16 @@ Index: ogre/OgreMain/src/OgreResourceGroupManager.cpp
  			for (StringVector::const_iterator p = patterns.begin(); p != patterns.end(); ++p)
  			{
  				FileInfoListPtr fileList = findResourceFileInfo(grp->name, *p);
+Index: ogre/acinclude.m4
+===================================================================
+--- ogre/acinclude.m4	2009-08-10 14:50:14.000000000 +0200
++++ ogre/acinclude.m4	2009-11-13 20:00:11.059944290 +0100
+@@ -444,7 +444,7 @@
+ ])
+ 
+ AC_DEFUN([OGRE_CHECK_CEGUI], [
+-    PKG_CHECK_MODULES(CEGUI, CEGUI >= 0.5.0, 
++    PKG_CHECK_MODULES(CEGUI, [CEGUI >= 0.5.0, CEGUI < 0.7.0], 
+             [build_cegui_sample=true], [build_cegui_sample=false])
+     if test x$build_cegui_sample = xtrue; then
+         AC_CONFIG_FILES([Samples/Common/CEGUIRenderer/Makefile \
