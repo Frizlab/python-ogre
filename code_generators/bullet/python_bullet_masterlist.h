@@ -219,7 +219,7 @@
     #include "BulletMultiThreaded/SpuNarrowPhaseCollisionTask/SpuGatheringCollisionTask.h"
 #elif defined (USE_PTHREADS)
     #include "BulletMultiThreaded/PosixThreadSupport.h"
-    #include "BulletMultiThreaded/SpuNarrowPhaseCollisionTask/SpuGatheringCollisionTask.h"s
+    #include "BulletMultiThreaded/SpuNarrowPhaseCollisionTask/SpuGatheringCollisionTask.h"
 #endif //USE_LIBSPE2
 
 
