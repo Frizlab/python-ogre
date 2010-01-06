@@ -128,6 +128,13 @@ def ManualExclude ( mb ):
             # new in .74
             ,'::btSliderConstraint::testLinLimits2'
             ,'::btDynamicsWorld::setInternalTickCallback' # linux
+            
+            # new as jan 2010
+            ,'::btAlignedObjectArray< float >::at'
+            ,'::btAlignedObjectArray< unsigned short >::at'
+            ,'::btAlignedObjectArray< unsigned int >::at'
+            ,'::btAlignedObjectArray< int >::at'
+            ,'::btAlignedObjectArray< short >::at'
             ]
     for e in excludes:
         try:
