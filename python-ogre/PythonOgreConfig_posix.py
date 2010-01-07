@@ -57,7 +57,7 @@ if os.sys.platform == 'darwin':  # for the Mac
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR,'ogre')
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'ogreaddons')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.6.2' )
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.7.1' )
 PATH_OIS =          os.path.join(BASE_DIR, 'ois')
 
 if SDK:
