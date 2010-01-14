@@ -22,7 +22,13 @@ import ctypes as ctypes
 import math
 import ogre.renderer.OGRE as ogre
 import array as array
-
+import time
+CYTHONOK = False
+try:
+    from Helper_CalcNorms import calcNormalsFast, calcNormalsPrep
+    CYTHONOK = True
+except:
+    pass
 
 USE_ARRAY = True  # use array instead of ctypes
 
@@ -30,6 +36,20 @@ PLANE_SIZE =3000.0
 
 CIRCLES_MATERIAL ="Examples/Water/Circles"
 
+
+def fixNormals1 ( complexity, vNormals, pNormalsAddress):  
+    for y in range(complexity) :
+        for x in range(complexity) :
+            numPoint = y*(complexity+1) + x  
+            v = 3*numPoint
+            n = ogre.Vector3(vNormals[v],vNormals[v+1],vNormals[v+2])  
+            n.normalise()  
+            v = 3*numPoint
+            pNormalsAddress [v] = n.x
+            pNormalsAddress [v+1] = n.y
+            pNormalsAddress [v+2] = n.z
+            
+            
 class specialVector3 ( object ):
     __slots__ = ('x','y','z')
     def __init__ (self):
@@ -129,10 +149,12 @@ class WaterMesh:
         self.PARAM_D = 0.4   ## distance
         self.PARAM_U = 0.05   ## viscosity
         self.PARAM_T = 0.13   ## time
-        self.useFakeNormals = False  
-    
+        if CYTHONOK:
+            self.normalsToUse = 2  # we have the cython module available
+        else:
+            self.normalsToUse = 1 
         ## allocate space for normal calculation
-        self.vNormals=[]
+        self.vNormals=array.array('f')
         for x in range ( self.numVertices * 3 ):
             self.vNormals.append(0)
     
@@ -352,14 +374,9 @@ class WaterMesh:
     
         #ogre.setUint16 ( pNormals, buf )
         self.normVertexBuffer.unlock() 
-    
+          
 #     /* ========================================================================= */
-    def calculateNormals(self):
-        ## zero normals
-        for i in range(self.numVertices*3) :
-            self.vNormals[i]=  0
-            
-        ## first, calculate normals for faces, add them to proper vertices
+    def calculateNormalsCython(self):
         
         # use helper function
         vinds = buffer ( self.indexBuffer)
@@ -369,104 +386,15 @@ class WaterMesh:
             0, self.normVertexBuffer.getSizeInBytes(), ogre.HardwareBuffer.HBL_DISCARD) 
         pNormalsAddress=(ctypes.c_float * (self.normVertexBuffer.getSizeInBytes()*3)).from_address(ogre.castAsInt(pNormals))
        
-        # make life easier (and faster) by using a local variables
-        buf = self.vertexBuffers[self.currentBufNumber]
-        vNormals = self.vNormals
-        
         ## AJM so here's a case where accessing a C++ object from python shows a performance hit !!
-        ## in this case we look through and the original C++ code creates and access ovre.Vector3 objects
-        ## multiple times on each pass.
-        diff1=specialVector3()
-        diff2=specialVector3()
-        #fn=specialVector3()
-        
-        if True:
-            for count in range(self.numFaces) :
-                p0 = vinds[3*count]  
-                p1 = vinds[3*count+1]  
-                p2 = vinds[3*count+2]  
-                # this is slow
-                # v0= ogre.Vector3 (self.vertexBuffers[buf][3*p0], self.vertexBuffers[buf][3*p0+1], self.vertexBuffers[buf][3*p0+2]) 
-                # v1 = ogre.Vector3 (self.vertexBuffers[buf][3*p1], self.vertexBuffers[buf][3*p1+1], self.vertexBuffers[buf][3*p1+2]) 
-                # v2 = ogre.Vector3 (self.vertexBuffers[buf][3*p2], self.vertexBuffers[buf][3*p2+1], self.vertexBuffers[buf][3*p2+2]) 
-                
-                # so use python arrays instead of Vector3's
-                i0 = 3*p0
-                i1 = 3*p1
-                i2 = 3*p2
-                v0 = [buf[i0], buf[i0+1], buf[i0+2]]
-                v1 = [buf[i1], buf[i1+1], buf[i1+2]] 
-                v2 = [buf[i2], buf[i2+1], buf[i2+2]] 
-                
-                # Do the vector subtraction by 'hand' instead of original
-                # diff2 = v0 - v1  
-                diff1.x=v2[0]-v1[0]
-                diff1.y=v2[1]-v2[1]
-                diff1.z=v2[2]-v2[2]  
-                diff2.x=v0[0]-v1[0]
-                diff2.y=v0[1]-v2[1]
-                diff2.z=v0[2]-v2[2]  
-                
-                if False:
-                    # and now we need to do a crossProduct by hand..
-                    # fn = ogre.Vector3(*diff1).crossProduct(ogre.Vector3(*diff2)) 
-                    fn.x = diff1.y * diff2.z - diff1.z * diff2.y
-                    fn.y = diff1.z * diff2.x - diff1.x * diff2.z
-                    fn.z = diff1.x * diff2.y - diff1.y * diff2.x
-                    # And of course now add the values into the normals
-                    # self.vNormals[p0] += fn  
-                    # self.vNormals[p1] += fn  
-                    # self.vNormals[p2] += fn  
-                    vNormals[i0] += fn.x 
-                    vNormals[i0+1] += fn.y 
-                    vNormals[i0+2] += fn.z 
-                    vNormals[i1] += fn.x
-                    vNormals[i1+1] += fn.y 
-                    vNormals[i1+2] += fn.z 
-                    vNormals[i2] += fn.x
-                    vNormals[i2+1] += fn.y 
-                    vNormals[i2+2] += fn.z 
-     
-                fn = [diff1.y * diff2.z - diff1.z * diff2.y,
-                    diff1.z * diff2.x - diff1.x * diff2.z,
-                    diff1.x * diff2.y - diff1.y * diff2.x]
-                    #diff1[1] * diff2[2] - diff1[2] * diff2[1],
-                    #diff1[2] * diff2[0] - diff1[0] * diff2[2],
-                    #diff1[0] * diff2[1] - diff1[1] * diff2[0]]
-                # And of course now add the values into the normals
-                # self.vNormals[p0] += fn  
-                # self.vNormals[p1] += fn  
-                # self.vNormals[p2] += fn  
-                vNormals[i0] += fn[0] 
-                vNormals[i0+1] += fn[1] 
-                vNormals[i0+2] += fn[2] 
-                vNormals[i1] += fn[0] 
-                vNormals[i1+1] += fn[1] 
-                vNormals[i1+2] += fn[2] 
-                vNormals[i2] += fn[0] 
-                vNormals[i2+1] += fn[1] 
-                vNormals[i2+2] += fn[2] 
- 
-        if True:
-            ## now normalize vertex normals
-            complexity = self.complexity
-            for y in range(complexity) :
-                for x in range(complexity) :
-                    numPoint = y*(complexity+1) + x  
-                    v = 3*numPoint
-                    n = ogre.Vector3(vNormals[v],vNormals[v+1],vNormals[v+2])  
-                    n.normalise()  
-                    v = 3*numPoint
-                    pNormalsAddress [v] = n.x
-                    pNormalsAddress [v+1] = n.y
-                    pNormalsAddress [v+2] = n.z
-        
-    
+        ## in this case we use an external cython module
+        calcNormalsFast ( self.numFaces, vinds, self.vertexBuffers[self.currentBufNumber], self.vNormals, 
+                            self.complexity, pNormalsAddress, self.numVertices)
+
         self.indexBuffer.unlock() 
         self.normVertexBuffer.unlock() 
 
-
-    def calculateNormals1(self):
+    def calculateNormalsPythonFast(self):
         ## zero normals
         for i in range(self.numVertices*3) :
             self.vNormals[i]=  0
@@ -547,68 +475,60 @@ class WaterMesh:
         self.normVertexBuffer.unlock() 
         
 #     /* ======================================================================== */
-    def calcs ( self ):
-        C = self.PARAM_C  ## ripple speed
-        D = self.PARAM_D  ## distance
-        U = self.PARAM_U  ## viscosity
-        T = self.PARAM_T  ## time
-        self.TERM1 = ( 4.0 - 8.0*C*C*T*T/(D*D) ) / (U*T+2)  
-        self.TERM2 = ( U*T-2.0 ) / (U*T+2.0)  
-        self.TERM3 = ( 2.0 * C*C*T*T/(D*D) ) / (U*T+2)  
         
     def updateMesh(self, timeSinceLastFrame):
         self.lastFrameTime = timeSinceLastFrame  
         self.lastTimeStamp += timeSinceLastFrame  
-    
+        comp = self.complexity
         ## do rendering to get ANIMATIONS_PER_SECOND
-        while(self.lastAnimationTimeStamp <= self.lastTimeStamp):
-    
-            ## switch buffer numbers
-            self.currentBufNumber = (self.currentBufNumber + 1) % 3  
 
-            buf = self.vertexBuffers[self.currentBufNumber]
-            buf1 = self.vertexBuffers[((self.currentBufNumber+2)%3)]  
-            buf2 = self.vertexBuffers[((self.currentBufNumber+1)%3)]
-    
-    #       /* we use an algorithm from
-    #        * http:##collective.valve-erc.com/index.php?go=water_simulation
-    #        * The params could be dynamically changed every frame ofcourse
-    #        */
-            if self.dirty:
-                self.calcs()
-                self.dirty = False
-#            C = self.PARAM_C  ## ripple speed
-#            D = self.PARAM_D  ## distance
-#            U = self.PARAM_U  ## viscosity
-##            T = self.PARAM_T  ## time
-#            TERM1 = ( 4.0 - 8.0*C*C*T*T/(D*D) ) / (U*T+2)  
-#            TERM2 = ( U*T-2.0 ) / (U*T+2.0)  
-#            TERM3 = ( 2.0 * C*C*T*T/(D*D) ) / (U*T+2)  
-            for y in range(self.complexity) : ## don't do anything with border values
-                row = 3*y*(self.complexity+1) + 1 
-                row1 = row
-                row1up = 3*(y-1)*(self.complexity+1) +1
-                row1down = 3*(y+1)*(self.complexity+1) +1 
-                row2 = row 
-                for x in range (self.complexity) :
-                    _inc = 3*x
-                    buf[row+(_inc)] =\
-                        self.TERM1 * buf1[row1 + _inc ] +\
-                        self.TERM2 * buf2[row2 + _inc ] +\
-                        self.TERM3 * ( buf1[row1 + _inc -3] +\
-                                    buf1[row1 + _inc +3] +\
-                                    buf1[row1up + _inc] +\
-                                    buf1[row1down + _inc]
-                                    )
-                                    
-                                    
-            self.lastAnimationTimeStamp += (1.0 / ANIMATIONS_PER_SECOND) 
-    
-        if (self.useFakeNormals):
+        if not CYTHONOK:
+            #       /* we use an algorithm from
+            #        * http:##collective.valve-erc.com/index.php?go=water_simulation
+            #        * The params could be dynamically changed every frame of course
+            #        */
+            C = self.PARAM_C  ## ripple speed
+            D = self.PARAM_D  ## distance
+            U = self.PARAM_U  ## viscosity
+            T = self.PARAM_T  ## time
+            TERM1 = ( 4.0 - 8.0*C*C*T*T/(D*D) ) / (U*T+2)  
+            TERM2 = ( U*T-2.0 ) / (U*T+2.0)  
+            TERM3 = ( 2.0 * C*C*T*T/(D*D) ) / (U*T+2)  
+            while(self.lastAnimationTimeStamp <= self.lastTimeStamp):
+        
+                ## switch buffer numbers
+                self.currentBufNumber = (self.currentBufNumber + 1) % 3  
+
+                buf = self.vertexBuffers[self.currentBufNumber]
+                buf1 = self.vertexBuffers[((self.currentBufNumber+2)%3)]  
+                buf2 = self.vertexBuffers[((self.currentBufNumber+1)%3)]
+        
+                for y in xrange(comp) : ## don't do anything with border values
+                    row = 3*y*(comp+1) + 1 
+                    row1 = row
+                    row1up = 3*(y-1)*(comp+1) +1
+                    row1down = 3*(y+1)*(comp+1) +1 
+                    row2 = row 
+                    for x in xrange (comp) :
+                        _inc = 3*x
+                        buf[row+(_inc)] =\
+                            TERM1 * buf1[row1 + _inc ] +\
+                            TERM2 * buf2[row2 + _inc ] +\
+                            TERM3 * ( buf1[row1 + _inc -3] +\
+                                        buf1[row1 + _inc +3] +\
+                                        buf1[row1up + _inc] +\
+                                        buf1[row1down + _inc]
+                                        )
+                self.lastAnimationTimeStamp += (1.0 / ANIMATIONS_PER_SECOND) 
+        else:
+            calcNormalsPrep(self,ANIMATIONS_PER_SECOND)
+        if self.normalsToUse ==0:
             self.calculateFakeNormals() 
-        else :
-            self.calculateNormals() 
-    
+        elif self.normalsToUse == 1:
+            self.calculateNormalsPythonFast() 
+        else:
+            self.calculateNormalsCython() 
+        
         ## set vertex buffer
         if USE_ARRAY:
             self.posVertexBuffer.writeData(0,
