@@ -55,7 +55,7 @@ cp python-ogre-pristine/debian/dsc ./python-ogre.dsc
 
 # Update the changelog with the subversion information.
 cat > ./debian.changelog <<EOF
-python-ogre (1.6.1+svn$CHANGELOG_VERSION-0) unstable; urgency=low
+python-ogre (1.6.4+svn$CHANGELOG_VERSION-0) unstable; urgency=low
 
   * Updating for Subversion revision $CHANGELOG_VERSION.
 
@@ -131,7 +131,7 @@ cp python-ogre-pristine/debs/python-ogre-demos/dsc ../python-ogre-demos/python-o
 
 # Update the changelog with the subversion information.
 cat > ../python-ogre-demos/debian.changelog <<EOF
-python-ogre-demos (1.6.1+svn$CHANGELOG_VERSION-0) unstable; urgency=low
+python-ogre-demos (1.6.4+svn$CHANGELOG_VERSION-0) unstable; urgency=low
 
   * Updating for Subversion revision $CHANGELOG_VERSION.
 
