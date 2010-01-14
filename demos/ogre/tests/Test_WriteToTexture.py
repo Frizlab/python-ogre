@@ -54,7 +54,11 @@ def WriteToTexture(in_string, destTexture, destRectangle, font, color, justify =
                                             
     ## create pixel box using the copy of the buffer
     fontPb = ogre.PixelBox(fontBuffer.getWidth(), fontBuffer.getHeight(),fontBuffer.getDepth(), 
-                                            fontBuffer.getFormat() )   
+                                            fontBuffer.getFormat() )  
+
+    print fontPb
+    print fontPb.data
+    
     # Use Ctypes expose_address functionality...                                                                                        
     fontPb.data =  ctypes.addressof(buff)     
     
@@ -191,10 +195,14 @@ class TestApplication(sf.Application):
 
         sceneManager.ambientLight = ogre.ColourValue(0.5, 0.5, 0.5)
         
-        background = ogre.TextureManager.getSingleton().getByName("ogretext.png")
+        background = ogre.TextureManager.getSingleton().getByName("Examples/OgreLogo")
 
         font = ogre.FontManager.getSingleton().getByName("BlueHighway")
                 
+        print font
+        print background
+        
+        print dir (ogre.TextureManager.getSingleton())
         ## Make sure the texture is not WRITE_ONLY, we need to read the buffer to do the blending with the font (get the alpha for example)
         texture = ogre.TextureManager.getSingleton().createManual("Write Texture","General",
                                             ogre.TEX_TYPE_2D, 512, 512, ogre.MIP_UNLIMITED , 

@@ -15,9 +15,13 @@
 #  * Started 29.05.2003, 20:54:37
 #  */
 import sys
+try:
+   import psyco
+   psyco.full()
+except ImportError:
+   sys.exit()
 sys.path.insert(0,'..')
 import PythonOgreConfig
-
 import ogre.renderer.OGRE as Ogre
 import ogre.io.OIS as OIS
 import WaterMesh as WaterMesh
@@ -26,7 +30,6 @@ import SampleFramework as sf
 import random
 import ctypes as ctypes
 import array as array
-
 # AnimationState* self.mAnimState 
 
 ## Mesh stuff
@@ -34,7 +37,7 @@ MESH_NAME ="WaterMesh"
 ENTITY_NAME ="waterEntity"
 MATERIAL_PREFIX ="Examples/Water"
 MATERIAL_NAME ="Examples/Water0"
-COMPLEXITY =32     ## watch out - number of polys is 2*ACCURACY*ACCURACY !
+COMPLEXITY = 64     ## watch out - number of polys is 2*ACCURACY*ACCURACY !
 PLANE_SIZE =3000.0
 
 RAIN_HEIGHT_RANDOM = 5
@@ -163,14 +166,20 @@ class WaterListener(sf.FrameListener):
 
     def updateInfoNormals(self):
         cap = "[N]Normals: "
-        if self.WaterMesh.useFakeNormals:
+        if self.WaterMesh.normalsToUse == 0:
             cap += "fake"
-        else: cap += "real"
+        elif self.WaterMesh.normalsToUse == 1:
+            cap += "real - Python"
+        else:
+            cap += "real - cython"
         Ogre.OverlayManager.getSingleton().getOverlayElement("Example/Water/Normals") \
             .setCaption(cap) 
 
     def switchNormals(self):
-        self.WaterMesh.useFakeNormals =  not self.WaterMesh.useFakeNormals  
+        if WaterMesh.CYTHONOK:
+            self.WaterMesh.normalsToUse =  (self.WaterMesh.normalsToUse +1 ) % 3 
+        else:  # only have 2 options as cython module didn't load
+            self.WaterMesh.normalsToUse =  (self.WaterMesh.normalsToUse +1 ) % 2 
         self.updateInfoNormals()  
 
     def updateInfoHeadDepth(self):
@@ -414,9 +423,12 @@ class WaterApplication(sf.Application,Ogre.RenderTargetListener):
  
 
 if __name__ == '__main__':
-#     try:
     application = WaterApplication()
-    application.go()
-#     except Ogre.Exception, e:
-#         print e
-
+    if False:  # use for profiling
+        import cProfile
+        import pstats
+        cProfile.run('application.go()', 'profile.out')
+        p = pstats.Stats('profile.out').strip_dirs()
+        p.sort_stats('time','cumulative').print_stats(15)
+    else:
+        application.go()
