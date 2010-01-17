@@ -9,7 +9,7 @@ Standards-Version: 3.7.2
 
 Package: pygccxml
 Architecture: all
-Depends: ${python:Depends}, gccxml (= 0.9.0+cvs%%SHORTDATE%%)
+Depends: ${python:Depends}, gccxml (>= 0.9.0+cvs%%SHORTDATE%%)
 XB-Python-Version: ${python:Versions}
 Description: pygccxml is a specialized XML reader that reads the output from GCCXML.
  
