@@ -34,7 +34,7 @@ install-python%:
 	dh_testroot
 	dh_clean -k 
 	dh_installdirs
-	python$* setup.py install --root=$(CURDIR)/debian/pyplusplus
+	python$* setup.py install --prefix=/usr --root=$(CURDIR)/debian/pyplusplus
 	cp -rf pyplusplus/code_repository $(CURDIR)/debian/pyplusplus/usr/lib/python$*/site-packages/pyplusplus/
 
 install-shared:

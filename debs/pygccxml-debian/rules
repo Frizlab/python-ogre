@@ -34,7 +34,7 @@ install-python%:
 	dh_testroot
 	dh_clean -k 
 	dh_installdirs
-	python$* setup.py install --root=$(CURDIR)/debian/pygccxml
+	python$* setup.py install --prefix=/usr --root=$(CURDIR)/debian/pygccxml
 	find $(CURDIR)/debian/pygccxml -name msvc
 	find $(CURDIR)/debian/pygccxml -name msvc | xargs rm -rf
 
