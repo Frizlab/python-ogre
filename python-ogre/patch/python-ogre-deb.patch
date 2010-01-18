@@ -1,49 +1,6 @@
-Index: environment.py
-===================================================================
---- environment.py	(revision 949)
-+++ environment.py	(working copy)
-@@ -84,6 +84,7 @@
- PATH_Python = os.path.dirname(sys.executable)
- ## I want a version string 2.4 or 2.5 etc
- PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
-+PythonVersionStringNoDot = "py"+str(sys.version_info[0])+str(sys.version_info[1])
- 
- if isWindows():
-     python_include_dirs = os.path.join(PATH_Python, 'include')
-@@ -597,12 +598,10 @@
- 
-     # If we are not given a LIB_Boost, use the version we are building.
-     if Config.LIB_Boost is None:
--        import subprocess
--        gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
--        import re
--        gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
--
--        lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
-+        if os.path.exists("/usr/lib/libboost_python-mt-%s.so" % (PythonVersionStringNoDot)):
-+          lib = "boost_python-mt-%s" % (PythonVersionStringNoDot,)
-+        else:
-+          lib = "boost_python-mt"
-     else:
-         lib = Config.LIB_Boost
- 
-Index: environment.py
-===================================================================
---- environment.py	(revision 949)
-+++ environment.py	(working copy)
-@@ -3,6 +3,9 @@
- import getpass
- import datetime
- 
-+cc_compiler="gcc-4.2"
-+cxx_compiler="g++-4.2"
-+
- ##
- ##  Jan 2007 modification
- ##
 Index: PythonOgreConfig_system.py
 ===================================================================
---- PythonOgreConfig_system.py	(revision 968)
+--- PythonOgreConfig_system.py	(revision 1067)
 +++ PythonOgreConfig_system.py	(working copy)
 @@ -1,5 +1,7 @@
  import sys,os
@@ -53,3 +10,43 @@ Index: PythonOgreConfig_system.py
  ## The root directory is where this module is located
  module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
  ## lets assume that the base development directory is one level higher
+Index: environment.py
+===================================================================
+--- environment.py	(revision 1067)
++++ environment.py	(working copy)
+@@ -3,6 +3,9 @@
+ import getpass
+ import subprocess
+ 
++cc_compiler="gcc-4.2"
++cxx_compiler="g++-4.2"
++
+ _LOGGING_ON = False
+ _PreCompiled = True
+ _UserName = getpass.getuser()
+@@ -75,6 +78,7 @@
+ ##
+ ## I want a version string 2.4 or 2.5 etc
+ PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
++PythonVersionStringNoDot = "py" + str(sys.version_info[0]) + str(sys.version_info[1])
+ if isWindows():
+     ppath = os.path.dirname(sys.executable)
+     python_include_dirs = os.path.join(ppath, 'include')
+@@ -672,14 +676,10 @@
+     if not isWindows():
+         # If we are not given a LIB_Boost, use the version we are building.
+         if Config.LIB_Boost is None:
+-            if isMac():  # latest version of boost build on mac generate a 'nice' boost lib name
+-                lib="libboost_python"
++            if os.path.exists("/usr/lib/libboost_python-mt-%s.so" % (PythonVersionStringNoDot)):
++                lib = "boost_python-mt-%s" % (PythonVersionStringNoDot,)
+             else:
+-                import subprocess
+-                gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
+-                import re
+-                gcc_version = re.search(r'([0-9]+?\.[0-9]+?\.[0-9]+?)', gccp.communicate()[0]).groups()[0].split('.')
+-                lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
++                lib = "boost_python-mt"
+         else:
+             lib = Config.LIB_Boost
+ 
