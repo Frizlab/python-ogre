@@ -6,6 +6,7 @@ module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is
 BASE_DIR = "/usr" 
 
 SDK = False
+_SVN = False    # if building from Ogre svn
 
 # the base of the /usr/... dircetory structure that we are using
 ROOT_DIR = '/'
@@ -16,6 +17,8 @@ LOCAL_INCLUDE = '/usr/include'
 PATH_Boost = os.path.join(LOCAL_INCLUDE, 'boost')
 ## Path to your boost_pythonxxxx lib file
 PATH_LIB_Boost = LOCAL_LIB
+PATH_LIB_Thread_STATIC = LOCAL_LIB
+PATH_LIB_date_time_STATIC = LOCAL_LIB
 ## and the name of the boost python library
 LIB_Boost = None
 
@@ -27,6 +30,7 @@ gccxml_bin = os.path.join(ROOT_DIR,'usr/bin')
 # and the Py++ directory as sometimes we need access to the code repository there
 pyplusplus_install_dir = os.path.join(BASE_DIR,'pygccxml')
 
+isMAC = False
 # # ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
@@ -35,6 +39,7 @@ PATH_CEGUI =        os.path.join(BASE_DIR, 'include/CEGUI' )
 PATH_OIS =          os.path.join(BASE_DIR, 'ois')
 
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
+PATH_Newton2 =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
 PATH_ODE =          os.path.join(BASE_DIR)
 PATH_OGG =          os.path.join(BASE_DIR, 'libogg-1.1.3')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'libvorbis-1.2.0')
@@ -77,6 +82,9 @@ PATH_raknet = os.path.join(BASE_DIR, 'raknet')
 PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib')
 PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
 
+PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
+PATH_INCLUDE_ogreoggsound = os.path.join(PATH_ogreoggsound,'include')
+PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'Release')
 
 ###
 ### these paths assume you've left all the directory structure as standard
@@ -87,7 +95,9 @@ PATH_LIB_Ogre_OgreMain=         os.path.join( LOCAL_LIB ) # PATH_Ogre, 'OgreMain
 PATH_LIB_Ogre_Dependencies =    os.path.join( LOCAL_LIB ) # , 'Dependencies/lib/Release')
 PATH_LIB_OgreRefApp =           os.path.join( LOCAL_LIB ) # PATH_Ogre, 'ReferenceApplication/ReferenceAppLayer/lib/Release')
 PATH_LIB_OgreNewt =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release') 
+PATH_LIB_OgreNewt2 =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release')
 PATH_LIB_Newton =               os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
+PATH_LIB_Newton2 =               os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
 
 PATH_LIB_OIS =                  os.path.join( LOCAL_LIB ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
 PATH_LIB_CEGUI =                os.path.join( LOCAL_LIB ) #PATH_Ogre, r'Dependencies/lib/Release' )
@@ -125,8 +135,14 @@ PATH_INCLUDE_Ogre_Dependencies =    PATH_INCLUDE_Ogre #      os.path.join( PATH_
 PATH_INCLUDE_OIS =          os.path.join(LOCAL_INCLUDE,'OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
 PATH_INCLUDE_CEGUI =        os.path.join(LOCAL_INCLUDE,'CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
 
-PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
+PATH_INCLUDE_ogrepaging =   os.path.join(PATH_Ogre,'Components','Paging', 'include')
+PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_Ogre,'Components','RTShaderSystem', 'include')
+PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
+PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
+PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
+PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include')
 PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
+PATH_INCLUDE_OgreNewt2 =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_ODE =          os.path.join(LOCAL_INCLUDE,'ode') #os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    '' #      os.path.join( PATH_ODE, 'ode/src')
@@ -146,6 +162,7 @@ PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
 PATH_INCLUDE_FMOD =  ""
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join(BASE_DIR, 'include', 'OGRE')
+#PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_INCLUDE_CEGUI, 'RendererModules', 'Ogre')
 PATH_INCLUDE_quickgui =     PATH_quickgui
 PATH_INCLUDE_NxOgre=        PATH_NxOgre
 PATH_INCLUDE_NxOgre_09=        PATH_NxOgre_09
@@ -159,7 +176,7 @@ PATH_INCLUDE_ogrevideoffmpeg =  PATH_ogrevideoffmpeg
 PATH_INCLUDE_ffmpeg =       os.path.join (PATH_ffmpeg,'include', 'ffmpeg')
 PATH_INCLUDE_plib =         PATH_plib
 PATH_INCLUDE_navi =     os.path.join (PATH_navi,'include')
-PATH_INCLUDE_noise = PATH_noise 
+PATH_INCLUDE_noise = PATH_noise
 PATH_INCLUDE_ogredshow =    PATH_ogredshow
 PATH_INCLUDE_ogreforests =         PATH_ogreforests
 PATH_INCLUDE_particleuniverse = os.path.join(PATH_particleuniverse, 'include' )
@@ -170,7 +187,7 @@ PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ##,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-1.8.3','include')
                         ,os.path.join(PATH_THIRDPARTY,'ptypes','include')
                         ]
-physxbase = os.path.join(LOCAL_INCLUDE, 'PhysX','v2.7.3', 'SDKs')
+physxbase = os.path.join('/usr/include/', 'PhysX','v2.8.1', 'SDKs')
 PATH_INCLUDE_PhysX= [ physxbase
                     ,os.path.join(physxbase, 'Cooking','include')
                     ,os.path.join(physxbase, 'Foundation','include')
