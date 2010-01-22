@@ -31,6 +31,7 @@
     sizeof(std::pair<std::string const, Ogre::Node*>);
     sizeof(std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> >);
     sizeof(std::pair<std::string const, unsigned short>);
+    sizeof(std::pair<bool,Ogre::Vector3>);
    // sizeof(Ogre::SceneManager::RenderContext);
     sizeof(Ogre::CompositorLogic);
     sizeof(Ogre::CustomCompositionPass);
@@ -69,6 +70,7 @@ sizeof( std::vector< char > );
 sizeof( std::vector< bool > );
 sizeof( std::set< std::string > );
 sizeof( std::pair<unsigned int,unsigned int> );
+sizeof( std::pair<unsigned char,unsigned char> );
 sizeof( std::pair<bool,String> );
 sizeof( std::pair<bool, float> );
 sizeof( std::pair<std::string, unsigned short> );

@@ -123,6 +123,7 @@ def ManualExclude ( mb ):
                 ,'::ssgSavePOV'
                 ,'::ssgConvertTexture'
                 ,'::netPoll'
+                ,'::ssgAddTextureFormat'
                 ]
     for e in excludes:
         main_ns.free_functions(e).exclude()

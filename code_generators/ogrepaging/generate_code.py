@@ -70,11 +70,13 @@ def ManualExclude ( mb ):
     else:
         main_ns = global_ns    
     ex = ['PageContentCollectionFactory', 'Page', 'PageContentFactory','PagedWorldSection']
+    ex=[]
     for c in ex:
         try:
             main_ns.class_(c).exclude()
+            print "Exculded:", c
         except:
-            print "failed to exclude:", c
+            print "Failed to exclude:", c
         
 ############################################################
 ##
@@ -92,7 +94,7 @@ def ManualInclude ( mb ):
         if c.name.startswith ('Page') or c.name.startswith ('SimplePage'):
             print "Including :", c
             c.include()
-    inc = ['Grid2DPageStrategy']
+    inc = ['Grid2DPageStrategy', 'PagedWorldSectionFactory', 'PageContentFactory']
     for c in inc:
         main_ns.class_(c).include()
 ############################################################
@@ -186,31 +188,32 @@ def Fix_NT ( mb ):
 #
 # the 'main'function
 #            
-def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+def generate_code(): 
+    if 0:
+        messages.disable( 
+    #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+              messages.W1020
+            , messages.W1021
+            , messages.W1022
+            , messages.W1023
+            , messages.W1024
+            , messages.W1025
+            , messages.W1026
+            , messages.W1027
+            , messages.W1028
+            , messages.W1029
+            , messages.W1030
+            , messages.W1031
+            , messages.W1035
+            , messages.W1040 
+            , messages.W1038        
+            , messages.W1041
+            , messages.W1036 # pointer to Python immutable member
+            , messages.W1033 # unnamed variables
+            , messages.W1018 # expose unnamed classes
+            , messages.W1049 # returns reference to local variable
+            , messages.W1014 # unsupported '=' operator
+             )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded

@@ -15,4 +15,6 @@ typedef std::vector<Ogre::PageContent*, Ogre::STLAllocator<Ogre::PageContent*, O
     stdVectorOgrePageContent;
 typedef std::vector<Ogre::PageContentCollection*, Ogre::STLAllocator<Ogre::PageContentCollection*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >\
     stdVectorOgrePageContentCollection;
+typedef std::map<std::string, Ogre::PagedWorldSectionFactory*, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, Ogre::PagedWorldSectionFactory*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >\
+    stdMapOgrePagedWorldSectionFactory;
 

@@ -713,7 +713,7 @@ class ogre(pymodule):
         ]
         try:
             if Config._SVN:
-                version="1.7.r9398"
+                version="1.7.0-RC1"
         except:
             pass
         # requirements to build a precompiled header on the fly
@@ -1561,10 +1561,11 @@ class ogreal(pymodule):
     if isWindows():
         lib_dirs = [ boost.PATH_LIB
                 , Config.PATH_LIB_Ogre_OgreMain
-                , os.path.join(Config.PATH_OGG, 'win32', 'Static_Release')
-                , os.path.join(Config.PATH_VORBIS, 'win32', 'Vorbis_Static_Release')
-                , os.path.join(Config.PATH_VORBIS, 'win32', 'VorbisEnc_Static_Release')
-                , os.path.join(Config.PATH_VORBIS, 'win32', 'VorbisFile_Static_Release')
+                # change with latest ogg -- 
+                , os.path.join(Config.PATH_OGG, 'win32', 'VS2008','Win32','Release')
+                , os.path.join(Config.PATH_VORBIS, 'win32', 'VS2008','Win32','Release') #'Vorbis_Static_Release')
+                #, os.path.join(Config.PATH_VORBIS, 'win32', 'VorbisEnc_Static_Release')
+                #, os.path.join(Config.PATH_VORBIS, 'win32', 'VorbisFile_Static_Release')
                 , os.path.join(Config.PATH_OPENAL, 'Release') #'libs','Win32')
                 , Config.PATH_LIB_OgreAL
                 , Config.PATH_LIB_OPENAL
@@ -1573,23 +1574,23 @@ class ogreal(pymodule):
         libs = [
             boost.lib,
             'OgreMain',
-            'ogg_static',
-            'vorbis_static',
-            'vorbisfile_static',
+            'libogg_static',
+            'libvorbis_static',
+            'libvorbisfile_static',
             'OpenAL32',
         ] # -- going to compile OgreAL ourselves
         source = [
             ["wget", "http://connect.creativelabs.com/openal/Downloads/OpenAL11CoreSDK.zip", downloadPath],
-            ["wget", "http://downloads.xiph.org/releases/ogg/libogg-1.1.3.zip", downloadPath],
-            ["wget", "http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.0.zip", downloadPath],
+            ["wget", "http://downloads.xiph.org/releases/ogg/libogg-1.1.4.zip", downloadPath],
+            ["wget", "http://downloads.xiph.org/releases/vorbis/libvorbis-1.2.3.zip", downloadPath],
         ]
         buildCmds = [
             [0, "unzip -q -o  " + os.path.join(downloadPath, "OpenAL11CoreSDK.zip"), ''],
             [0, "OpenAL11CoreSDK.exe", ''],
-            [0, "unzip -q -o  " + os.path.join(downloadPath, "libogg-1.1.3.zip"), ''],
-            [0, "ren libogg-1.1.3 ogg", ''],
-            [0, "unzip -q -o  " + os.path.join(downloadPath, "libvorbis-1.2.0.zip"), ''],
-            [0, "ren libvorbis-1.2.0 vorbis", ''],
+            [0, "unzip -q -o  " + os.path.join(downloadPath, "libogg-1.1.4.zip"), ''],
+            [0, "ren libogg-1.1.4 ogg", ''],
+            [0, "unzip -q -o  " + os.path.join(downloadPath, "libvorbis-1.2.3.zip"), ''],
+            [0, "ren libvorbis-1.2.3 vorbis", ''],
         ]
         moduleLibs=[os.path.join(Config.PATH_OPENAL, 'redist','OpenAL32'),
                     os.path.join(Config.PATH_OPENAL, 'redist','wrap_oal')
@@ -2113,7 +2114,7 @@ class ogreoctreezone(pymodule):
     descText = "Octree Zone Management - Expose all functions in OctreeZone incase required"
 
 class ogreoggsound(pymodule):
-    version = "r243"
+    version = "r273"
     active = True
     name = 'ogreoggsound'
     parent = "ogre/sound"

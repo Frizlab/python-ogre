@@ -3,6 +3,9 @@
 #include "OgreTerrain.h"
 #include "OgreTerrainQuadTreeNode.h"
 #include "OgreTerrainPaging.h"
+#include "OgreTerrainGroup.h"
+#include "OgreTerrainMaterialGeneratorA.h"
+#include "OgreTerrainPagedWorldSection.h"
 
 
 // First we create a magic namespace to hold all our aliases

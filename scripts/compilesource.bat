@@ -3,11 +3,11 @@ pushd
 set _VCBUILD="c:\\Program Files\\Microsoft Visual Studio 9.0\\vc\\vcpackages\\vcbuild.exe"
 set _ROOT=c:\\development
 call "c:\\Program Files\\Microsoft Visual Studio 9.0\\vc\\bin\vcvars32.bat"
-cd %_ROOT%\\ogre_svn
+cd %_ROOT%\\ogre
 %_VCBUILD% /useenv Ogre.sln "Release|Win32"
 
-cd %_ROOT%\\NxOgre\\build\\msvc
-%_VCBUILD% /useenv NxOgre.VC9.sln "Release|Win32"
+#cd %_ROOT%\\NxOgre\\build\\msvc
+#%_VCBUILD% /useenv NxOgre.VC9.sln "Release|Win32"
 
 cd %_ROOT%\\ogreaddons\\ogreode\\scripts\\vc8
 %_VCBUILD% /useenv OgreOde_SDK.sln "Release|Win32"
