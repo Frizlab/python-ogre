@@ -69,20 +69,30 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-    ex = ['PageLoadableUnit', 'PageContent']
+    ex = ['PageLoadableUnit', 'PageContent',
+        '::std::list<Ogre::HardwareVertexBufferSharedPtr, Ogre::STLAllocator<Ogre::HardwareVertexBufferSharedPtr, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >'
+        ]
     for c in ex:
         try:
             main_ns.class_(c).exclude()
+            print "Excluded:", c
         except:
             print "Failed to exclude:", c
     ex = ['::Ogre::TerrainLayerBlendMap::upload']
     for c in ex:
         try:
             main_ns.member_functions(c).exclude()
+            print "Excluded:", c
         except:
             print "Failed to exclude:", c
-            
- ############################################################
+    for c in global_ns.namespace( 'std' ).classes():
+        if "HardwareVertexBufferSharedPtr" in c.name:
+            print c.ignore, c
+            if c.decl_string.startswith ("::std::list<Ogre::HardwareVertexBufferSharedPtr"):
+                c.include(already_exposed=True)
+                print "excluded:", c
+           
+############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
 ##
@@ -190,30 +200,31 @@ def Fix_NT ( mb ):
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+    if 0:
+        messages.disable( 
+    #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+              messages.W1020
+            , messages.W1021
+            , messages.W1022
+            , messages.W1023
+            , messages.W1024
+            , messages.W1025
+            , messages.W1026
+            , messages.W1027
+            , messages.W1028
+            , messages.W1029
+            , messages.W1030
+            , messages.W1031
+            , messages.W1035
+            , messages.W1040 
+            , messages.W1038        
+            , messages.W1041
+            , messages.W1036 # pointer to Python immutable member
+            , messages.W1033 # unnamed variables
+            , messages.W1018 # expose unnamed classes
+            , messages.W1049 # returns reference to local variable
+            , messages.W1014 # unsupported '=' operator
+             )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
@@ -288,7 +299,7 @@ def generate_code():
     
     ## add additional version information to the module to help identify it correctly 
     common_utils.addDetailVersion ( mb, environment, environment.ogreterrain )
-
+    
     ##########################################################################################
     #
     # Creating the code. After this step you should not modify/customize declarations.
@@ -312,6 +323,24 @@ def generate_code():
 #     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_ogreterrain, 
 #                             destPath = environment.ogreterrain.generated_dir, 
 #                             recursive=False )
+    if environment.ogre.version.startswith("1.7"):
+        ## have a code generation issue that needs resolving...
+        filesToFix=['TerrainGroup.pypp.cpp', 'stdVectorOgreTerrain.pypp.cpp']
+        for filename in filesToFix:
+            fname = os.path.join( environment.ogreterrain.generated_dir, filename)
+            try:
+                f = open(fname, 'r')
+                buf = f.read()
+                f.close()
+                if (" MEMCATEGORY_GENERAL" in buf) or ("<MEMCATEGORY_GENERAL" in buf):
+                    buf = buf.replace ( " MEMCATEGORY_GENERAL", " Ogre::MEMCATEGORY_GENERAL")
+                    buf = buf.replace ( "<MEMCATEGORY_GENERAL", "<Ogre::MEMCATEGORY_GENERAL")
+                    f = open ( fname, 'w+')
+                    f.write ( buf )
+                    f.close()
+                    print "UGLY FIX OK:", fname
+            except:
+                print "ERROR: Unable to fix:", fname
         
 if __name__ == '__main__':
     start_time = time.clock()

@@ -78,7 +78,10 @@ def ManualExclude ( mb ):
             ,'::OgreNewt::BasicRaycast::getInfoAt'
             ]
     for e in exclude:
-        main_ns.member_functions(e).exclude()
+        try:
+            main_ns.member_functions(e).exclude()
+        except:
+            print "Failed to exclude:",e
         
     for c in main_ns.classes():
         if '_DestructorCallback' in c.name:

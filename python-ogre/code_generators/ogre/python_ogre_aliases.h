@@ -81,6 +81,8 @@ typedef std::list<Ogre::Plane> stdListPlane;
 typedef std::list<Ogre::Particle*> stdListParticlePtr;
 typedef std::pair<bool, float> stdPairBoolFloat;
 typedef std::pair<unsigned, unsigned> stdPairUnsignedUnsigned;
+typedef std::pair<unsigned char, unsigned char> stdPairUnsignedCharUnsignedChar;
+typedef std::pair<bool,Ogre::Vector3> stdPairBoolVector3;
 
 
 

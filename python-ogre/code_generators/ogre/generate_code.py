@@ -506,6 +506,8 @@ def ManualInclude ( mb ):
  ##       "pair<std::string const, Ogre::MovableObject*>",
  ##       "pair<std::string const, Ogre::Node*>",
         "pair<bool, Ogre::SharedPtr<Ogre::Resource> >",
+        "pair<bool, Ogre::Vector3>",
+        'pair<unsigned char, unsigned char>',
         ]
 
     for c in includes:

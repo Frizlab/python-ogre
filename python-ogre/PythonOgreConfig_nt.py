@@ -46,7 +46,7 @@ pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplusplus')
 ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
 if _SVN:
-    PATH_Ogre =         os.path.join(BASE_DIR, 'ogre_svn')
+    PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
 else:
     PATH_Ogre = "c:\\ogre"
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')

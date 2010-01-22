@@ -1,5 +1,7 @@
 
 #include "OgrePaging.h"
+#include "OgrePageContentCollectionFactory.h"
+#include "OgrePageContentFactory.h"
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {
