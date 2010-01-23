@@ -148,7 +148,9 @@ PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =             PATH_quickgui
 PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'lib')
 PATH_LIB_PhysX =                os.path.join(PATH_PhysX,'lib/win32')
-PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
+#PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
+PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release_dll8/libs' )
+
 # PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/debug8/libs' )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg

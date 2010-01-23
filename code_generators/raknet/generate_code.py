@@ -92,8 +92,11 @@ def ManualExclude ( mb ):
                    
          
     for e in excludes:
-        main_ns.member_functions(e).exclude()
-        print "Excluded Function:", e
+        try:
+            main_ns.member_functions(e).exclude()
+            print "Excluded Function:", e
+        except:
+            print "Unable to exclude:", e
 #     i=['GetRakPeerInterface']
 #     for fun in main_ns.class_('::RakNetworkFactory').member_functions():
 #        if fun.name not in i:
