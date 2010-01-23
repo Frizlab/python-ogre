@@ -329,14 +329,15 @@ class install(module):
     ]
 
 class newton2 ( module ):
-    source_version = "2.11"
+    source_version = "2.16"
     if isLinux():
+        source_version = "2.13"
         source = [
-            [wget, "http://www.newtondynamics.com/downloads/NewtonLinux-32-2.11.tar.gz", downloadPath],
+            [wget, "http://www.newtondynamics.com/downloads/NewtonLinux-32-2.13.tar.gz", downloadPath],
         ]
 
         buildCmds = [
-            [0, "tar zxf " + os.path.join(downloadPath, "NewtonLinux-32-2.11.tar.gz"), ''],
+            [0, "tar zxf " + os.path.join(downloadPath, "NewtonLinux-32-2.13.tar.gz"), ''],
             #[0, "patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
             [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
             [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
@@ -1702,6 +1703,14 @@ class et(pymodule):  ## editable terrain
     ModuleName = 'et'
 
 class bullet(pymodule):
+    """ WIndows Build Notes: -- 
+    patch src/LineraMath/btScaler.h -- around line 39 (removes the align 16 issues) to look like:
+        #ifdef WIN32
+
+            #if 1 || defined(__MINGW32__) || defined(__CYGWIN__) || (defined (_MSC_VER) && _MSC_VER < 1300)
+
+    build ReleaseDLL and copy generated libs into a single directory ie (PATH_Bullet, 'out/release_dll8/libs')
+    """
     version = "2.75"
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
@@ -1748,7 +1757,8 @@ class ogrebulletc(pymodule):
     parent = "ogre/physics"
     libs = [boost.lib, 'OgreMain',
         'libBulletCollision', 'libBulletDynamics', 'libBulletMultiThreaded',
-        'libBulletSoftBody', 'libConvexDecomposition'
+        'libBulletSoftBody', 
+        'libConvexDecomposition'
         ]
     if isLinux():
        libs.append('libLinearMath')
@@ -1771,7 +1781,7 @@ class ogrebulletc(pymodule):
     ]
     if isWindows():
         CCFLAGS = ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
-        #LINKFLAGS = '  /NODEFAULTLIB:LIBCMT.lib  '
+        LINKFLAGS = '  /NODEFAULTLIB:LIBCMT.lib  '
     else:
         CCFLAGS = ' -D_PRECOMP -fno-inline '
     ModuleName = 'OgreBulletC'
@@ -2017,7 +2027,13 @@ class canvas(pymodule):
     descLink = "http://www.ogre3d.org/phpBB2/viewtopic.php?t=41365&postdays=0&postorder=asc&start=0&sid=6578000180a935734beb03d548b900a4"
 
 class raknet(pymodule):
-    version = "3.4"
+    """ windows build notes:--
+    patch source/NativeTypes.h ro read:
+            #if !defined(__PYTHONOGRE_BUILD_CODE) and (defined(__GNUC__)  || defined(__GCCXML__) || defined(__SNC__))
+            #include <stdint.h>
+            #endif
+    """
+    version = "3.7171"
     name = 'raknet'
     parent = "ogre/addons"
     include_dirs = [

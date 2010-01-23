@@ -180,7 +180,9 @@ def filter_declarations( mb ):
         "dWorldGetAutoDisableLinearAverageThreshold", 
         "dWorldSetAutoDisableAngularAverageThreshold",
         "dWorldSetAutoDisableLinearAverageThreshold" ,
-        "dJointAddPUTorque"    )
+        "dJointAddPUTorque",
+        "dGeomTriMeshGetTriangle"
+        )
     for cls in ignore:
         try:
             ode_ns.free_function(cls).exclude()
