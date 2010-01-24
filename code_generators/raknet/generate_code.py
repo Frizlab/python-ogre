@@ -71,13 +71,29 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-        
+    for f in main_ns.member_functions():
+        if 'void (*)' in f.decl_string:
+            f.exclude()
+            print "Excluded as function return in decl string:", f
     excludes = [
                '::HTTPConnection::Post'  ## TODO Needs to be handwrapped to be useful
                 #,'::RakPeerInterface::RegisterAsRemoteProcedureCall'
                 # these are missing from source
                 ,'::FileListTransfer::SetIncrementalReadInterface'
                 ,'::NatPunchthrough::ConnectionRequest::GetAddressList'
+                ,'::RakNet::FunctionThread::CancelFunctorsWithContext'
+                ,'::LogCommandParser::WriteLog'
+                ,'::MessageFilter::SetDisallowedMessageCallback'
+                ,'::MessageFilter::SetTimeoutCallback'
+                ,'::MessageFilter::Update'
+                ,'::RakNetTransport::Send' ## has veraible argumners (like printf ) which breaks the wrapper -- needs to be handwrapped
+                ,'::TelnetTransport::Send'
+                ,'::RakPeer::RegisterAsRemoteProcedureCall'
+                
+                # not in library
+                ,'::RakNet::CCRakNetUDT::BytesPerMicrosecondToPacketsPerMillisecond'
+                ,'::RakNet::CCRakNetUDT::ResetOnDataArrivalHalveSNDOnNoDataTime'
+                
 #                 '::RakNetworkFactory::GetConsoleServer'
 #                 ,'::RakNetworkFactory::GetTelnetTransport'
 #                 ,'::RakNetworkFactory::GetRouter'
@@ -111,6 +127,8 @@ def ManualExclude ( mb ):
                ,'::RakNet::AutoRPC'
                ,'::RakNet::RakString'
                ,'::ReliabilityLayer'
+               ,'::RakPeerInterface' ## this one needs work as it looks useful however has a number of functions that need to be handwrapped
+               ,'::RakNet::RakThread' ## Create function needs wrapping
 
                ]
     for e in excludes:   
@@ -124,10 +142,16 @@ def ManualExclude ( mb ):
     excludes = ['::RakNet::_RakRealloc'
                ,'::RakNet::_RakMalloc'
                ,'::RakNet::_RakFree'
+               ,'::RakNet::OP_NEW'
+               ,'::RakNet::OP_DELETE'
+               ,'::RakNet::_RakMalloc_Ex'
+               ,'::RakNet::_RakFree_Ex'
+               ,'::RakNet::_RakRealloc_Ex'
+               ,'::RakNet::_DLMallocMUnmap'
                ]
     for e in excludes:   
       try:
-         main_ns.free_function(e).exclude()
+         main_ns.free_functions(e).exclude()
          print "Excluded freefunction:", e
       except:
          print "Failed to exclude", e         
