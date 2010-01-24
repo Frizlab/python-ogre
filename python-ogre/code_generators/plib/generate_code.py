@@ -64,7 +64,11 @@ def ManualExclude ( mb ):
                 if e == m.name:
                     print "Excluding:", c, m
                     m.exclude()
-    
+            ## Really should fix this properly however as it's not a very active library going to exclude problem functions        
+            if "float[4]" in m.decl_string:
+                print "Excluding:", c, m
+                m.exclude() 
+                
     ### Member Functions
     excludes=[  #'::slScheduler::waveOutClose'
 #             ,'::slScheduler::waveOutWrite'
@@ -103,13 +107,27 @@ def ManualExclude ( mb ):
             ,'::ssgLoaderOptions::createBranch' # call back functions taking a char * which we need to hand wrap
             ,'::ssgLoaderOptions::createState'
             
+            ,'::ssgAnimTransform::hot'
+            ,'::ssgAnimTransform::hot_test'
+            ,'::ssgAnimTransform::los'
+            ,'::ssgAnimTransform::los_test'
+            ,'::ssgAxisTransform::hot'
+            ,'::ssgAxisTransform::hot_test'
+            ,'::ssgAxisTransform::los'
+            ,'::ssgAxisTransform::los_test'
+            ,'::ssgBaseTransform::hot'
+            ,'::ssgBaseTransform::hot_test'
+            ,'::ssgBaseTransform::los'
+            ,'::ssgBaseTransform::los_test'
            
            ## ,'::ssgBase::getName'
          ]
     for e in excludes:
-        print "excluding ", e
-        main_ns.member_functions(e).exclude()
-        
+        try:
+            main_ns.member_functions(e).exclude()
+            print "excluding ", e
+        except:
+            print "Unable to exclude:", e
     ### Free Functions
     excludes = ['::ssgShowStats'
                 ,'::netCopyName'
@@ -124,10 +142,21 @@ def ManualExclude ( mb ):
                 ,'::ssgConvertTexture'
                 ,'::netPoll'
                 ,'::ssgAddTextureFormat'
+                ,'::ssgHOT'
+                ,'::ssgLOS'
+                ,'::ulSetError'
                 ]
     for e in excludes:
-        main_ns.free_functions(e).exclude()
+        try:
+            main_ns.free_functions(e).exclude()
+        except:
+            print "Error: Unable to exclude ", e
         
+    for e in main_ns.free_functions ('::ssgLoad'):
+        if 'ssgBranch' in e.decl_string:
+            print "Excluding:", e
+            e.exclude()
+            
     ## Classes
     excludes = [    'ssgEntityBinding'
                     ,'ssgHit' 
