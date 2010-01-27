@@ -18,11 +18,6 @@ setup: setup-stamp
 setup-stamp:
 	# Patch the python-ogre build system.
 	patch -p0 < ./patch/python-ogre-deb.patch
-	
-	rm -rf include/OGRE || true
-	cp -rf /usr/include/OGRE include
-	patch -p1 < ./patch/ogre_1.6.4-deb.patch
-	
 	touch $@
 
 
@@ -55,7 +50,6 @@ build-python%:
 clean:
 	dh_testdir
 	dh_testroot
-	rm -rf include/OGRE || true
 	rm -f build-python* || true
 	rm -rf build || true
 	rm *-stamp* || true

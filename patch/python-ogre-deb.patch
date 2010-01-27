@@ -1,6 +1,6 @@
 Index: PythonOgreConfig_system.py
 ===================================================================
---- PythonOgreConfig_system.py	(revision 1067)
+--- PythonOgreConfig_system.py	(revision 1078)
 +++ PythonOgreConfig_system.py	(working copy)
 @@ -1,5 +1,7 @@
  import sys,os
@@ -12,7 +12,7 @@ Index: PythonOgreConfig_system.py
  ## lets assume that the base development directory is one level higher
 Index: environment.py
 ===================================================================
---- environment.py	(revision 1067)
+--- environment.py	(revision 1078)
 +++ environment.py	(working copy)
 @@ -3,6 +3,9 @@
  import getpass
@@ -32,7 +32,7 @@ Index: environment.py
  if isWindows():
      ppath = os.path.dirname(sys.executable)
      python_include_dirs = os.path.join(ppath, 'include')
-@@ -672,14 +676,10 @@
+@@ -673,14 +677,10 @@
      if not isWindows():
          # If we are not given a LIB_Boost, use the version we are building.
          if Config.LIB_Boost is None:
@@ -50,3 +50,12 @@ Index: environment.py
          else:
              lib = Config.LIB_Boost
  
+@@ -770,7 +770,7 @@
+                         Config.PATH_INCLUDE_Ogre,
+                         python_include_dirs,
+                         ]
+-        CCFLAGS = ' -D__PYTHONOGRE_BUILD_CODE '
++        CCFLAGS = ' -D__PYTHONOGRE_BUILD_CODE -UOGRE_GUI_gtk -DOGRE_GUI_GLX'
+ 
+ 
+     elif isMac():
