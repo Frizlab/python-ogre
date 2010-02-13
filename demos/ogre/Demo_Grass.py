@@ -258,7 +258,7 @@ class Grass_Application(sf.Application):
 # #         ogre.setUint16( pointer, buff )   
 
         ## Here is a way to do it with ctypes....
-        pVert= ( ctypes.c_uint16 * (sm.indexData.indexCount)).from_address ( ogre.CastInt ( pointer ) ) 
+        pVert= ( ctypes.c_uint16 * (sm.indexData.indexCount)).from_address ( ogre.castAsInt ( pointer ) ) 
         index = 0
         for i in range ( 3 ):
             off = i*4
