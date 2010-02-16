@@ -218,6 +218,14 @@ def ManualExclude ( mb ):
     main_ns.class_('UTFString').mem_fun('c_str').exclude()
     main_ns.class_('UTFString').mem_fun('data').exclude()
     main_ns.class_('UTFString').mem_fun('asUTF32_c_str').exclude()
+    main_ns.class_('UTFString').variable('npos').exclude()
+
+
+    main_ns.class_('CompositorChain').variable('BEST').exclude()
+    main_ns.class_('CompositorChain').variable('LAST').exclude()
+    main_ns.class_('Compiler2Pass').variable('SystemTokenBase').exclude()
+    #main_ns.class_('AnimationTrack').variable('INVALID_KEY_INDEX').exclude()
+
 
     ## missing symbols at link time, including constructor and destructor!
     global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getGeometryBucketList').exclude()
@@ -1406,6 +1414,7 @@ def generate_code():
 
     environment.ogre.include_dirs.insert ( 0,os.getcwd() )
 
+    
     if environment.Config._SVN: # building Ogre 1.7
         defined_symbols.append ('HAVE_OGRE_BUILDSETTINGS_H') # it uses the cmake buildsettings include
     #

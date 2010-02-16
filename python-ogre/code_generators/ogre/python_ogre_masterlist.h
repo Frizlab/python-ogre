@@ -4,6 +4,13 @@ Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add m
 
 */
 
+// Feb 2010 -- fix to force the GCC compiler version when building cache with GCCXML...
+#include "OgrePlatform.h"
+
+#if (OGRE_COMPILER == OGRE_COMPILER_GNUC ) && defined (__PYTHONOGRE_BUILD_CODE )
+#define OGRE_COMP_VER 420
+#endif
+
 #include "Ogre.h"
 #include "OgreStableHeaders.h"
 
@@ -81,7 +88,7 @@ Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add m
 #include "OgreParticleSystemRenderer.h"
 #include "OgrePixelFormat.h"
 #include "OgrePlaneBoundedVolume.h"
-#include "OgrePlatform.h"
+
 #include "OgrePlugin.h"
 #include "OgrePolygon.h"
 #include "OgrePose.h"
