@@ -76,6 +76,8 @@ def ManualExclude ( mb ):
             ,'::OgreNewt::BodyInAABBIterator::go'
             ,'::OgreNewt::World::setLeaveWorldCallback'
             ,'::OgreNewt::BasicRaycast::getInfoAt'
+            ,'::OgreNewt::Body::setNodeUpdateNotify'
+            ,'::OgreNewt::Body::getForceTorqueCallback'
             ]
     for e in exclude:
         try:
