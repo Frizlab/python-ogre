@@ -82,7 +82,12 @@ def ManualInclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-        
+     
+    for v in main_ns.class_('Sample').variables():
+        v.include()
+#        print v, v.ignore
+#    print dir(v)
+#    sys.exit()
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -170,35 +175,46 @@ def Fix_NT ( mb ):
     """ fixup for NT systems
     """
         
-
+def FindProtectedVars ( mb ):
+    global_ns = mb.global_ns
+    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    for v in main_ns.variables():
+        if v.access_type == 'protected':
+            v.set_exportable(True)
+            v._exportable_reason = None
+            print "Protected Variable Exposed:", v
+    for c in main_ns.classes():
+        print "Class: ", c
+            
 #
 # the 'main'function
 #            
 def generate_code():  
-    messages.disable( 
-#           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
-          messages.W1020
-        , messages.W1021
-        , messages.W1022
-        , messages.W1023
-        , messages.W1024
-        , messages.W1025
-        , messages.W1026
-        , messages.W1027
-        , messages.W1028
-        , messages.W1029
-        , messages.W1030
-        , messages.W1031
-        , messages.W1035
-        , messages.W1040 
-        , messages.W1038        
-        , messages.W1041
-        , messages.W1036 # pointer to Python immutable member
-        , messages.W1033 # unnamed variables
-        , messages.W1018 # expose unnamed classes
-        , messages.W1049 # returns reference to local variable
-        , messages.W1014 # unsupported '=' operator
-         )
+    if 0:
+        messages.disable( 
+    #           Warnings 1020 - 1031 are all about why Py++ generates wrapper for class X
+              messages.W1020
+            , messages.W1021
+            , messages.W1022
+            , messages.W1023
+            , messages.W1024
+            , messages.W1025
+            , messages.W1026
+            , messages.W1027
+            , messages.W1028
+            , messages.W1029
+            , messages.W1030
+            , messages.W1031
+            , messages.W1035
+            , messages.W1040 
+            , messages.W1038        
+            , messages.W1041
+            , messages.W1036 # pointer to Python immutable member
+            , messages.W1033 # unnamed variables
+            , messages.W1018 # expose unnamed classes
+            , messages.W1049 # returns reference to local variable
+            , messages.W1014 # unsupported '=' operator
+             )
     #
     # Use GCCXML to create the controlling XML file.
     # If the cache file (../cache/*.xml) doesn't exist it gets created, otherwise it just gets loaded
@@ -250,6 +266,8 @@ def generate_code():
     ManualFixes ( mb )
     
     common_utils.Auto_Functional_Transformation ( main_ns ) #, special_vars=[]  )
+    
+    FindProtectedVars ( mb )
    
     #
     # We need to tell boost how to handle calling (and returning from) certain functions

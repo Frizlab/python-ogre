@@ -559,15 +559,15 @@ class boost(module):
     #if Config._SVN:
     #    version = "1.41r57399"
     #else:
-    version = "1.41.0"
+    version = "1.42.0"
     ModuleName = ""
 
     if isWindows():
         PATH_LIB_THREAD = Config.PATH_LIB_Thread_STATIC
         PATH_LIB_DATETIME = Config.PATH_LIB_date_time_STATIC
-        base = 'boost_1_41_0'
-        lib = 'boost_python-vc90-mt-1_41'
-        versionBase = '1_41' ## the version used on the library name
+        base = 'boost_1_42_0'
+        lib = 'boost_python-vc90-mt-1_42'
+        versionBase = '1_42' ## the version used on the library name
     else:
         base = 'boost_1_41_0'
         versionBase = '1_41' ## the version used on the library name
@@ -732,6 +732,7 @@ class ogre(pymodule):
         else:
             moduleLibs = [os.path.join(boost.PATH_LIB,boost.lib),
                           os.path.join(Config.PATH_Ogre,'bin','Release', 'OgreMain'),
+                          os.path.join(Config.PATH_Ogre,'bin','Release', 'OgreProperty'),
                           os.path.join(Config.PATH_Ogre,'bin','Release', 'cg'),
                           ]
         lib_dirs = [
@@ -1009,6 +1010,10 @@ class ogrenewt2(pymodule):
     include_dirs = [
         boost.PATH,
         Config.PATH_Newton2,
+        os.path.join(Config.PATH_Newton2,'dMath'),
+        os.path.join(Config.PATH_Newton2,'dAnimation'),
+        os.path.join(Config.PATH_Newton2,'dContainers'),
+        os.path.join(Config.PATH_Newton2,'dCustomJoints'),
         Config.PATH_INCLUDE_Ogre,
         Config.PATH_INCLUDE_OgreNewt2,
         Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
@@ -1430,7 +1435,7 @@ class nxogre(pymodule):
 
 
 class ogrevideo(pymodule):
-    version = "r92"
+    version = "r96"
     parent = "ogre/addons"
     base = 'ogrevideo'
     ##
@@ -1975,7 +1980,7 @@ class hikari(pymodule):
 
 class mygui(pymodule):
     active = True
-    version = "2.2.3"
+    version = "3.0"
     parent = "ogre/gui"
     source = [
         ["wget", "http://downloads.sourceforge.net/my-gui/MyGUI2.2.3_source.zip", downloadPath],
@@ -2130,7 +2135,7 @@ class ogreoctreezone(pymodule):
     descText = "Octree Zone Management - Expose all functions in OctreeZone incase required"
 
 class ogreoggsound(pymodule):
-    version = "r273"
+    version = "r274"
     active = True
     name = 'ogreoggsound'
     parent = "ogre/sound"
@@ -2168,6 +2173,9 @@ if ogre.version.startswith ("1.7"):
             Config.PATH_LIB_Ogre_OgreMain,
         ]
         libs = [boost.lib, 'OgreTerrain', 'OgrePaging', 'OgreMain' ]
+        moduleLibs = [os.path.join(Config.PATH_Ogre,'bin','Release', 'OgreTerrain'),
+             ]
+
         ModuleName = "ogreterrain"
         descText = "OgreTerrain: New Terrain Manager in Ogre"
 
@@ -2187,6 +2195,8 @@ if ogre.version.startswith ("1.7"):
         libs = [boost.lib, 'OgrePaging', 'OgreMain' ]
         ModuleName = "ogrepaging"
         descText = "OgrePaging: New Paging Manager in Ogre"
+        moduleLibs = [os.path.join(Config.PATH_Ogre,'bin','Release', 'OgrePaging'),
+             ]
 
     class ogrertshadersystem(pymodule):
         version = ogre.version
@@ -2204,6 +2214,8 @@ if ogre.version.startswith ("1.7"):
         libs = [boost.lib, 'OgreRTShaderSystem', 'OgreMain' ]
         ModuleName = "ogrertshadersystem"
         descText = "OgreRTShaderSystem: New Real Time Shader System in Ogre"
+        moduleLibs = [os.path.join(Config.PATH_Ogre,'bin','Release', 'OgreRTShaderSystem'),
+             ]
 
     class ogresdksample(pymodule):
         version = ogre.version
