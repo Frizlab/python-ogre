@@ -6,7 +6,18 @@ import subprocess
 _LOGGING_ON = False
 _PreCompiled = True
 _UserName = getpass.getuser()
+PythonOgreMajorVersion = "1"
+PythonOgreMinorVersion = "6"
+PythonOgrePatchVersion = "4"
 
+_SystemType = os.name ## nt or posix or mac
+_PlatformType = sys.platform ## win32, ??
+
+UseSystem = "--usesystem" in sys.argv or (os.environ.has_key('USESYSTEM') and eval(os.environ['USESYSTEM'].title()))
+if "--usesystem" in sys.argv:
+    sys.argv.remove("--usesystem")
+
+    
 def log(instring):
     if _LOGGING_ON:
         print __file__, "LOG::", instring
@@ -36,8 +47,6 @@ def is64():
     return False
 
 def numCores():
- #if isMac():
- #   return 1
  if hasattr(os, "sysconf"):
      # Linux
      if os.sysconf_names.has_key("SC_NPROCESSORS_ONLN"):
@@ -46,7 +55,6 @@ def numCores():
              return ncpus
      else: # OSX:
          return int(os.popen2("sysctl -n hw.ncpu")[1].read())
-
  # Windows
  if os.environ.has_key("NUMBER_OF_PROCESSORS"):
          ncpus = int(os.environ["NUMBER_OF_PROCESSORS"]);
@@ -64,17 +72,14 @@ else:
     _USE_THREADS = False
     BOOST_STATIC = False
 
-
-PythonOgreMajorVersion = "1"
-PythonOgreMinorVersion = "6"
-PythonOgrePatchVersion = "4"
-
-
 ##
 ## these should be fine with auto create - however override them as necessary
 ##
 ## I want a version string 2.4 or 2.5 etc
+##
 PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
+
+## and now setup suitable paths
 if isWindows():
     ppath = os.path.dirname(sys.executable)
     python_include_dirs = os.path.join(ppath, 'include')
@@ -100,33 +105,26 @@ elif isMac(): ## it's Mac OS X
     MAC_ADDR = '32' # default to 32 bit
     if '64' in MAC_ARCH:
         MAC_ADDR = '64' # need to build the right boost libraries FIX = guessing here
-
 else:
     raise (SystemExit, "Don't know what this system is (checked for Windows, Linux and Mac)!")
 
 
 root_dir = os.path.abspath(os.path.dirname(__file__))## The root directory is where this module is located
-
+_root = root_dir
 sys.path.append(os.path.join(root_dir, 'common_utils'))
 shared_ptr_dir = os.path.join(root_dir, 'shared_ptr')
 include_dir = os.path.join(root_dir, 'include')
+_thirdPartyDir = os.path.join(root_dir, 'ThirdParty')
 generated_dir_name = 'generated'
 package_dir_name = 'packages' + "_" + PythonVersionString
 generated_dir = os.path.join(root_dir, generated_dir_name)
 declarations_cache_dir = os.path.join(root_dir, 'code_generators', 'cache')
 
-_ConfigSet = False
-_SystemType = os.name ## nt or posix or mac
-_PlatformType = sys.platform ## win32, ??
-
-UseSystem = "--usesystem" in sys.argv or (os.environ.has_key('USESYSTEM') and eval(os.environ['USESYSTEM'].title()))
-if "--usesystem" in sys.argv:
-    sys.argv.remove("--usesystem")
 
 ##
 ## Now we load the user specific stuff
 ##
-
+_ConfigSet = False
 try:
     s = 'PythonOgreConfig_' + _UserName ## + '.py'
     Config = __import__(s)
@@ -168,7 +166,6 @@ if hasattr(Config, "NUMBER_OF_CORES") and Config.NUMBER_OF_CORES:
 else:
     NUMBER_OF_CORES = numCores()
 
-print "Using the %s cores" % NUMBER_OF_CORES
 
 ######################
 downloadPath = os.path.abspath("downloads")
@@ -205,12 +202,14 @@ else:
         sed_ = "sed --in-place "
 
 ## BIG assumption about where you want things put
-if UseSystem:
+if UseSystem and not isWindows():
     ROOT = '/'
     PREFIX = '/usr'
+    _sudo = 'sudo '
 else:
     ROOT = os.path.join(os.getcwd(), 'root')
     PREFIX = os.path.join(os.getcwd(), 'root', 'usr')
+    _sudo = ''
 
 # set a default set of symbols for gccxml to use when generating code
 # put it here do to the changes that threading makes
@@ -311,7 +310,7 @@ class gccxml(module):
             [0, "mkdir -p gccxml-build", ''],
             [0, "cmake ../gccxml -DCMAKE_INSTALL_PREFIX:PATH=" + PREFIX, os.path.join(os.getcwd(), 'gccxml-build')],
             [0, "make", os.path.join(os.getcwd(), 'gccxml-build')],
-            [0, "make install", os.path.join(os.getcwd(), 'gccxml-build')],
+            [0, _sudo + " make install", os.path.join(os.getcwd(), 'gccxml-build')],
         ]
     else:
         buildCmds = [
@@ -325,65 +324,9 @@ class gccxml(module):
 class install(module):
     source = []
     buildCmds = [
-        [0, "python setup.py install --prefix=%s" % PREFIX, os.path.join(os.getcwd(), 'python-ogre')],
+        [0, _sudo + " python setup.py install --prefix=%s" % PREFIX, os.path.join(os.getcwd(), 'python-ogre')],
     ]
 
-class newton2 ( module ):
-    source_version = "2.16"
-    if isLinux():
-        source_version = "2.13"
-        source = [
-            [wget, "http://www.newtondynamics.com/downloads/NewtonLinux-32-2.13.tar.gz", downloadPath],
-        ]
-
-        buildCmds = [
-            [0, "tar zxf " + os.path.join(downloadPath, "NewtonLinux-32-2.13.tar.gz"), ''],
-            #[0, "patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
-            [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
-            [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
-            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt", ''],
-        ]
-
-
-
-class newton(module):
-    source_version = "1.53"
-    if isLinux():
-        source = [
-            [wget, "http://www.newtondynamics.com/downloads/newtonLinux-1.53.tar.gz", downloadPath],
-        ]
-
-        buildCmds = [
-            [0, "tar zxf " + os.path.join(downloadPath, "newtonLinux-1.53.tar.gz"), ''],
-            [0, "patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
-            [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
-            [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
-            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt", ''],
-        ]
-
-    if isMac():
-        source = [
-            [wget, "http://www.newtondynamics.com/downloads/NewtonMac-1.53.zip", downloadPath]
-        ]
-
-        buildCmds = [
-            [0, "unzip -q -o " + os.path.join(downloadPath, "NewtonMac-1.53.zip"), ''],
-            [0, "patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
-            [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
-            [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
-            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt", '']
-        ]
-
-    if isWindows():
-        source = [
-            [wget, "http://www.newtondynamics.com/downloads/NewtonWin-1.53.zip", downloadPath],
-        ]
-
-
-        buildCmds = [
-            [0, unzip + os.path.join(downloadPath, "NewtonWin-1.53.zip"), ''],
-            [0, "setup.exe", ''],
-        ]
 
 class pygccxml(module):
     source_version = "head"
@@ -393,7 +336,7 @@ class pygccxml(module):
 
     if isLinux() or isMac():
         buildCmds = [
-            [0, "python setup.py install  --prefix=" + PREFIX, os.path.join(os.getcwd(), "pygccxml") ],
+            [0, _sudo + " python setup.py install  --prefix=" + PREFIX, os.path.join(os.getcwd(), "pygccxml") ],
         ]
 
     if isWindows():
@@ -410,7 +353,7 @@ class pyplusplus(module):
 
     if isLinux() or isMac():
         buildCmds = [
-            [0, "python setup.py install  --prefix=" + PREFIX, os.path.join(os.getcwd(), "pyplusplus") ],
+            [0, _sudo + " python setup.py install  --prefix=" + PREFIX, os.path.join(os.getcwd(), "pyplusplus") ],
         ]
 
     if isWindows():
@@ -431,7 +374,7 @@ class cg(module):
              [wget, " http://developer.download.nvidia.com/cg/Cg_2.2/" + base+ ".tgz", downloadPath]
         ]
         buildCmds = [
-            [0, tar + " xvzf " + os.path.join(downloadPath, base) + ".tgz --overwrite", ROOT], # unpack it directly into 'our' root
+            [0, sudo + ' ' + tar + " xvzf " + os.path.join(downloadPath, base) + ".tgz --overwrite", ROOT], # unpack it directly into 'our' root
         ]
 
     elif isMac():
@@ -554,6 +497,22 @@ class scons(module):
             [0, "python setup.py install ", os.path.join(os.getcwd(), base) ]
         ]
 
+class boost_python(module):
+    """ build versionof boost that we include with the SVN code -- builds python, thread and date-time
+    only installs boost_python on Linux
+    """
+    version = "1.42.0"
+    source =[]
+    boostDir = os.path.join(os.getcwd(), "boost_python")
+    buildCmds = [
+        [0, unzip + ' ' + os.path.join(_thirdPartyDir, "boost_python.zip"), '' ],
+        [0, 'bjam -j%i release --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, PREFIX), boostDir ],
+        [0, 'echo This may take a while -- copying each include file individually!!', ''],
+        [0, _sudo + ' bjam  install --with-python  --prefix=%s' %( PREFIX), boostDir ],
+        ]
+        
+        
+        
 class boost(module):
     """Boost module, also included bjam."""
     #if Config._SVN:
@@ -763,7 +722,7 @@ class ogre(pymodule):
             [0, "./configure --prefix=%s --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')], #--with-gui=Xt
             [0, "make -j%i" % NUMBER_OF_CORES, os.path.join(os.getcwd(), 'ogre')],
  #          [0, "make", os.path.join(os.getcwd(), 'ogre')],
-            [0, "make install", os.path.join(os.getcwd(), 'ogre')],
+            [0, _sudo + " make install", os.path.join(os.getcwd(), 'ogre')],
         ]
         libs = [boost.lib, 'OgreMain']
         lib_dirs = [Config.LOCAL_LIB]
@@ -833,7 +792,7 @@ class ois(pymodule):
             [0, "./bootstrap", os.path.join(os.getcwd(), base)],
             [0, "./configure --prefix=%s --includedir=%s/include" % (PREFIX, PREFIX), os.path.join(os.getcwd(), base)],
             [0, 'make', os.path.join(os.getcwd(), base)],
-            [0, 'make install', os.path.join(os.getcwd(), base)]
+            [0, _sudo + ' make install', os.path.join(os.getcwd(), base)]
         ]
 
     if isWindows():
@@ -874,176 +833,6 @@ class ois(pymodule):
     if os.sys.platform == 'darwin':
         LINKFLAGS = '-framework IOKit '
 
-class ogrerefapp(pymodule):
-    ## making this false as replaced by OgreODE etc..
-    active = False
-
-    version = ogre.version # same as the Ogre version
-    name = 'ogrerefapp'
-    parent = "ogre/physics"
-    baseDir = os.path.join(os.getcwd(), 'ogrenew', 'ReferenceApplication')
-    source = []
-    buildCmds = [
-        [0, "aclocal", baseDir],
-        [0, "./bootstrap", baseDir],
-        [0, "./configure --prefix=%s " % PREFIX, baseDir],
-        [0, "make", baseDir],
-        [0, "make install", baseDir],
-    ]
-    if isWindows():
-        libs = [boost.lib, 'OgreMain', 'ode_single', 'ReferenceAppLayer']
-    else:
-        libs = [boost.lib, 'OgreMain', 'ode', 'ReferenceAppLayer']
-
-    lib_dirs = [
-        boost.PATH_LIB,
-        Config.PATH_LIB_Ogre_OgreMain,
-        Config.PATH_LIB_ODE,
-        Config.PATH_LIB_OgreRefApp,
-    ]
-
-    include_dirs = [
-        boost.PATH,
-        Config.PATH_INCLUDE_Ogre,
-        Config.PATH_INCLUDE_OgreRefApp,
-        Config.PATH_INCLUDE_ODE,
-    ]
-
-    ModuleName = 'OgreRefApp'
-
-class ogrenewt(pymodule):
-    version = "r2429"
-    parent = "ogre/physics"
-    base = 'ogreaddons/ogrenewt'
-    if isWindows():
-        libs = ['Newton', boost.lib, 'OgreNewt_Main', 'OgreMain']
-        moduleLibs=[os.path.join(Config.PATH_LIB_Newton,'Newton')]
-    elif isLinux():
-        libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
-    else:
-        libs = ['Newton32', boost.lib, 'OgreMain']
-
-    source = [
-        [svn, " co http://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogrenewt " + base, os.getcwd()]
-    ]
-    baseDir = os.path.join(os.getcwd(), base)
-    buildCmds = [
-        [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
-        [0, rm + " -rf ./OgreNewt_Main/inc/boost", baseDir],
-        [0, 'cp SConscript OgreNewt_Main', baseDir],
-        [0, "scons prefix=%s boost=%s/include/boost-1_37 build" % (PREFIX, PREFIX), baseDir], ##WARNING -- boost include dir name is different than  build name (dash not underscore)
-        [0, "scons prefix=%s boost=%s/include/boost-1_37 install" % (PREFIX, PREFIX), baseDir],
-    ]
-
-    if isWindows():
-        buildCmds = [
-            [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
-            [0, "rmdir  /s /q .\\OgreNewt_Main\\inc\\boost", baseDir],
-            [0, "echo   Now use MSVC to compile OgreNewt -- OgreNewt_vc71.sln", baseDir]
-        ]
-
-    include_dirs = [
-        boost.PATH,
-        Config.PATH_Newton,
-        Config.PATH_INCLUDE_Ogre,
-        Config.PATH_INCLUDE_OgreNewt,
-        Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
-    ]
-    lib_dirs = [
-        boost.PATH_LIB,
-        Config.PATH_LIB_Newton,
-        Config.PATH_LIB_OgreNewt,
-        Config.PATH_LIB_Ogre_OgreMain,
-    ]
-
-    if isMac():
-        include_dirs = [
-            boost.PATH,
-            Config.PATH_Newton,
-            Config.PATH_INCLUDE_Ogre,
-            Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
-            Config.PATH_INCLUDE_OgreNewt
-        ]
-        lib_dirs = [
-            boost.PATH_LIB,
-            Config.PATH_LIB_Newton,
-            Config.PATH_LIB_Ogre_OgreMain,
-        ]
-
-    if isMac():
-        LINKFLAGS = ' -framework OIS '
-
-    ModuleName = 'OgreNewt'
-
-class ogrenewt2(pymodule):
-    version = "r2764_2.11"
-    parent = "ogre/physics"
-    base = 'ogreaddons/ogrenewt2'
-    baseDir = os.path.join(os.getcwd(), base)
-
-    if isWindows():
-        libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
-    elif isLinux():
-        libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
-        buildCmds = [
-            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
-            [0, "make", baseDir],
-            [0, "make install", baseDir]
-            ]
-        CCFLAGS = ' -D_OGRENEWT_DYNAMIC -DOIS_NONCLIENT_BUILD '
-    else:
-        libs = ['Newton32', boost.lib, 'OgreMain']
-
-    source = [
-        [svn, " co http://svn.ogre3d.org/svnroot/ogreaddons/branches/ogrenewt/newton20 " + base, os.getcwd()]
-    ]
-
-
-    if isWindows():
-        buildCmds = [
-     #       [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
-            [0, "echo   Now use MSVC to compile OgreNewt -- OgreNewt_vc71.sln", baseDir]
-        ]
-        CCFLAGS = ' -DWIN32 -D_OGRENEWT_DYNAMIC -DOIS_NONCLIENT_BUILD '
-
-
-    include_dirs = [
-        boost.PATH,
-        Config.PATH_Newton2,
-        os.path.join(Config.PATH_Newton2,'dMath'),
-        os.path.join(Config.PATH_Newton2,'dAnimation'),
-        os.path.join(Config.PATH_Newton2,'dContainers'),
-        os.path.join(Config.PATH_Newton2,'dCustomJoints'),
-        Config.PATH_INCLUDE_Ogre,
-        Config.PATH_INCLUDE_OgreNewt2,
-        Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
-    ]
-    lib_dirs = [
-        boost.PATH_LIB,
-        Config.PATH_LIB_Newton2,
-        Config.PATH_LIB_OgreNewt2,
-        Config.PATH_LIB_Ogre_OgreMain,
-    ]
-    moduleLibs=[os.path.join(Config.PATH_Newton2,'x32','dll_vs9','newton'),
-                os.path.join(Config.PATH_LIB_OgreNewt2, 'OgreNewt')
-                ]
-    if isMac():
-        include_dirs = [
-            boost.PATH,
-            Config.PATH_Newton2,
-            Config.PATH_INCLUDE_Ogre,
-            Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
-            Config.PATH_INCLUDE_OgreNewt2
-        ]
-        lib_dirs = [
-            boost.PATH_LIB,
-            Config.PATH_LIB_Newton2,
-            Config.PATH_LIB_Ogre_OgreMain,
-        ]
-
-        LINKFLAGS = ' -framework OIS '
-
-    ModuleName = 'ogrenewt2'
 
 class cegui(pymodule):
     parent = "ogre/gui"
@@ -2275,6 +2064,233 @@ if ogre.version.startswith ("1.7"):
         ModuleName = "awesomium"
         descText = "Awesomium: WebGUI in Ogre "
 
+        
+class newton2 ( module ):
+    source_version = "2.16"
+    if isLinux():
+        source_version = "2.13"
+        source = [
+            [wget, "http://www.newtondynamics.com/downloads/NewtonLinux-32-2.13.tar.gz", downloadPath],
+        ]
+
+        buildCmds = [
+            [0, "tar zxf " + os.path.join(downloadPath, "NewtonLinux-32-2.13.tar.gz"), ''],
+            #[0, "patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
+            [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt", ''],
+        ]
+
+class newton(module):
+    source_version = "1.53"
+    if isLinux():
+        source = [
+            [wget, "http://www.newtondynamics.com/downloads/newtonLinux-1.53.tar.gz", downloadPath],
+        ]
+
+        buildCmds = [
+            [0, "tar zxf " + os.path.join(downloadPath, "newtonLinux-1.53.tar.gz"), ''],
+            [0, "patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
+            [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt", ''],
+        ]
+
+    if isMac():
+        source = [
+            [wget, "http://www.newtondynamics.com/downloads/NewtonMac-1.53.zip", downloadPath]
+        ]
+
+        buildCmds = [
+            [0, "unzip -q -o " + os.path.join(downloadPath, "NewtonMac-1.53.zip"), ''],
+            [0, "patch -s -i ./python-ogre/patch/Newton.patch -p0 ", ''],
+            [0, "cp newtonSDK/sdk/Newton.h %s/include" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a %s/lib" % PREFIX, ''],
+            [0, "cp newtonSDK/sdk/*.a ogreaddons/ogrenewt", '']
+        ]
+
+    if isWindows():
+        source = [
+            [wget, "http://www.newtondynamics.com/downloads/NewtonWin-1.53.zip", downloadPath],
+        ]
+
+
+        buildCmds = [
+            [0, unzip + os.path.join(downloadPath, "NewtonWin-1.53.zip"), ''],
+            [0, "setup.exe", ''],
+        ]
+        
+class ogrerefapp(pymodule):
+    ## making this false as replaced by OgreODE etc..
+    active = False
+
+    version = ogre.version # same as the Ogre version
+    name = 'ogrerefapp'
+    parent = "ogre/physics"
+    baseDir = os.path.join(os.getcwd(), 'ogrenew', 'ReferenceApplication')
+    source = []
+    buildCmds = [
+        [0, "aclocal", baseDir],
+        [0, "./bootstrap", baseDir],
+        [0, "./configure --prefix=%s " % PREFIX, baseDir],
+        [0, "make", baseDir],
+        [0, "make install", baseDir],
+    ]
+    if isWindows():
+        libs = [boost.lib, 'OgreMain', 'ode_single', 'ReferenceAppLayer']
+    else:
+        libs = [boost.lib, 'OgreMain', 'ode', 'ReferenceAppLayer']
+
+    lib_dirs = [
+        boost.PATH_LIB,
+        Config.PATH_LIB_Ogre_OgreMain,
+        Config.PATH_LIB_ODE,
+        Config.PATH_LIB_OgreRefApp,
+    ]
+
+    include_dirs = [
+        boost.PATH,
+        Config.PATH_INCLUDE_Ogre,
+        Config.PATH_INCLUDE_OgreRefApp,
+        Config.PATH_INCLUDE_ODE,
+    ]
+
+    ModuleName = 'OgreRefApp'
+
+class ogrenewt(pymodule):
+    version = "r2429"
+    parent = "ogre/physics"
+    base = 'ogreaddons/ogrenewt'
+    if isWindows():
+        libs = ['Newton', boost.lib, 'OgreNewt_Main', 'OgreMain']
+        moduleLibs=[os.path.join(Config.PATH_LIB_Newton,'Newton')]
+    elif isLinux():
+        libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
+    else:
+        libs = ['Newton32', boost.lib, 'OgreMain']
+
+    source = [
+        [svn, " co http://ogreaddons.svn.sourceforge.net/svnroot/ogreaddons/trunk/ogrenewt " + base, os.getcwd()]
+    ]
+    baseDir = os.path.join(os.getcwd(), base)
+    buildCmds = [
+        [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
+        [0, rm + " -rf ./OgreNewt_Main/inc/boost", baseDir],
+        [0, 'cp SConscript OgreNewt_Main', baseDir],
+        [0, "scons prefix=%s boost=%s/include/boost-1_37 build" % (PREFIX, PREFIX), baseDir], ##WARNING -- boost include dir name is different than  build name (dash not underscore)
+        [0, "scons prefix=%s boost=%s/include/boost-1_37 install" % (PREFIX, PREFIX), baseDir],
+    ]
+
+    if isWindows():
+        buildCmds = [
+            [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
+            [0, "rmdir  /s /q .\\OgreNewt_Main\\inc\\boost", baseDir],
+            [0, "echo   Now use MSVC to compile OgreNewt -- OgreNewt_vc71.sln", baseDir]
+        ]
+
+    include_dirs = [
+        boost.PATH,
+        Config.PATH_Newton,
+        Config.PATH_INCLUDE_Ogre,
+        Config.PATH_INCLUDE_OgreNewt,
+        Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
+    ]
+    lib_dirs = [
+        boost.PATH_LIB,
+        Config.PATH_LIB_Newton,
+        Config.PATH_LIB_OgreNewt,
+        Config.PATH_LIB_Ogre_OgreMain,
+    ]
+
+    if isMac():
+        include_dirs = [
+            boost.PATH,
+            Config.PATH_Newton,
+            Config.PATH_INCLUDE_Ogre,
+            Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
+            Config.PATH_INCLUDE_OgreNewt
+        ]
+        lib_dirs = [
+            boost.PATH_LIB,
+            Config.PATH_LIB_Newton,
+            Config.PATH_LIB_Ogre_OgreMain,
+        ]
+
+    if isMac():
+        LINKFLAGS = ' -framework OIS '
+
+    ModuleName = 'OgreNewt'
+
+class ogrenewt2(pymodule):
+    version = "r2764_2.11"
+    parent = "ogre/physics"
+    base = 'ogreaddons/ogrenewt2'
+    baseDir = os.path.join(os.getcwd(), base)
+
+    if isWindows():
+        libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
+    elif isLinux():
+        libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
+        buildCmds = [
+            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
+            [0, "make", baseDir],
+            [0, "make install", baseDir]
+            ]
+        CCFLAGS = ' -D_OGRENEWT_DYNAMIC -DOIS_NONCLIENT_BUILD '
+    else:
+        libs = ['Newton32', boost.lib, 'OgreMain']
+
+    source = [
+        [svn, " co http://svn.ogre3d.org/svnroot/ogreaddons/branches/ogrenewt/newton20 " + base, os.getcwd()]
+    ]
+
+
+    if isWindows():
+        buildCmds = [
+     #       [0, "patch -s -N -i ../../python-ogre/patch/ogrenewt.patch -p0", baseDir],
+            [0, "echo   Now use MSVC to compile OgreNewt -- OgreNewt_vc71.sln", baseDir]
+        ]
+        CCFLAGS = ' -DWIN32 -D_OGRENEWT_DYNAMIC -DOIS_NONCLIENT_BUILD '
+
+
+    include_dirs = [
+        boost.PATH,
+        Config.PATH_Newton2,
+        os.path.join(Config.PATH_Newton2,'dMath'),
+        os.path.join(Config.PATH_Newton2,'dAnimation'),
+        os.path.join(Config.PATH_Newton2,'dContainers'),
+        os.path.join(Config.PATH_Newton2,'dCustomJoints'),
+        Config.PATH_INCLUDE_Ogre,
+        Config.PATH_INCLUDE_OgreNewt2,
+        Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
+    ]
+    lib_dirs = [
+        boost.PATH_LIB,
+        Config.PATH_LIB_Newton2,
+        Config.PATH_LIB_OgreNewt2,
+        Config.PATH_LIB_Ogre_OgreMain,
+    ]
+    moduleLibs=[os.path.join(Config.PATH_Newton2,'x32','dll_vs9','newton'),
+                os.path.join(Config.PATH_LIB_OgreNewt2, 'OgreNewt')
+                ]
+    if isMac():
+        include_dirs = [
+            boost.PATH,
+            Config.PATH_Newton2,
+            Config.PATH_INCLUDE_Ogre,
+            Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
+            Config.PATH_INCLUDE_OgreNewt2
+        ]
+        lib_dirs = [
+            boost.PATH_LIB,
+            Config.PATH_LIB_Newton2,
+            Config.PATH_LIB_Ogre_OgreMain,
+        ]
+
+        LINKFLAGS = ' -framework OIS '
+
+    ModuleName = 'ogrenewt2'
+        
 ############################################################################################
 
 ## Here is the master list....
