@@ -7,8 +7,8 @@ _LOGGING_ON = False
 _PreCompiled = True
 _UserName = getpass.getuser()
 PythonOgreMajorVersion = "1"
-PythonOgreMinorVersion = "6"
-PythonOgrePatchVersion = "4"
+PythonOgreMinorVersion = "7"
+PythonOgrePatchVersion = "0"
 
 _SystemType = os.name ## nt or posix or mac
 _PlatformType = sys.platform ## win32, ??
@@ -152,13 +152,16 @@ if not _ConfigSet:
     print "\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % (_SystemType)
     sys.exit(-1)
 
-
-if Config._SVN:
-    PythonOgreMajorVersion = "1"
-    PythonOgreMinorVersion = "7"
-    PythonOgrePatchVersion = "0"
-    #_USE_THREADS = True
-
+## BIG assumption about where you want things put
+if UseSystem and not isWindows():
+    ROOT = '/'
+    Config.ROOT_DIR = '/'  # need to override this so the code generation stuff works
+    PREFIX = '/usr'
+    _sudo = 'sudo '
+else:
+    ROOT = os.path.join(os.getcwd(), 'root')
+    PREFIX = os.path.join(os.getcwd(), 'root', 'usr')
+    _sudo = ''
 
 # Let the user override the number of cores.
 if hasattr(Config, "NUMBER_OF_CORES") and Config.NUMBER_OF_CORES:
@@ -201,15 +204,6 @@ else:
     else:
         sed_ = "sed --in-place "
 
-## BIG assumption about where you want things put
-if UseSystem and not isWindows():
-    ROOT = '/'
-    PREFIX = '/usr'
-    _sudo = 'sudo '
-else:
-    ROOT = os.path.join(os.getcwd(), 'root')
-    PREFIX = os.path.join(os.getcwd(), 'root', 'usr')
-    _sudo = ''
 
 # set a default set of symbols for gccxml to use when generating code
 # put it here do to the changes that threading makes
@@ -220,8 +214,9 @@ if _USE_THREADS:
     defined_symbols.append('BOOST_HAS_THREADS')
     if isWindows():
         defined_symbols.append('BOOST_HAS_WINTHREADS')
-if Config._SVN: # building Ogre 1.7
-        defined_symbols.append ('HAVE_OGRE_BUILDSETTINGS_H') # it uses the cmake buildsettings include
+
+if int(PythonOgreMajorVersion) >=1 and int(PythonOgreMinorVersion) >= 7:
+    defined_symbols.append ('HAVE_OGRE_BUILDSETTINGS_H') # Ogre 1.7 it uses the cmake buildsettings include
 
 
 def unTarGz(base, source):
@@ -706,8 +701,10 @@ class ogre(pymodule):
         LINKFLAGS = ''
 
     elif isLinux():
-        version = "1.6.4"
-        base = "ogre-v1-6-4"
+        version = "1.7.0RC1"
+        base = "ogre-v1-7-0RC1"
+        baseDir = 'ogre'
+        ##https://sourceforge.net/projects/ogre/files/ogre/1.7/ogre-v1-7-0RC1.tar.bz2/download
 
         source = [
             [wget, "http://downloads.sourceforge.net/ogre/" + base + ".tar.bz2", downloadPath],
@@ -724,6 +721,13 @@ class ogre(pymodule):
  #          [0, "make", os.path.join(os.getcwd(), 'ogre')],
             [0, _sudo + " make install", os.path.join(os.getcwd(), 'ogre')],
         ]
+
+        buildCmds = [
+            [0, tar + " jxf " + os.path.join(downloadPath, base) + ".tar.bz2 --overwrite", os.getcwd() ],
+            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
+            [0, "make", baseDir],
+            [0, _sudo + " make install", baseDir]
+            ]
         libs = [boost.lib, 'OgreMain']
         lib_dirs = [Config.LOCAL_LIB]
         include_dirs = [boost.PATH,

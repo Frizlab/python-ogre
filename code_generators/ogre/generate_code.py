@@ -221,9 +221,12 @@ def ManualExclude ( mb ):
     main_ns.class_('UTFString').variable('npos').exclude()
 
 
-    main_ns.class_('CompositorChain').variable('BEST').exclude()
-    main_ns.class_('CompositorChain').variable('LAST').exclude()
-    main_ns.class_('Compiler2Pass').variable('SystemTokenBase').exclude()
+    try:
+        main_ns.class_('CompositorChain').variable('BEST').exclude()
+        main_ns.class_('CompositorChain').variable('LAST').exclude()
+        main_ns.class_('Compiler2Pass').variable('SystemTokenBase').exclude()
+    except:
+        pass
     #main_ns.class_('AnimationTrack').variable('INVALID_KEY_INDEX').exclude()
 
 
@@ -1134,7 +1137,10 @@ def Fix_Posix ( mb ):
     elif sys.platform.startswith ('linux'):
         pass
     mb.global_ns.class_('vector<int, std::allocator<int> >').alias='VectorInt'
-    mb.global_ns.class_('vector<std::pair<unsigned int, unsigned int>, std::allocator<std::pair<unsigned int, unsigned int> > >').alias='VectorUnsignedUnsigned'
+    try:
+        mb.global_ns.class_('vector<std::pair<unsigned int, unsigned int>, std::allocator<std::pair<unsigned int, unsigned int> > >').alias='VectorUnsignedUnsigned'
+    except:
+        pass
     #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
     mb.namespace( MAIN_NAMESPACE ).class_('StringConverter').member_functions('toString').exclude()
 

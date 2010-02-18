@@ -227,6 +227,10 @@ class QuickGUIDemoApp (sf.Application):
         self.desc = gui.GUIManagerDesc()
         sf.info ("done self.desc")
 #     
+        r = gui.Root.getSingleton()
+        sf.info ("got root")
+        print "\nROOT: ",r
+        print self.desc
         self.mGUIManager = gui.Root.getSingleton().createGUIManager(self.desc)
         sf.info ("Created guimanager")
         self.mGUIManager.setSceneManager(self.sceneManager) 
