@@ -18,7 +18,7 @@ LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_41_0' ) #-trunk')
+PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_42_0' ) #-trunk')
 #PATH_Boost =        os.path.join(BASE_DIR, 'boost_svn')
 
 
@@ -33,7 +33,9 @@ if (getpass.getuser() == 'amiller' ):  # special for Andy's machine as I tend to
    PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python_' +PythonVersionString +'/build/msvc-9.0/release/threading-multi')
    _SVN = True
 
-
+PATH_LIB_Boost = os.path.join(PATH_Boost, 'stage/lib' )
+PATH_LIB_Thread_STATIC = PATH_LIB_Boost
+PATH_LIB_date_time_STATIC = PATH_LIB_Boost
 
 # in Linux we need to code in the Relative path for the library
 RPATH=""
