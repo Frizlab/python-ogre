@@ -374,7 +374,7 @@ class cg(module):
              [wget, " http://developer.download.nvidia.com/cg/Cg_2.2/" + base+ ".tgz", downloadPath]
         ]
         buildCmds = [
-            [0, sudo + ' ' + tar + " xvzf " + os.path.join(downloadPath, base) + ".tgz --overwrite", ROOT], # unpack it directly into 'our' root
+            [0, _sudo + ' ' + tar + " xvzf " + os.path.join(downloadPath, base) + ".tgz --overwrite", ROOT], # unpack it directly into 'our' root
         ]
 
     elif isMac():
