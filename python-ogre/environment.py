@@ -885,7 +885,7 @@ class cegui(pymodule):
             [0, "./bootstrap", os.path.join(os.getcwd(), base)],
             [0, "./configure --prefix=%s --enable-freeimage=yes --enable-ogre-renderer=yes --with-default-xml-parser=TinyXMLParser  --includedir=%s/include" % (PREFIX, PREFIX), os.path.join(os.getcwd(), base)],
             [0, 'make', os.path.join(os.getcwd(), base)],
-            [0, 'make install', os.path.join(os.getcwd(), base)]
+            [0, _sudo + ' make install', os.path.join(os.getcwd(), base)]
         ]
 
     if isMac():
