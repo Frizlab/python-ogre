@@ -26,7 +26,9 @@
     sizeof(std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >,Ogre::Node*> );
     sizeof(std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >,Ogre::SharedPtr<Ogre::Resource> > );
     sizeof(std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >,short unsigned int> );
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
     sizeof(std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >,stdext::hash_map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::SharedPtr<Ogre::Resource>, stdext::hash_compare<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::SharedPtr<Ogre::Resource> > > > > );
+#endif
     sizeof(std::pair<std::string const, Ogre::MovableObject*> );
     sizeof(std::pair<std::string const, Ogre::Node*>);
     sizeof(std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> >);
