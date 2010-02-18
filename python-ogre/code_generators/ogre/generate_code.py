@@ -1141,6 +1141,12 @@ def Fix_Posix ( mb ):
         mb.global_ns.class_('vector<std::pair<unsigned int, unsigned int>, std::allocator<std::pair<unsigned int, unsigned int> > >').alias='VectorUnsignedUnsigned'
     except:
         pass
+    try: #new in 1.7 on Linux
+        mb.global_ns.class_('::Ogre::Profiler').exclude()
+
+        mb.global_ns.class_('::Ogre::map<std::string, std::_List_iterator<Ogre::Profiler::ProfileHistory>, std::less<std::string>, Ogre::STLAllocator<std::pair<std::string const, std::_List_iterator<Ogre::Profiler::ProfileHistory> >, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >').exclude()
+    except:
+        pass
     #as reported by mike with linux:bp::arg("flags")=(std::_Ios_Fmtflags)0
     mb.namespace( MAIN_NAMESPACE ).class_('StringConverter').member_functions('toString').exclude()
 
