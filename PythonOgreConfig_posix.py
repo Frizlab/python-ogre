@@ -181,6 +181,7 @@ PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_Ogre,'Components','RTShade
 PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
 PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
+PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include"),
 
 
 if SDK :

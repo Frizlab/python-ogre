@@ -390,6 +390,7 @@ def ManualExclude ( mb ):
               '::Ogre::vector<Ogre::Compiler2Pass::TokenIns',
               '::Ogre::vector<Ogre::EdgeListBuilder::CommonVertex',
               '::Ogre::vector<Ogre::EdgeListBuilder::Geometry',
+              '::Ogre::vector<Ogre::EdgeListBuilder::vectorLess',
               '::Ogre::vector<Ogre::GpuSharedParametersUsage::CopyDataEntry',
               '::Ogre::vector<Ogre::ProgressiveMesh::PMFaceVertex',
               '::Ogre::vector<Ogre::ProgressiveMesh::PMVertex',
@@ -566,6 +567,15 @@ def ManualInclude ( mb ):
             oper.include()
     main_ns.class_('MaterialPtr').include()
 
+    ex = ['::Ogre::EdgeListBuilder::vectorLess',
+          '::Ogre::EdgeListBuilder::CommonVertex'
+        ]
+    for c in ex:
+        try:
+            main_ns.class_(c).exclude()
+            print "Excluded:", c
+        except:
+            print "Failed to Exclude:", c
 
 ############################################################
 ##
