@@ -5,7 +5,7 @@
 
 ##
 ## NOTE use this for MacOS or Linux
-PluginFolder=/home/andy/development/root/usr/lib/OGRE
+PluginFolder=/usr/lib/OGRE
 Plugin=RenderSystem_GL
 Plugin=Plugin_ParticleFX
 Plugin=Plugin_BSPSceneManager

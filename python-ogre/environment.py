@@ -625,6 +625,7 @@ class boost(module):
         PATH_LIB = Config.PATH_LIB_Boost
 
     if not isWindows():
+        #print "*****", Config.LIB_Boost, Config
         # If we are not given a LIB_Boost, use the version we are building.
         if Config.LIB_Boost is None:
             if isMac():  # latest version of boost build on mac generate a 'nice' boost lib name
@@ -637,7 +638,7 @@ class boost(module):
                 lib = "boost_python-gcc%s%s-mt" % (gcc_version[0], gcc_version[1])
         else:
             lib = Config.LIB_Boost
-
+    #lib = "libboost_python"
 ####################################################
 ##
 ## Now for the actual Python-Ogre Modules
