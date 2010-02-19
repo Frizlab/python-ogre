@@ -75,19 +75,19 @@ def ManualExclude ( mb ):
             main_ns.member_function(c).exclude()
         except:
             print "failed to exclude:", c
-    ex = ["::Ogre::RTShader::SGMaterialSerializerListener::createSGPassList"]
+    ex = []
     for c in ex:
         try:
-            main_ns.member_function(c).exclude()
+            main_ns.member_variable(c).exclude()
         except:
             print "failed to exclude:", c
-    ex=["Ogre::RTShader::ShaderGenerator::SGPass"]
+    ex=["Ogre::RTShader::ShaderGenerator::SGPass","Ogre::RTShader::ProgramProcessor"]
     for c in ex:
         try:
             main_ns.class_(c).exclude()
         except:
             print "failed to exclude:", c
-    
+ 
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 

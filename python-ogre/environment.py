@@ -2018,7 +2018,7 @@ if ogre.version.startswith ("1.7"):
         include_dirs = [
             boost.PATH,
             Config.PATH_INCLUDE_Ogre,
-            os.path.join(Config.PATH_Ogre, "Samples", "Common", "include"),
+            Config.PATH_INCLUDE_sdksample,
             Config.PATH_INCLUDE_OIS
         ]
         lib_dirs = [
