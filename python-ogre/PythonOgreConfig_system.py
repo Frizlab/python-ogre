@@ -148,6 +148,7 @@ PATH_INCLUDE_ogreterrain =   os.path.join(PATH_INCLUDE_Ogre,'Terrain')
 PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeZone' )
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeSceneManager' )
 PATH_INCLUDE_sdksample = os.path.join(module_dir, "..", "ogre", "Samples", "Common", "include")
+PATH_INCLUDE_ogrepcz = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'PCZSceneManager')
 
 PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_OgreNewt2 =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
@@ -206,7 +207,6 @@ PATH_INCLUDE_PhysX= [ physxbase
                     ]
 PATH_INCLUDE_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
 PATH_INCLUDE_opensteer_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
-PATH_INCLUDE_ogrepcz = os.path.join(PATH_ogrepcz,'include')
 PATH_INCLUDE_hydrax=        PATH_hydrax
 PATH_INCLUDE_hikari = os.path.join(PATH_hikari ) #, 'include')
 PATH_INCLUDE_mygui = os.path.join(PATH_mygui,'MyGUIEngine','include') 
