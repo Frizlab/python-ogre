@@ -380,6 +380,7 @@ def ManualExclude ( mb ):
               '::Ogre::map<Ogre::Resource*',
               '::Ogre::map<std::string, Ogre::ResourceGroupManager::ResourceGroup*',
               '::Ogre::map<Ogre::Vector3, unsigned int, Ogre::EdgeListBuilder::vectorLess',
+              '::Ogre::map<Ogre::Vector3, unsigned long, Ogre::EdgeListBuilder::vectorLess', #64 bit version
               '::Ogre::map<unsigned int, Ogre::Vector3',
               '::Ogre::set<Ogre::ProgressiveMesh::PMTriangle*',
               '::Ogre::set<Ogre::ProgressiveMesh::PMVertex*',
