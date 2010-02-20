@@ -318,9 +318,14 @@ class gccxml(module):
 
 class install(module):
     source = []
-    buildCmds = [
-        [0, _sudo + " python setup.py install --prefix=%s" % PREFIX, os.path.join(os.getcwd(), 'python-ogre')],
-    ]
+    if UseSystem:
+        buildCmds = [
+            [0, _sudo + " python setup.py install ", os.path.join(os.getcwd(), 'python-ogre')],
+        ]
+    else:
+        buildCmds = [
+            [0, _sudo + " python setup.py install --prefix=%s" % PREFIX, os.path.join(os.getcwd(), 'python-ogre')],
+        ]
 
 
 class pygccxml(module):
@@ -330,9 +335,14 @@ class pygccxml(module):
     ]
 
     if isLinux() or isMac():
-        buildCmds = [
-            [0, _sudo + " python setup.py install  --prefix=" + PREFIX, os.path.join(os.getcwd(), "pygccxml") ],
-        ]
+        if UseSystem:
+            buildCmds = [
+                [0, _sudo + " python setup.py install " , os.path.join(os.getcwd(), "pygccxml") ],
+            ]
+        else:
+            buildCmds = [
+                [0, _sudo + " python setup.py install  --prefix=" + PREFIX, os.path.join(os.getcwd(), "pygccxml") ],
+            ]
 
     if isWindows():
         buildCmds = [
@@ -347,9 +357,14 @@ class pyplusplus(module):
     ]
 
     if isLinux() or isMac():
-        buildCmds = [
-            [0, _sudo + " python setup.py install  --prefix=" + PREFIX, os.path.join(os.getcwd(), "pyplusplus") ],
-        ]
+        if UseSystem:
+            buildCmds = [
+                [0, _sudo + " python setup.py install " , os.path.join(os.getcwd(), "pygccxml") ],
+            ]
+        else:
+            buildCmds = [
+                [0, _sudo + " python setup.py install  --prefix=" + PREFIX, os.path.join(os.getcwd(), "pygccxml") ],
+            ]
 
     if isWindows():
         buildCmds = [
@@ -725,7 +740,7 @@ class ogre(pymodule):
 
         buildCmds = [
             [0, tar + " jxf " + os.path.join(downloadPath, base) + ".tar.bz2 --overwrite", os.getcwd() ],
-            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
+            [0, "cmake . -DOGRE_INSTALL_PLUGINS_HEADERS=TRUE -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
             [0, "make", baseDir],
             [0, _sudo + " make install", baseDir]
             ]
