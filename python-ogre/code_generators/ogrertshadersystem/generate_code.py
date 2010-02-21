@@ -120,7 +120,14 @@ def ManualFixes ( mb ):
         main_ns = global_ns
     func = main_ns.member_function("::Ogre::RTShader::FunctionInvocation::pushOperand")      
     func.arguments[2].default_value = "(int) ::Ogre::RTShader::Operand::OPM_ALL"
-    
+    for c in global_ns.namespace('std').classes():
+        print c
+        if 'vector<Ogre::RTShader::ProgramProcessor::MergeParameter,Ogre::STLAllocator<Ogre::RTShader::' in c.decl_string:
+            print "FOUND!!"
+            c.alias = "stdVectoRTShaderProgramProcessorMergeParameter"
+    #c = main_ns.class_('std::vector<Ogre::RTShader::ProgramProcessor::MergeParameter,Ogre::STLAllocator<Ogre::RTShader::ProgramProcessor::MergeParameter, Ogre::CategorisedAllocPolicy<MEMCATEGORY_GENERAL> > >')
+    #c.alias = "stdVectoRTShaderProgramProcessorMergeParameter"
+    sys.exit(-1)
     for c in main_ns.classes():
         if "SGPass" in c.name:
             print "Excluding:", c
@@ -328,6 +335,28 @@ def generate_code():
 #                             destPath = environment.ogrertshadersystem.generated_dir, 
 #                             recursive=False )
         
+    if environment.ogre.version.startswith("1.7"):
+        ## have a code generation issue that needs resolving...
+        filesToFix=['CGProgramProcessor.pypp.cpp', 'GLSLProgramProcessor.pypp.cpp','HLSLProgramProcessor.pypp.cpp',
+                    'ProgramProcessor.pypp.cpp', 'stdMapRTShaderParameterOperand.pypp.cpp', 
+                    'stdMapRTShaderParameterParameter.pypp.cpp',]
+        for filename in filesToFix:
+            fname = os.path.join( environment.ogre.generated_dir, filename)
+            try:
+                f = open(fname, 'r')
+                buf = f.read()
+                f.close()
+                if (" MEMCATEGORY_GENERAL" in buf) or ("<MEMCATEGORY_GENERAL" in buf):
+                    buf = buf.replace ( " MEMCATEGORY_GENERAL", " Ogre::MEMCATEGORY_GENERAL")
+                    buf = buf.replace ( "<MEMCATEGORY_GENERAL", "<Ogre::MEMCATEGORY_GENERAL")
+                    f = open ( fname, 'w+')
+                    f.write ( buf )
+                    f.close()
+                    print "UGLY FIX OK:", fname
+            except:
+                print "ERROR: Unable to fix:", fname
+
+
 if __name__ == '__main__':
     start_time = time.clock()
     generate_code()
