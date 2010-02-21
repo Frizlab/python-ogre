@@ -260,14 +260,6 @@ def ManualExclude ( mb ):
     global_ns.class_('::Ogre::OverlayManager').\
         mem_fun('destroyOverlayElementImpl', arg_types=['::Ogre::OverlayElement *',None] ).exclude()
 
-
-    excludes = ['::Ogre::Any::getType'  ## this returns a std::type_info which doesn't make any sense in Python
-    ]
-    for e in excludes:
-        print "excluding ", e
-        main_ns.member_functions(e).exclude()
-
-
     ## change due to CVS Ogre update (Thanks Dermont)
     AttribParserList = main_ns.typedef( name="AttribParserList" )
     declarations.class_traits.get_declaration( AttribParserList ).exclude()
@@ -452,6 +444,7 @@ def ManualExclude ( mb ):
                     
         excludelist= ['::Ogre::FileHandleDataStream', # uses FILE (c style) -- can use FileStreamDataStream instead
                       '::Ogre::Node::DebugRenderable', # not implemented
+                      ##'::Ogre::VisibleObjectsBoundsInfo',  # possible 64 bit Linux Fix
                       ]
         for c in excludelist:
             try:
@@ -477,6 +470,8 @@ def ManualExclude ( mb ):
                       '::Ogre::TextureUnitState::getReferencedMRTIndex',
                       '::Ogre::TextureUnitState::getReferencedTextureName',
                       '::Ogre::TextureUnitState::getReferencedCompositorName',
+                      '::Ogre::Any::getType',  ## this returns a std::type_info which doesn't make any sense in Python
+                      '::Ogre::VisibleObjectsBoundsInfo::mergeNonRenderedButInFrustum'  ## 64 bit Linux fix
                       ]
         for c in excludelist:
             try:
@@ -484,7 +479,6 @@ def ManualExclude ( mb ):
                 print "Excluded:", c
             except:
                 print "ERROR: Unable to exclude:", c
-
 
 ####################b########################################
 ##
