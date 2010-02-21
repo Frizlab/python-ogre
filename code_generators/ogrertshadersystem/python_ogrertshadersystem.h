@@ -4,6 +4,13 @@
 #endif
 #include "OgreRTShaderSystem.h"
 #include "OgreShaderProgramSet.h"
+#include "OgreShaderHLSLProgramProcessor.h"
+#include "OgreShaderGLSLProgramProcessor.h"
+#include "OgreShaderCGProgramProcessor.h"
+#include "OgreShaderHLSLProgramWriter.h"
+#include "OgreShaderGLSLProgramWriter.h"
+#include "OgreShaderCGProgramWriter.h"
+
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {
