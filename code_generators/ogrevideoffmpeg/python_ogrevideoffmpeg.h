@@ -1,3 +1,4 @@
+#include "../ogre/python_ogre_include_OGRE.h"
 
 #include "videoPlayer.h"
 

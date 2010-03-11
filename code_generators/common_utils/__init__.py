@@ -5,6 +5,8 @@ import datetime
 import subprocess
 ##import hashlib ## makes this 2.5 dependent
 import md5
+import logging
+
 from pygccxml import declarations
 from pyplusplus.decl_wrappers import property_t
 
@@ -26,6 +28,64 @@ def input_c_string( *args, **keywd ):
     return creator
     
 ft.input_c_string = input_c_string
+_logger = None
+
+def setup_logging (logfilename):
+    global _logger
+    # set up logging to file
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                        datefmt='%m-%d %H:%M',
+                        filename=logfilename,
+                        filemode='w')
+    # define a Handler which writes INFO messages or higher to the sys.stderr
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    # set a format which is simpler for console use
+    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    # tell the handler to use this format
+    console.setFormatter(formatter)
+    # add the handler to the root logger
+    logging.getLogger('').addHandler(console)
+    _logger = logging.getLogger('PythonOgre')
+
+def log_error (msg):
+    if _logger:
+        _logger.error (msg)
+        
+def log_warning  (msg):
+    if _logger:
+        _logger.warn(msg)
+        
+def log_info (msg):
+    if _logger:
+        _logger.info(msg)
+
+def log_exclude (msg, ok=True, extra=None):
+    """ helper specifically for excluding stuff (classes, memeber functions...)
+    """
+    if ok:
+        _msg =  "Excluded: " + str(msg)
+        if extra:
+            _msg += ' (' + extra + ')'
+        log_info( _msg )
+    else:
+        _msg =  "Unable to excluded: " + str(msg)
+        if extra:
+            _msg += ' (' + extra + ')'
+        log_info( _msg )
+        
+def log_include (msg, ok=True, extra=None):
+    if ok:
+        _msg =  "Included: " + str(msg)
+        if extra:
+            _msg += ' (' + extra + ')'
+        log_info( _msg )
+    else:
+        _msg =  "Unable to include: " + str(msg)
+        if extra:
+            _msg += ' (' + extra + ')'
+        log_info( _msg )
 
 def configure_shared_ptr( mb ):
     exposer = shared_ptr.exposer_t( mb )
@@ -211,7 +271,7 @@ def fix_unnamed_classes( classes, namespace ):
                 continue
             except:
                 print "**** Error in unnamed_classes", mvar
-            print "Fixing Unnamed Class:", unnamed_cls, mvar, names_parent.name                            
+            print "Fixing Unnamed Class:", unnamed_cls, mvar, named_parent.name
             named_parent.add_code( template % dict( ns=namespace, mvar=mvar.name, parent=named_parent.name ) )
 
 def set_declaration_aliases(global_ns, aliases):
@@ -709,7 +769,7 @@ def samefile ( sourcefile, destfile):
             
     return True
                                 
-def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx','cxx','hpp'], collapse = False ):
+def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx','cxx','hpp'], collapse = False, files_in=None ):
     """ function to do a nice tree copy with file filtering and directory creation etc 
        
         Setting collapse to True makes us copy files from the destintion into a single source directory.
@@ -743,8 +803,11 @@ def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx
     ## Main code starts here
     
     if not recursive: # Ok so we only care about a single directory and hence don't care about collapse setting
-        files =  os.listdir( sourcePath )   # get files
-        files = filterExtensions ( files, extensions )  # filter them
+        if not files_in:
+            files =  os.listdir( sourcePath )   # get files
+            files = filterExtensions ( files, extensions )  # filter them
+        else:
+            files = files_in
         if len( files ) > 0: 
             makePath ( destPath )   # make a path if need be
             for fileName in files:
@@ -777,110 +840,4 @@ def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx
                     copyFile ( fileName, currentDir, destPath )                      
                     
                     
-                    
-# # # OK this section is probaly way over the top.. The intention is to process arguments within a function to determine
-# # # if they need to be functionaly transformed (wrapped) or warnings issued.  I want this to be as generic as 
-# # # possible and still be overridden on a per module basis.
-# # # 
-# # # We define functions that handle the actual transformation and documentation generation ( tf_XXXXX )
-# # # 
-# # # And then feel a list of tranformHelper classes into the main loop -- it then process each in the list to see
-# # # if they want to handle the argument.  This does make the order important.  Also they can have a simple prefix
-# # # filter on the function name -- ie if the function starts with "get" then it probably needs an output only
-# # # transformation -- otherwise we default to an input/output transformation
-#     
-# def tf_modify_unsignedint ( arg, position, docin="" ):
-#     t = ft.modify_type(position,_ReturnUnsignedInt )
-#     desc = "Argument: "+arg.name+ "( pos:" + str(position) +") takes a CTypes.addressof(xx) - "\
-#                         arg.type.decl_string + "." + docin  
-#     return ( t, desc )
-#     
-# def tf_inout ( arg, position, docin="" ):
-#     t = ft.inout(position )
-#     desc = "Argument: "+arg.name+ "( pos:" + str(position) +") is now an in/out (added to the returned variables). " + docin  
-#     return ( t, desc ) 
-#      
-# def tf_output ( arg, position, docin="" ):
-#     t = ft.output(position )
-#     desc = "Argument: "+arg.name+ "( Original pos:" + str(position) +") is an output only (no longer in the input arg list). " + docin  
-#     return ( t, desc ) 
-#     
-# def tf_warn_unsupported_pointer ( arg, position, docin="" ):
-#     t = []
-#     desc = "WARNING: Argument: "+arg.name+ "( pos:" + str(position) +") is unsupported ! " + arg.type_decl_string + docin
-#     return ( t, desc ) 
-#             
-# class tranformHelper:
-#     def __init__ ( self, lookupType, actionFunctions, startswith=[""], docs=[""]  )
-#         self.lookupType = lookupType
-#         if isinstance ( actionFunctions, list ):
-#             self.actionFunctions = actionFunctions
-#         else:
-#             self.actionFunctions = [ actionFunctions ]
-#             
-#         if isinstance ( startswith, list ): self.startswith = startswith
-#         else : self.startswith = [ startswith ]  
-#         
-#         if isinstance ( docs, list ) : self.docs = docs
-#         else : self.docs = [ docs ]
-#         self.transforms=[]
-#         self.docstring = ""
-#  
-#     def process ( self, function, arg, position ):
-#         self.transforms = None
-#         self.docstring = None
-#         index = 0
-#         # first check if we match on the argument type
-#         if arg.type.decl_string != self.lookupType:
-#             return False
-#         
-#         # now do we care about the function name   
-#         for s in self.startswith:   # assume there will at least be an empty string which is match anything
-#             if function.name.startswith ( s ) or s == "" :  # we have a match
-#                 ( self.transforms, self.docstring ) = self.actionFunctions[ index ] ( function, arg, position, docs[ index ] )
-#                 return True   # we processed this argument    
-#             index += 1        
-#         return False    # wasn't ours...             
-#            
-#                    
-#           
-# def Auto_Functional_Transformation ( mb, additional_rules=[], ignore_functions=[], ignore_classes=[],
-#             base_rules=[
-#                         # may change these to tf_modify_unsignedint ????
-#                         transformHelper ('unsigned int *', tf_warn_unsupported_pointer )
-#                         ,transformHelper ('int *', tf_warn_unsupported_pointer )
-#                         ,transformHelper ('float *', tf_warn_unsupported_pointer )
-#                         ,transformHelper ('bool *', tf_warn_unsupported_pointer )
-#                         
-#                         # these ones are probably byte buffers
-#                         ,transformHelper ('char *', tf_modify_unsignedint )
-#                         ,transformHelper ('void *', tf_modify_unsignedint )
-#                         ,transformHelper ('unsigned char *', tf_modify_unsignedint  )
-#                         
-#                         # assume functions that are 'getXX' are probably returning functions only
-#                         ,transformHelper ('unsigned int &', tf_output, 'get') 
-#                         ,transformHelper ('int &', tf_output, 'get') 
-#                         ,transformHelper ('float &', tf_output, 'get') 
-#                         ,transformHelper ('unsigned char &', tf_output, 'get') 
-#                         ,transformHelper ('char &', tf_output, 'get') 
-#                         ,transformHelper ('bool &', tf_output, 'get') 
-#                         
-#                         # default is to make everything an in/out...
-#                         # could make const version of this input only 
-#                         ,transformHelper ('unsigned int &', tf_inout) 
-#                         ,transformHelper ('int &', tf_inout) 
-#                         ,transformHelper ('float &', tf_inout) 
-#                         ,transformHelper ('unsigned char &', tf_inout) 
-#                         ,transformHelper ('char &', tf_inout) 
-#                         ,transformHelper ('bool &', tf_inout)
-#                         
-#                         ,transformHelper ('unsigned int const &', tf_inout) 
-#                         ,transformHelper ('int const &', tf_inout) 
-#                         ,transformHelper ('float const &', tf_inout) 
-#                         ,transformHelper ('unsigned char const &', tf_inout) 
-#                         ,transformHelper ('char const &', tf_inout) 
-#                         ,transformHelper ('bool const &', tf_inout) 
-#                         
-#                         
-#                         ]          
                     

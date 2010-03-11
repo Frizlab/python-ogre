@@ -85,6 +85,14 @@ sizeof( std::multimap< std::string, std::string > );
 sizeof( std::map<Ogre::String, Ogre::MovableObjectFactory*> );
 sizeof( std::map<Ogre::String, Ogre::Archive*> );
 sizeof( std::list<Ogre::Particle*> );
+sizeof( std::list<Ogre::Plane> );
+sizeof( std::pair<bool, std::string> );
+sizeof( std::pair<std::string const, Ogre::Node*> );
+sizeof( std::pair<std::string const, unsigned short> );
+sizeof( std::pair<std::string const, Ogre::MovableObject*> );
+sizeof( std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> > );
+
+
 sizeof( specialList);
 sizeof( Ogre::ushort );
 sizeof( Ogre::ulong );

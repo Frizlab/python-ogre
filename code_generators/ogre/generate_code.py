@@ -6,15 +6,6 @@
 # For the latest info, see http://python-ogre.org/
 #
 # -----------------------------------------------------------------------------
-"""  To Do list:
-
-Continue to ignore ptr() functions in Vectors2/3/4 and Matrix 2/3/4 - these simple return a pointer to the start of the
-underlying data memebers and can be accessed in python with matrix3.x, matrix3.y etc
-
-Functions with Matrices and Vertices need to be managed - as they expect a pointer to an array of Matrix4/Vector3 etc
-Review all the functions with 'Check' beside them in the output as they probably don't work........
-
-"""
 
 import os, sys, time, shutil
 _DEBUG=False
@@ -59,6 +50,9 @@ import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
 
+# setup a shortcut to the logger functions
+from common_utils import log_exclude as log_exclude
+from common_utils import log_include as log_include
 
 ##
 ## EXPERIMENTAL for SWIG code generation
@@ -123,27 +117,132 @@ def ManualExclude ( mb ):
     else:
         main_ns = global_ns
 
-    ## Specifically remove functions that we have wrapped in hand_made_wrappers.py
-    main_ns.class_( "RenderTarget" ).member_functions( 'getCustomAttribute' ).exclude()
+    # so first remove all the member functions that cause issues.
+    ex = [
+        # Specifically remove functions that we have wrapped in hand_made_wrappers.py
+        '::Ogre::ResourceManager::getByName',
+        '::Ogre::ResourceManager::getByHandle',
+        '::Ogre::ResourceManager::load',
+        '::Ogre::ResourceManager::create',
+        '::Ogre::RenderTarget::getCustomAttribute',
+        '::Ogre::SceneManager::setOption',
+        '::Ogre::SceneManager::getOption',
+        '::Ogre::ParticleSystem::_getIterator',
 
-    # hand made wrapper to return correct types
-    global_ns.class_('::Ogre::ResourceManager').mem_fun('getByName').exclude()
-    global_ns.class_('::Ogre::ResourceManager').mem_fun('getByHandle').exclude()
-    global_ns.class_('::Ogre::ResourceManager').mem_fun('load').exclude()
-    global_ns.class_('::Ogre::ResourceManager').mem_fun('create').exclude()
+        '::Ogre::InstancedGeometry::BatchInstance::getObjectsAsArray', #Ogre 1.4
+
+        '::Ogre::VertexElement::baseVertexPointerToElement', ##now as a transformed funct
+
+        '::Ogre::Node::getChild',
+        '::Ogre::Node::removeChild',
+        '::Ogre::Node::getParent',
+
+        # these need to be dynamically cast before returning their result
+        '::Ogre::OverlayElement::findElementAt',
+        '::Ogre::OverlayElement::clone',
+        '::Ogre::CompositorChain:_queuedOperation', #needs RenderSystemOperation
+        '::Ogre::OptimisedUtil::softwareVertexSkinning',  # this isn't in the LINUX include for 1.4.1
+
+        '::Ogre::UTFString::at',
+        '::Ogre::UTFString::data',
+        '::Ogre::UTFString::c_str',
+        '::Ogre::UTFString::asUTF32_c_str',
+        '::Ogre::HashedVector<Ogre::Light*>::resize',  # compile time issue
+        '::Ogre::HashedVector<Ogre::Light*>::at',
+        '::Ogre::SceneManager::_pauseRendering', # bug in source needs fixing
+        '::Ogre::SceneManager::_resumeRendering',
+        #'::Ogre::CompositorManager::getCustomCompositionPass',
+        '::Ogre::NedPoolingPolicy::deallocateBytes',
+
+        # these need the source patched -- they are implemented in the header file not the cpp one
+        '::Ogre::Mesh::unnameSubMesh',
+        '::Ogre::OverlayManager::hasOverlayElementImpl',
+        '::Ogre::OverlayManager::hasOverlayElement',
+        '::Ogre::Rectangle2D::setCorners',
+        '::Ogre::TextureUnitState::setCompositorReference',
+        '::Ogre::TextureUnitState::getReferencedMRTIndex',
+        '::Ogre::TextureUnitState::getReferencedTextureName',
+        '::Ogre::TextureUnitState::getReferencedCompositorName',
+        '::Ogre::Any::getType',  ## this returns a std::type_info which doesn't make any sense in Python
+        '::Ogre::VisibleObjectsBoundsInfo::mergeNonRenderedButInFrustum',  ## 64 bit Linux fix
+        '::Ogre::ResourceGroupManager::addCreatedResource',
+        '::Ogre::ScriptCompiler::removeNameExclusion',    # these don't exist
+        '::Ogre::ScriptCompiler::addNameExclusion',
+        '::Ogre::SceneManager::getQueuedRenderableVisitor',
+        '::Ogre::BillboardSet::getTextureCoords',
+        '::Ogre::BillboardSet::setTextureCoords',
+        '::Ogre::MaterialSerializer::invokeParser',
+        '::Ogre::OverlayManager::parseNewElement',
+        ## missing symbols at link time, including constructor and destructor!
+        '::Ogre::InstancedGeometry::MaterialBucket::getGeometryBucketList',
+        '::Ogre::InstancedGeometry::MaterialBucket::getMaterialBucketMap',
+        # this one expects a pointer to matrix4 and will return mBoneList.size() of them
+        '::Ogre::Skeleton::_getBoneMatrices',
+        '::Ogre::DefaultWorkQueueBase::RequestHandlerHolder',
 
 
+        ]
+    for e in ex:
+        try:
+            global_ns.member_functions(e).exclude()
+            log_exclude(e)
+        except:
+            log_exclude(e, False) # log it failing
 
-    global_ns.class_('::Ogre::Node').member_functions('getChild').exclude()
-    global_ns.class_('::Ogre::Node').member_functions('removeChild').exclude()
-    global_ns.class_('::Ogre::Node').member_functions('getParent').exclude()
+    # now for problem clases
+    ex = [  #AJM Set of functions in Particle system that don't get wrapped properly.. Rechecked 30Nov06 AJM
+            # Other 'Cmd..' classes are defined as _OgrePrivate, whereas these are not in the head file
+            '::Ogre::ParticleSystem::CmdIterationInterval',
+            '::Ogre::ParticleSystem::CmdSorted',
+            '::Ogre::ParticleSystem::CmdLocalSpace',
+            '::Ogre::ParticleSystem::CmdNonvisibleTimeout',
+            '::Ogre::ErrorDialog',  # doesn't exist for link time
+            '::Ogre::CompositorInstance::RenderSystemOperation', # doesn't exist for link time
+            '::Ogre::UnifiedHighLevelGpuProgramFactory',
+            '::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate',
+            '::Ogre::FileHandleDataStream', # uses FILE (c style) -- can use FileStreamDataStream instead
+            '::Ogre::Node::DebugRenderable', # not implemented
+            '::Ogre::EdgeListBuilder::vectorLess',
+            '::Ogre::EdgeListBuilder::CommonVertex',
+            '::Ogre::GpuProgramParameters::AutoConstantEntry'
+            ]
+    for e in ex:
+        try:
+            global_ns.class_(e).exclude()
+            log_exclude(e)
+        except:
+            log_exclude(e, False) # log it failing
 
-    # these need to be dynamically cast before returning their result
-    global_ns.class_('::Ogre::OverlayElement').mem_fun('findElementAt').exclude()
-    global_ns.class_('::Ogre::OverlayElement').mem_fun('clone').exclude()
-# #     global_ns.class_('::Ogre::OverlayManager').mem_fun('createOverlayElement').exclude()
+    # and member variables
+    ex = [
+        '::Ogre::GpuLogicalBufferStruct::map',
+        ## These are really unions
+        '::Ogre::GpuProgramParameters::AutoConstantEntry::data',
+        '::Ogre::GpuProgramParameters::AutoConstantEntry::fData',
+        '::Ogre::AutoConstantEntry::data',
+        '::Ogre::AutoConstantEntry::fData',
+        '::Ogre::ShadowVolumeExtrudeProgram::programNames',  #funky string[8]
+        '::Ogre::UTFString::mVoidBuffer',
+        '::Ogre::UTFString::mStrBuffer',
+        '::Ogre::UTFString::mWStrBuffer',
+        '::Ogre::UTFString::mUTF32StrBuffer',
+        '::Ogre::UTFString::npos',
+        '::Ogre::CompositorChain::BEST',
+        '::Ogre::CompositorChain::LAST',
+        '::Ogre::Compiler2Pass::SystemTokenBase',
 
-
+    ]
+    for e in ex:
+        p=e.rindex('::') # need to split out the var from the class
+        _class=e[:p]
+        _var=e[p+2:]
+        try:
+            global_ns.class_(_class).variable(_var).exclude()
+            log_exclude(e)
+        except:
+            log_exclude(e, False) # log it failing
+            
+    # Now for the specials
     startswith = [
         'WIN32'
         , 'MemoryManager'   ## it's a specialised C++ mem manger not needed in Python
@@ -152,39 +251,19 @@ def ManualExclude ( mb ):
         , 'StringConverter' ## the tostring introduces registration order issues which means it doesn't really work
     ]
 
-
     ## Now get rid of a wide range of classes as defined earlier in startswith...
     for prefix in startswith:
         ### NOTE the PREFIX is used here !!!!
         classes = main_ns.classes( common_utils.decl_starts_with(prefix), allow_empty=True)
-        classes.exclude()
-
-    #AJM Set of functions in Particle system that don't get wrapped properly.. Rechecked 30Nov06 AJM
-    ## Other 'Cmd..' classes are defined as _OgrePrivate, whereas these are not in the head file
-    PartSys = main_ns.class_( "ParticleSystem" )
-    PartSys.class_( "CmdIterationInterval" ).exclude()
-    PartSys.class_( "CmdLocalSpace" ).exclude()
-    PartSys.class_( "CmdNonvisibleTimeout" ).exclude()
-    PartSys.class_( "CmdSorted" ).exclude()
-
-
-    #exclude GpuLogicalIndexUseMap  NOTE:  Example use of Py++ to exclude a special variable........
-    GpuLogicalBufferStruct = main_ns.class_( 'GpuLogicalBufferStruct' )
-    GpuLogicalBufferStruct.variable( 'map' ).exclude()
-
-    ## These are really unions
-    main_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('data').exclude()
-    main_ns.class_('GpuProgramParameters').class_('AutoConstantEntry').variable('fData').exclude()
-
-    # functions that take pointers to pointers
-    main_ns.class_( 'VertexElement').member_functions('baseVertexPointerToElement').exclude() ## now as a transformed funct
-
-    if environment.ogre.version =="1.4":
-        mb.global_ns.mem_fun('::Ogre::InstancedGeometry::BatchInstance::getObjectsAsArray').exclude()
+        for e in classes:
+            try:
+                e.exclude()
+                log_exclude(e)
+            except:
+                log_exclude(e, False) # log it failing
 
     #all constructors in this class are private, also some of them are public.
-
-    try: 
+    try:
         main_ns.free_functions ('any_cast').exclude () #not relevant for Python
     except:
         pass
@@ -196,65 +275,6 @@ def ManualExclude ( mb ):
     main_ns.calldefs ('peekNextPtr').exclude ()
     main_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
 
-    main_ns.class_( "ErrorDialog" ).exclude()   # doesn't exist for link time
-    main_ns.class_( 'CompositorInstance').class_('RenderSystemOperation').exclude() # doesn't exist for link time
-    main_ns.class_( 'CompositorChain').mem_fun('_queuedOperation').exclude() #needs RenderSystemOperation
-
-   ## changes due to expanded header file input
-    try:
-        main_ns.class_('OptimisedUtil').mem_fun('softwareVertexSkinning').exclude  # this isn't in the LINUX include for 1.4.1
-    except:
-        pass
-    main_ns.class_('ShadowVolumeExtrudeProgram').variable('programNames').exclude()    #funky string[8] problem
-
-    ## now for problem areas in the new unicode string handling - just excluding without 'thought' :)
-    ## the variables are not present in the source (to check)
-    ## most of the functions return pointers to 'stuff' that isn't handled at compile time
-    main_ns.class_('UTFString').variable('mVoidBuffer').exclude()
-    main_ns.class_('UTFString').variable('mStrBuffer').exclude()
-    main_ns.class_('UTFString').variable('mWStrBuffer').exclude()
-    main_ns.class_('UTFString').variable('mUTF32StrBuffer').exclude()
-    main_ns.class_('UTFString').member_functions('at').exclude()
-    main_ns.class_('UTFString').mem_fun('c_str').exclude()
-    main_ns.class_('UTFString').mem_fun('data').exclude()
-    main_ns.class_('UTFString').mem_fun('asUTF32_c_str').exclude()
-    main_ns.class_('UTFString').variable('npos').exclude()
-
-
-    try:
-        main_ns.class_('CompositorChain').variable('BEST').exclude()
-        main_ns.class_('CompositorChain').variable('LAST').exclude()
-        main_ns.class_('Compiler2Pass').variable('SystemTokenBase').exclude()
-    except:
-        pass
-    #main_ns.class_('AnimationTrack').variable('INVALID_KEY_INDEX').exclude()
-
-
-    ## missing symbols at link time, including constructor and destructor!
-    global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getGeometryBucketList').exclude()
-    global_ns.class_('::Ogre::InstancedGeometry::MaterialBucket').mem_fun('getMaterialBucketMap').exclude()
-
-    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgramFactory').exclude()
-    global_ns.class_('::Ogre::UnifiedHighLevelGpuProgram::CmdDelegate').exclude()
-
-    # this one expects a pointer to matrix4 and will return mBoneList.size() of them
-    global_ns.class_('::Ogre::Skeleton').mem_fun('_getBoneMatrices').exclude()
-
-    #new in Ogre 1.4 RC2
-    global_ns.class_('::Ogre::SceneManager').mem_fun('getQueuedRenderableVisitor').exclude()
-    # in hand made wrappers
-    global_ns.class_('::Ogre::BillboardSet').mem_fun('getTextureCoords').exclude()
-    global_ns.class_('::Ogre::BillboardSet').mem_fun('setTextureCoords').exclude()
-
-    ## AJM 10/10/07 new excludes due to hand_make wrappers..
-    global_ns.class_('::Ogre::SceneManager').mem_fun('setOption').exclude()
-    global_ns.class_('::Ogre::SceneManager').mem_fun('getOption').exclude()
-    global_ns.class_('::Ogre::ParticleSystem').mem_fun('_getIterator').exclude()
-
-    ## AJM 26/09/08 Working to get renderqueue listener to wrap without changing Ogre API
-#     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueStarted').exclude()
-#     global_ns.class_('::Ogre::RenderQueueListener').mem_fun('renderQueueEnded').exclude()
-
     ## as we now include all protected functions there are a couple of problem areas that popped up
     main_ns.constructor("IndexData",arg_types=['::Ogre::IndexData const &']).exclude()
     global_ns.class_('::Ogre::OverlayManager').\
@@ -263,10 +283,6 @@ def ManualExclude ( mb ):
     ## change due to CVS Ogre update (Thanks Dermont)
     AttribParserList = main_ns.typedef( name="AttribParserList" )
     declarations.class_traits.get_declaration( AttribParserList ).exclude()
-
-    main_ns.class_( 'MaterialSerializer' ).mem_fun('invokeParser').exclude()
-
-    main_ns.class_('OverlayManager' ).mem_fun('parseNewElement').exclude()
 
     #Exclude non default constructors of iterator classes.
     for cls in main_ns.classes():
@@ -283,202 +299,99 @@ def ManualExclude ( mb ):
         # and while we are here we have problems with '=' on these classes
         try:
             cls.operator('=').exclude()
+            log_exclude(cls)
         except:
-            pass
-# #         print "Setting Iterator to copyable:", cls
-#         print dir(cls)
-#         sys.exit()
-# #         cls.noncopyable = False
+            log_exclude(cls, False)
 
     ## Remove private classes , and those that are internal to Ogre...
     private_decls = common_utils.private_decls_t(environment.ogre.include_dirs)
     for cls in main_ns.classes():
-#         print "MC:", cls
         if private_decls.is_private( cls ):
-            cls.exclude()
-            print '{*} Excluding class "%s" as marked as private' % cls.decl_string
-
+            try:
+                cls.exclude()
+                log_exclude (cls, extra='Marked as Private')
+            except:
+                log_exclude (cls, False)
+                
     for func in main_ns.calldefs():
         if private_decls.is_private( func ):
             if func.virtuality == declarations.VIRTUALITY_TYPES.PURE_VIRTUAL:
                 continue
-            func.exclude()
-            print '{*} Excluding function "%s" as marked as internal' % declarations.full_name( func )
-
-    # this change was for 1.7 but also needed for 1.4
-    noncopy=['Camera','Frustum', 'Log' ]
-
-    # these showed up during threading -- possible needs to be done all the time (needs to be looked at)
-    if environment._USE_THREADS:
-        noncopy = noncopy + ['Compositor', 'DefaultHardwareBufferManager', 'DefaultSceneManager', 'Font', 'FontManager',
-                             'HighLevelGpuProgramManager','Material', 'Mesh', 'MeshManager',
-                             'ParticleSystemManager', 'Pass', 'PatchMesh', 'ResourceGroupManager',
-                             'Skeleton', 'SkeletonInstance', 'SkeletonManager', 'UnifiedHighLevelGpuProgram']
-    for c in noncopy:
-        main_ns.class_(c).noncopyable = True
+            try:
+                func.exclude()
+                log_exclude (func, extra='Marked as internal')
+            except:
+                log_exclude (func, False)
 
 
-    # changes for Ogre after 1.4
-    if not environment.ogre.version.startswith("1.4"):
-
-# don't seem to be needed with 1.6.4
-#        if not environment.ogre.version.startswith("1.7"):
-#            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageEnded").exclude()
-#            main_ns.class_("ResourceGroupManager").mem_fun("_notifyWorldGeometryPrepareStageStarted").exclude()
-
-        #needed for linux
-        try:
-            main_ns.member_function('::Ogre::ResourceGroupManager::addCreatedResource').exclude()
-        except:
-            pass
-        # these don't exist
-        main_ns.class_("ScriptCompiler").mem_fun("removeNameExclusion").exclude()
-        main_ns.class_("ScriptCompiler").mem_fun("addNameExclusion").exclude()
-
-        for cls in main_ns.classes():
-            if cls.decl_string.startswith ("::Ogre::AllocatedObject") or\
-                cls.decl_string.startswith("::Ogre::STLAllocator") or\
-                cls.decl_string.startswith("::Ogre::CategorisedAllocPolicy") :
-                    print "Excluding Allocator class", cls
+    for cls in main_ns.classes():
+        if cls.decl_string.startswith ("::Ogre::AllocatedObject") or\
+            cls.decl_string.startswith("::Ogre::STLAllocator") or\
+            cls.decl_string.startswith("::Ogre::CategorisedAllocPolicy"):
+                try:
                     cls.exclude()
+                    log_exclude(cls, extra="Allocator Class")
+                except:
+                    log_exclude(cls, False, extra="Allocator Class")
 
-    # turns out there are some variables we didn't catch that are actually classes of boost::recursive_mutex
+    # variables that are actually classes of boost::recursive_mutex
     # which isn't exposed... May be related only to threading ??
-    # could limit it to known classes however safer to handle everything
-#     ec = ['Pass', 'ResourceBackgroundQueue', 'SceneManager']
+    # could limit it to known classes however safe to handle everything
     for c in main_ns.classes():
         for v in c.variables( allow_empty=True):
             if v.name.endswith('Mutex'):
-                print "Excluding possible Mutex Variable:", v
-                v.exclude()
+                try:
+                    v.exclude()
+                    log_exclude(v)
+                except:
+                    log_exclude(v,False)
 
-
-    if environment.ogre.version.startswith("1.7"): 
-        # most of these are issues with protected members so fail at compile time
-        # and they have ugly long names so we do the crazy searching as below
-        
-        # typically one of the 'classes/variables' in the map/list/.. is protected so we could change this
-        # list and do something intelligent -- a possible future improvement..
-        ex = ['::Ogre::list<Ogre::Profiler::Profile',
-              '::Ogre::map<std::string, Ogre::SceneManager::MovableObjectCollection*',
-              '::Ogre::list<Ogre::ResourceGroupManager::ResourceLocation',
-              '::Ogre::map<std::string, Ogre::Compiler2Pass::TokenState',
-              '::Ogre::vector<Ogre::ProgressiveMesh::PMTriangle',
-              '::Ogre::map<Ogre::CompositorManager::TextureDef',
-              '::Ogre::map<Ogre::HardwareVertexBuffer*, Ogre::HardwareBufferManagerBase::VertexBufferLicense',
-              '::Ogre::map<Ogre::Light*, Ogre::SceneManager::LightClippingInfo',
-              '::Ogre::map<std::string, std::list<Ogre::Profiler::ProfileHistory',
-              '::Ogre::map<Ogre::Pass*, std::vector<Ogre::Renderable*',
-              '::Ogre::map<Ogre::Resource*',
-              '::Ogre::map<std::string, Ogre::ResourceGroupManager::ResourceGroup*',
-              '::Ogre::map<Ogre::Vector3, unsigned int, Ogre::EdgeListBuilder::vectorLess',
-              '::Ogre::map<Ogre::Vector3, unsigned long, Ogre::EdgeListBuilder::vectorLess', #64 bit version
-              '::Ogre::map<unsigned int, Ogre::Vector3',
-              '::Ogre::set<Ogre::ProgressiveMesh::PMTriangle*',
-              '::Ogre::set<Ogre::ProgressiveMesh::PMVertex*',
-              '::Ogre::vector<Ogre::BillboardChain::ChainSegment',
-              '::std::vector<Ogre::RenderWindowDescription',  # this one needs Memory Allocator namespace fixed
-              '::Ogre::vector<Ogre::Compiler2Pass::LexemeTokenDef',
-              '::Ogre::vector<Ogre::Compiler2Pass::TokenRule',
-              '::Ogre::vector<Ogre::Compiler2Pass::TokenIns',
-              '::Ogre::vector<Ogre::EdgeListBuilder::CommonVertex',
-              '::Ogre::vector<Ogre::EdgeListBuilder::Geometry',
-              '::Ogre::vector<Ogre::EdgeListBuilder::vectorLess',
-              '::Ogre::vector<Ogre::GpuSharedParametersUsage::CopyDataEntry',
-              '::Ogre::vector<Ogre::ProgressiveMesh::PMFaceVertex',
-              '::Ogre::vector<Ogre::ProgressiveMesh::PMVertex',
-              '::Ogre::vector<Ogre::ProgressiveMesh::PMTriangle',
-              '::Ogre::vector<Ogre::ProgressiveMesh::PMWorkingData',
-              '::Ogre::vector<Ogre::SceneManager::LightInfo',
-              
- 
-              
-              ]
-#===============================================================================
-#        c = main_ns.class_('::Ogre::ResourceGroupManager::ResourceGroup')
-#        print "\nSPECIAL\n",c
-#        print dir(c)
-#        print type(c)
-#        print c.bases
-#        print c.decl_string
-#        print c.parent
-#        for con in c.public_members:
-#            print "PM:",con
-#===============================================================================
-        
-        for c in main_ns.classes():
-#===============================================================================
-#            if 'SharedPtr' not in c.decl_string:
-#                if c.decl_string.startswith('::Ogre::map<'):
-#                    l = c.decl_string.split(',')
-#                    f=l[0][12:].rstrip('*&')
-#                    s=l[1].lstrip().rstrip('*&')
-#                    for cc in [f,s]:
-#                        print "Checking for:", cc
-#                        if cc.startswith ( 'Ogre' ):
-#                            try:
-#                                cclass=main_ns.member_variable('::'+cc)
-#                                if cclass.access_type != 'public':
-#                                    print "ISSUE with:", c
-#                                    c.exclude()
-#                            except:
-#                                pass
-#                elif c.decl_string.startswith('::Ogre::list<') or c.decl_string.startswith('::Ogre::vector<'):
-#                    l = c.decl_string.split('<') # first get rid of pre <
-#                    l = l[1].split(',') # now get first class
-#                    cc=l[0].lstrip().rstrip('*&')
-#                    print "Checking for:", cc
-#                    if cc.startswith ( 'Ogre' ):
-#                        try:
-#                            cclass=main_ns.member_variable('::'+cc)
-#                            if cclass.access_type != 'public':
-#                                print "ISSUE with:", c
-#                                c.exclude()
-#                        except:
-#                            pass        
-#===============================================================================
-            for e in ex:
-                if c.decl_string.startswith(e):
-                    print "Excluding:", c
+    # most of these are issues with protected members so fail at compile time
+    # and they have ugly long names so we do the crazy searching as below
+    # typically one of the 'classes/variables' in the map/list/.. is protected so we could change this
+    # list and do something intelligent -- a possible future improvement..
+    ex = ['::Ogre::list<Ogre::Profiler::Profile',
+          '::Ogre::map<std::string, Ogre::SceneManager::MovableObjectCollection*',
+          '::Ogre::list<Ogre::ResourceGroupManager::ResourceLocation',
+          '::Ogre::map<std::string, Ogre::Compiler2Pass::TokenState',
+          '::Ogre::vector<Ogre::ProgressiveMesh::PMTriangle',
+          '::Ogre::map<Ogre::CompositorManager::TextureDef',
+          '::Ogre::map<Ogre::HardwareVertexBuffer*, Ogre::HardwareBufferManagerBase::VertexBufferLicense',
+          '::Ogre::map<Ogre::Light*, Ogre::SceneManager::LightClippingInfo',
+          '::Ogre::map<std::string, std::list<Ogre::Profiler::ProfileHistory',
+          '::Ogre::map<Ogre::Pass*, std::vector<Ogre::Renderable*',
+          '::Ogre::map<Ogre::Resource*',
+          '::Ogre::map<std::string, Ogre::ResourceGroupManager::ResourceGroup*',
+          '::Ogre::map<Ogre::Vector3, unsigned int, Ogre::EdgeListBuilder::vectorLess',
+          '::Ogre::map<Ogre::Vector3, unsigned long, Ogre::EdgeListBuilder::vectorLess', #64 bit version
+          '::Ogre::map<unsigned int, Ogre::Vector3',
+          '::Ogre::set<Ogre::ProgressiveMesh::PMTriangle*',
+          '::Ogre::set<Ogre::ProgressiveMesh::PMVertex*',
+          '::Ogre::vector<Ogre::BillboardChain::ChainSegment',
+          '::std::vector<Ogre::RenderWindowDescription',  # this one needs Memory Allocator namespace fixed
+          '::Ogre::vector<Ogre::Compiler2Pass::LexemeTokenDef',
+          '::Ogre::vector<Ogre::Compiler2Pass::TokenRule',
+          '::Ogre::vector<Ogre::Compiler2Pass::TokenIns',
+          '::Ogre::vector<Ogre::EdgeListBuilder::CommonVertex',
+          '::Ogre::vector<Ogre::EdgeListBuilder::Geometry',
+          '::Ogre::vector<Ogre::EdgeListBuilder::vectorLess',
+          '::Ogre::vector<Ogre::GpuSharedParametersUsage::CopyDataEntry',
+          '::Ogre::vector<Ogre::ProgressiveMesh::PMFaceVertex',
+          '::Ogre::vector<Ogre::ProgressiveMesh::PMVertex',
+          '::Ogre::vector<Ogre::ProgressiveMesh::PMTriangle',
+          '::Ogre::vector<Ogre::ProgressiveMesh::PMWorkingData',
+          '::Ogre::vector<Ogre::SceneManager::LightInfo',
+          '::Ogre::map<unsigned short, std::list<Ogre::SharedPtr<Ogre::DefaultWorkQueueBase::RequestHandlerHolder',
+          '::Ogre::list<Ogre::SharedPtr<Ogre::DefaultWorkQueueBase::RequestHandlerHolder>',
+          ]
+    for c in main_ns.classes():
+        for e in ex:
+            if c.decl_string.startswith(e):
+                try:
                     c.exclude()
-                    
-        excludelist= ['::Ogre::FileHandleDataStream', # uses FILE (c style) -- can use FileStreamDataStream instead
-                      '::Ogre::Node::DebugRenderable', # not implemented
-                      ##'::Ogre::VisibleObjectsBoundsInfo',  # possible 64 bit Linux Fix
-                      ]
-        for c in excludelist:
-            try:
-                main_ns.class_(c).exclude()
-                print "Excluded:", c
-            except:
-                pass
-        excludelist= ['::Ogre::HashedVector<Ogre::Light*>::resize',  # compile time issue
-                      '::Ogre::HashedVector<Ogre::Light*>::at',
-                      '::Ogre::SceneManager::_pauseRendering', # bug in source needs fixing
-                      '::Ogre::SceneManager::_resumeRendering',
-                      #'::Ogre::CompositorManager::getCustomCompositionPass',
-                      '::Ogre::NedPoolingPolicy::deallocateBytes',
-                      
-                      # these need the source patched -- they are implemented in the header file not the cpp one
-                      '::Ogre::Mesh::unnameSubMesh',
-                      '::Ogre::OverlayManager::hasOverlayElementImpl',
-                      '::Ogre::OverlayManager::hasOverlayElement',
-                      '::Ogre::Rectangle2D::setCorners',
-                      #'::Ogre::RenderSystem::getVertexWindingInverted',
-                      #'::Ogre::RenderSystem::getVertexWindingInverted'
-                      '::Ogre::TextureUnitState::setCompositorReference',
-                      '::Ogre::TextureUnitState::getReferencedMRTIndex',
-                      '::Ogre::TextureUnitState::getReferencedTextureName',
-                      '::Ogre::TextureUnitState::getReferencedCompositorName',
-                      '::Ogre::Any::getType',  ## this returns a std::type_info which doesn't make any sense in Python
-                      '::Ogre::VisibleObjectsBoundsInfo::mergeNonRenderedButInFrustum'  ## 64 bit Linux fix
-                      ]
-        for c in excludelist:
-            try:
-                main_ns.member_functions(c).exclude()
-                print "Excluded:", c
-            except:
-                print "ERROR: Unable to exclude:", c
+                    log_exclude(c, extra="Has Protected Member(s)")
+                except:
+                    log_exclude(c, False)
 
 ####################b########################################
 ##
@@ -490,11 +403,8 @@ def ManualInclude ( mb ):
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
 
-    ## It's a structure that doesn't get included by default...
-    main_ns.class_("VertexBoneAssignment_s").include()
-    # A couple of Std's that need exposing
+    # A few Std's that need exposing
     std_ns = global_ns.namespace("std")
-
 
     includes = ['vector<bool>',
         'vector<int>',
@@ -515,32 +425,45 @@ def ManualInclude ( mb ):
         "pair<bool, Ogre::SharedPtr<Ogre::Resource> >",
         "pair<bool, Ogre::Vector3>",
         'pair<unsigned char, unsigned char>',
+        'list<Ogre::Plane>',
+        'pair<bool, std::string>',
+        'pair<std::string const, Ogre::Node*',
+#         'pair<std::string const, unsigned short>',
+#         'pair<std::string const, Ogre::MovableObject*>',
+#         'pair<std::string const, Ogre::SharedPtr<Ogre::Resource> >',
         ]
 
     for c in includes:
       try:
          std_ns.class_(c).include()
-         print "Included std class:", c
+         log_include(c, extra='std namespace' )
       except:
-         print "Problem including:", c
+         log_include(c, ok=False, extra='std namespace' )
 
-    if not environment.ogre.version =="1.4":
-        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> >").include()
-        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)1> >").include()
-        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)2> >").include()
-        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)3> >").include()
-        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)4> >").include()
-        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)5> >").include()
-        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)6> >").include()
-        main_ns.class_("AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)7> >").include()
-    
-#        main_ns.class_("::Ogre::AnyNumUshort").include()
-    
-    #RenderOperation class is marked as private, but I think this is a mistake
-    main_ns.class_('RenderOperation').include()
+    in_classes = [
+        'AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> >',
+        'AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)1> >',
+        'AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)2> >',
+        'AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)3> >',
+        'AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)4> >',
+        'AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)5> >',
+        'AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)6> >',
+        'AllocatedObject<Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)7> >',
+        'RenderOperation', #marked as private, but I think this is a mistake
+        'VertexBoneAssignment_s',
+        'MaterialPtr',
+        ]
+    for i in in_classes:
+        try:
+            main_ns.class_(i).include()
+            log_include (i)
+        except:
+            log_incllude(i,False)
 
-    ## Now we find all << operators and expose them as __str__ methods..  Makes "print xx" work nicely
-    ## we simply include any relevant << operators and Py++/Boost does the work for us
+
+    # Now we find all << operators and expose them as __str__ methods..
+    # Makes "print xx" work nicely
+    # Include any relevant << operators and Py++/Boost does the work for us
     for oper in global_ns.free_operators( '<<' ):
         rtype = declarations.remove_declarated( declarations.remove_reference( oper.return_type ) )
         # we don't want the ones from std::...
@@ -560,17 +483,6 @@ def ManualInclude ( mb ):
         if type_or_decl.ignore == False and Expose:
             print "OPERATOR<<:", oper
             oper.include()
-    main_ns.class_('MaterialPtr').include()
-
-    ex = ['::Ogre::EdgeListBuilder::vectorLess',
-          '::Ogre::EdgeListBuilder::CommonVertex'
-        ]
-    for c in ex:
-        try:
-            main_ns.class_(c).exclude()
-            print "Excluded:", c
-        except:
-            print "Failed to Exclude:", c
 
 ############################################################
 ##
@@ -585,6 +497,17 @@ def ManualFixes ( mb ):
 
     global_ns = mb.global_ns
     main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    
+    # this change was for 1.7 but also needed for 1.4
+    noncopy=['Camera','Frustum', 'Log' ]
+    # these showed up during threading -- possible needs to be done all the time (needs to be looked at)
+    if environment._USE_THREADS:
+        noncopy = noncopy + ['Compositor', 'DefaultHardwareBufferManager', 'DefaultSceneManager', 'Font', 'FontManager',
+                             'HighLevelGpuProgramManager','Material', 'Mesh', 'MeshManager',
+                             'ParticleSystemManager', 'Pass', 'PatchMesh', 'ResourceGroupManager',
+                             'Skeleton', 'SkeletonInstance', 'SkeletonManager', 'UnifiedHighLevelGpuProgram']
+    for c in noncopy:
+        main_ns.class_(c).noncopyable = True
 
     # return arrays
     ##  const Vector3* ----
@@ -684,21 +607,7 @@ def ManualFixes ( mb ):
         pat = re.compile ("::Ogre::(\w+?)<.*?Ogre::(.+?)[<*,]")
         dups = {}
 
-        if 0:
-            c = global_ns.class_('::Ogre::vector<Ogre::RenderWindowDescription, Ogre::STLAllocator<Ogre::RenderWindowDescription, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >')
-            print "FFFFF", c
-            print c.decl_string
-            for cc in c.constructors():
-                if not cc.is_copy_constructor:
-                    print "OLD:", cc.parent.cache.full_name
-                    cc.parent.cache.full_name = cc.parent.cache.full_name.replace('(Ogre::MemoryCategory)0','Ogre::MEMCATEGORY_GENERAL')
-                    print "NEW:", cc.parent.cache.full_name
-                    print cc
-                    print cc.decl_string
-            print c.decl_string
 
-
-           
         for c in global_ns.member_functions():
             #
             # This code is redundent if a patch is applied to OGRE
@@ -717,9 +626,8 @@ def ManualFixes ( mb ):
                          print "FAILED!!!", f, f.type
                          print type(f), type(f.type)
                 if f.default_value and "<MEMCATEGORY_GENERAL>" in f.default_value:
-                    f.default_value = f.default_value.replace("<MEMCATEGORY_GENERAL>", "<Ogre::MEMCATEGORY_GENERAL>")
-                            # print "PROBLEM", f, type(f.type), dir(f.type)
-#        sys.exit()          
+                    f.default_value = f.default_value.replace("<MEMCATEGORY_GENERAL>", "<Ogre::MEMCATEGORY_GENERAL>")\
+                    
         for c in global_ns.classes():
             if "_" in c.alias: # only care about classes we are include with ugly alaises # not c.ignore and 
                 # print "1a:", c, c.alias
@@ -751,25 +659,6 @@ def ManualFixes ( mb ):
                     ## any that show up here need a manual entry in the python_ogre_aliases.h file
                     print "NO MATCH:", c.decl_string
 
-        # need to fixup return values that show up as invalid typdefs in generated code
-        #
-        # again this has been fixed with a patch to the C++ code
-        #
-        # for f in global_ns.member_functions():
-            # if f.return_type:
-                # if "<MEMCATEGORY_GENERAL>" in f.return_type.decl_string:
-                    # print "MEMFIX2:",f.return_type
-                    # if type (f.return_type) == declarations.cpptypes.declarated_t:
-                        # print "TWEAKED:", f, f.return_type
-                        # f.return_type.declaration.name = f.return_type.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
-                    # elif type (f.return_type) == declarations.cpptypes.pointer_t:
-                        # f.return_type.base.declaration.name = f.return_type.base.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
-                        # print "CHANGED:", f.return_type.base.declaration.name
-                    # else:
-                        # print "*** ISSUE:", f, type(f.return_type)
-                        # # sys.exit()
-                    
-                    # # pdb.set_trace()
 
 ##
 # fix up any ugly name alias
@@ -789,16 +678,6 @@ def ManualAlias ( mb ):
             c.add_transformation( fix[2], alias=fix[3])
         mb.member_function('::Ogre::Math::Abs', arg_types['::Ogre::Real']).alias="AbsReal"
 
-    #c=mb.namespace('std').class_('std::set<Ogre::Texture*,std::less<Ogre::Texture*>,Ogre::STLAllocator<Ogre::Texture*,Ogre::CategorisedAllocPolicy<MEMCATEGORY_GENERAL> > >')
-    #c.alias="stdSetOgreTexture"
-
-    count =0
-#    for c in mb.decls():
-#        #if not c.ignore:#  and not c.alias:
-#        if c.decl_string.startswith('::std::set<Ogre::Texture'):
-#            c.alias = 'stdSetOgreTexture'
-
-    #sys.exit()
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
@@ -816,158 +695,6 @@ def ManualTransformations ( mb ):
 
     # this is now handled automatically in the common utilities...
 
-# # #     rt_cls = ns.class_('RenderTarget')
-# # #     x=rt_cls.mem_fun('getMetrics')
-# # #     x.add_transformation( *create_output(3) )
-# # #     x.documentation = docit ( "","no arguments", "tuple containing width, height, colourDepth")
-# # #
-# # #     x=rt_cls.mem_fun( 'getStatistics', arg_types=['float &']*4 )
-# # #     x.add_transformation( ft.output(0),ft.output(1),ft.output(2),ft.output(3), alias="getStatisticsList" )
-# # #     x.documentation = docit ("", "no arguments", "tuple - lastFPS, avgFPS, bestFPS, worstFPS")
-# # #
-# # #     # This doesn't work at the moment as Py++ ignores it ??
-# # # #
-#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueEnded')
-#     x.add_transformation(ft.inout('repeatThisInvocation'))
-#     x.documentation = docit ("","queueGroupId, invocation", "tuple - repeatThisInvocation")
-#
-#     x = ns.mem_fun('::Ogre::RenderQueueListener::renderQueueStarted')
-#     x.add_transformation(ft.inout('skipThisInvocation'))
-#     x.documentation = docit ("","queueGroupId, invocation", "tuple - skipThisInvocation")
-#
-#     x = ns.mem_fun('::Ogre::ResourceGroupManager::fireScriptStarted')
-#     x.add_transformation(ft.inout('skipScript'))
-#     x.documentation = docit ("","scriptName, skipScript", "tuple - skipThisInvocation")
-#
-# # #
-# # #     x=ns.mem_fun('::Ogre::RenderWindow::getMetrics')
-# # #     x.add_transformation( *create_output(5) )
-# # #     x.documentation = docit ("","no arguments", "tuple - width, height, colourDepth, left, top")
-# # #
-# # #     x=ns.mem_fun('::Ogre::Viewport::getActualDimensions')
-# # #     x.add_transformation( *create_output(4) )
-# # #     x.documentation = docit ("","no arguments", "tuple - left, top, width, height")
-# # #
-# # #     x=ns.mem_fun('::Ogre::BillboardSet::getParametricOffsets')
-# # #     x.add_transformation( *create_output(4) )
-# # #     x.documentation = docit ("","no arguments", "tuple - left, right, top, bottom")
-# # #
-# # #     x=ns.mem_fun('::Ogre::Compiler2Pass::isFloatValue')
-# # #     x.add_transformation( *create_output(2) )
-# # #     x.documentation = docit ("","no arguments", "tuple - Return Value(True/False), fvalue, charsize")
-# # #
-# # #     x=ns.mem_fun('::Ogre::UTFString::_utf16_to_utf32')
-# # #     x.add_transformation( ft.output('out_uc') )
-# # #     x.documentation = docit ("","uint16", "tuple - size_t, out character")
-# # #
-# # #     x=ns.mem_fun('::Ogre::UTFString::_utf8_to_utf32')
-# # #     x.add_transformation( ft.output('out_uc') )
-# # #     x.documentation = docit ("","char", "tuple - size_t, out character")
-# # #
-# # #     x=ns.mem_fun('::Ogre::Frustum::calcProjectionParameters')
-# # #     x.add_transformation( *create_output(4) )
-# # #     x.documentation = docit ("","no arguments", "tuple - left, right, bottom, top")
-# # #
-# # #     x=ns.mem_fun('::Ogre::StaticGeometry::getRegionIndexes')
-# # #     x.add_transformation( ft.output('x'), ft.output('y'), ft.output('z') )
-# # #     x.documentation = docit ("","Vector", "tuple - x,y,z")
-# # #
-# # #     x=ns.mem_fun('::Ogre::InstancedGeometry::getBatchInstanceIndexes')
-# # #     x.add_transformation( ft.output('x'), ft.output('y'), ft.output('z') )
-# # #     x.documentation = docit ("","Vector", "tuple - x,y,z")
-# # #
-#     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueStarted')
-#     x.add_transformation(ft.inout("skipThisQueue"))
-#     x.documentation = docit ("", "id, invocation", "skipThisQueue" )
-#
-#     x=ns.mem_fun('::Ogre::CompositorChain::RQListener::renderQueueEnded')
-#     x.add_transformation(ft.inout("repeatThisQueue"))
-#     x.documentation = docit ("", "id, invocation", "repeatThisQueue" )
-# # #
-# # #     x=ns.mem_fun('::Ogre::PanelOverlayElement::getUV')
-# # #     x.add_transformation(ft.output('u1'), ft.output('v1'), ft.output('u2'), ft.output('v2') )
-# # #     x.documentation = docit ("", "no arguments", "tuple - u1, v1, u2, v2" )
-# # #
-# # #     x=ns.mem_fun('::Ogre::ExternalTextureSource::getTextureTecPassStateLevel')
-# # #     x.add_transformation( *create_output(3) )
-# # #     x.documentation = docit ("", "no arguments", "tuple - TechniqueLevel, PassLevel,StateLevel")
-# # #
-# # #     x=ns.mem_fun('::Ogre::Mesh::suggestTangentVectorBuildParams' )
-# # #     x.add_transformation(ft.output('outSourceCoordSet'), ft.output('outIndex') )
-# # #     x.documentation = docit ("", "targetSemantic","outSourceCoordSet, outIndex" )
-# # #
-# # #     x=ns.mem_fun('::Ogre::PixelUtil::getBitDepths')
-# # #     x.add_transformation(ft.output_static_array('rgba',4) )
-# # #     x.documentation = docit ("", "format", "rgba" )
-# # #
-# # #     x=ns.mem_fun('::Ogre::PixelUtil::getBitMasks')
-# # #     x.add_transformation(ft.output_static_array('rgba',4) )
-# # #     x.documentation = docit ("", "format", "rgba" )
-# # #
-# # #
-
-
-
-
-
-# # #     ## these need updates to Py++ to handle pointers
-#     x = ns.mem_fun('::Ogre::PixelUtil::packColour', arg_types=['Ogre::uint8','Ogre::uint8','Ogre::uint8','Ogre::uint8',None,None])
-#     x.add_transformation(ft.modify_type(5,_ReturnUnsignedInt ), alias= "packColourUint" )
-#     x.documentation = docit ("", "r,g,b,a,Pixelformat, src", "" )
-#
-#     x = ns.mem_fun('::Ogre::PixelUtil::packColour', arg_types=['float','float','float','float',None,None])
-#     x.add_transformation(ft.modify_type(5,_ReturnUnsignedInt ), alias= "packColourFloat" )
-#     x.documentation = docit ("", "r,g,b,a,Pixelformat, src", "" )
-#
-#     x = ns.mem_fun('::Ogre::PixelUtil::unpackColour', arg_types=['float *','float *','float *','float *',None,None])
-#     x.add_transformation(ft.output('r'), ft.output('g'), ft.output('b'), ft.output('a'), alias="unpackColourFloat )
-#     x.documentation = docit ("", "Pixelformat, src", "r,g,b,a" )
-#
-#     x = ns.mem_fun('::Ogre::PixelUtil::unpackColour', arg_types=['float *','float *','float *','float *',None,None])
-#     x.add_transformation(ft.output('r'), ft.output('g'), ft.output('b'), ft.output('a'), alias="unpackColourFloat )
-#     x.documentation = docit ("", "Pixelformat, src", "r,g,b,a" )
-
-# # #
-# # # # #     x = ns.mem_fun('::Ogre::Frustum::projectSphere')
-# # # # #     x.add_transformation(ft.output('left'), ft.output('top'), ft.output('right'), ft.output('bottom') )
-# # # # #     x.documentation = docit ("", "Sphere", "result, left, top, right, bottom" )
-# # # # #
-# # # # #     x = ns.mem_fun('::Ogre::Camera::projectSphere')
-# # # # #     x.add_transformation(ft.output('left'), ft.output('top'), ft.output('right'), ft.output('bottom') )
-# # # # #     x.documentation = docit ("", "Sphere", "result, left, top, right, bottom" )
-# # #
-# # #     # these are * * 's so need more work
-# # # #     x = ns.mem_fun('::Ogre::AnimationTrack::getKeyFramesAtTime' )
-# # # #     x.add_transformation(ft.output('keyFrame1'), ft.output('keyFrame2') )
-# # #
-# # # #     x = ns.mem_fun('::Ogre::Mesh::prepareMatricesForVertexBlend' )
-# # # #     x.add_transformation(ft.output('blendMatrices') )
-# # # #
-# # # #     x = ns.mem_fun('::Ogre::Mesh::softwareVertexBlend' )
-# # # #     x.add_transformation(ft.output('blendMatrices') )
-# # # #
-# # # #     x = ns.mem_fun('::Ogre::OptimisedUtil::softwareVertexSkinning' )
-# # # #     x.add_transformation(ft.output('blendMatrices') )
-# # #
-# # # #     x = ns.mem_fun('::Ogre::NumericSolver::solveNxNLinearSysDestr')
-# # # #     x.add_transformation(ft.output('coeff') )
-# # #
-# # # #     x = ns.mem_fun('::Ogre::SkeletonInstance::_getAnimationImpl')
-# # # #     x.add_transformation(ft.output('linker') )
-# # # #     x = ns.mem_fun('::Ogre::SkeletonInstance::getAnimation', arg_types=[None,None])
-# # # #     x.add_transformation(ft.output('linker') )
-# # # # #     x = ns.mem_fun('::Ogre::Skeleton::_getAnimationImpl')
-# # # # #     x.add_transformation(ft.output('linker') )
-# # # #     x = ns.mem_fun('::Ogre::Skeleton::getAnimation', arg_types=[None,None])
-# # # #     x.add_transformation(ft.output('linker') )
-# # #
-# # # # # #     x = ns.mem_fun('::Ogre::RenderQueue::RenderableListener::renderableQueued')
-# # # # # #     x.add_transformation(ft.output('ppTech') )
-# # # # # #     x.documentation = docit ("UNTESTED", "rend, groupID, priority", "ppTech" )
-# # #
-# # #     ##
-# # #     ## now we handle some specials..
-# # #     ##
 
 # # #
 # # #     pixelBox_size = """
@@ -1662,6 +1389,7 @@ def generate_code():
             os.path.join( environment.shared_ptr_dir, 'py_shared_ptr.h'),
             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_precompiled.h' ),
             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_masterlist.h' ),
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_ogre_include_OGRE.h' ),
             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'generators.h' ),
             os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'custom_rvalue.cpp' ),
             os.path.join( environment.include_dir, 'tuples.hpp' )
@@ -1676,7 +1404,11 @@ def generate_code():
 
     if environment.ogre.version.startswith("1.7"):
         ## have a code generation issue that needs resolving...
-        filesToFix=['LightList.pypp.cpp', 'stdVectorRenderWindowDescription.pypp.cpp','InstancedGeometry.pypp.cpp']
+        filesToFix=['LightList.pypp.cpp',
+                    'stdVectorRenderWindowDescription.pypp.cpp',
+                    'InstancedGeometry.pypp.cpp',
+                    'PropertySet.pypp.cpp',
+                    'stdMapOgrePropertyValue.pypp.cpp']
         for filename in filesToFix:
             fname = os.path.join( environment.ogre.generated_dir, filename)
             try:
@@ -1693,12 +1425,12 @@ def generate_code():
             except:
                 print "ERROR: Unable to fix:", fname
         
-    count=0
-    for v in global_ns.classes():
-        if not v.ignore:
-            print "class:",v
-            count +=1
-    print "SPECIAL -- Number classes:", count            
+#     count=0
+#     for v in global_ns.classes():
+#         if not v.ignore:
+#             print "class:",v
+#             count +=1
+#     print "SPECIAL -- Number classes:", count
     
 if __name__ == '__main__':
 
@@ -1707,6 +1439,7 @@ if __name__ == '__main__':
 #     from pygccxml import utils
 #     logger = utils.loggers.cxx_parser
 # #     logger.setLevel(logging.DEBUG)
+    common_utils.setup_logging ("log.out")
     if _DEBUG:
         pdb.run('generate_code()')
     else:

@@ -1,11 +1,4 @@
-#ifndef __python_ogreal_h_5B402FBF_8DE8_49C9_AF71_1CF9634B5344__
-#define __python_ogreal_h_5B402FBF_8DE8_49C9_AF71_1CF9634B5344__
-#if defined __APPLE_CC__
-    #include "strings.h"
-    #include "Carbon/Carbon.h"
-#endif
-//See best practices section in Py++ documentation
-//#include "../ogre/python_ogre_masterlist.h"
+#include "../ogre/python_ogre_include_OGRE.h"
 #include "OgreAL.h"
 
 // First we create a magic namespace to hold all our aliases
@@ -24,6 +17,3 @@ inline void instantiate(){
 } 
 } 
 }
-
-
-#endif//__python_ogreal_h_5B402FBF_8DE8_49C9_AF71_1CF9634B5344__

@@ -1,5 +1,18 @@
+/*
+Work around for windows compile as align 16 due to the boost library not supporting this
 
-//#undef _MSC_VER
+*/
+/*
+#include "LinearMath/btScalar.h"  // this sets the aling defines
+
+// and if need be we clearn them up
+#if defined _WIN32
+			#define SIMD_FORCE_INLINE inline
+			#define ATTRIBUTE_ALIGNED16(a) a
+			#define ATTRIBUTE_ALIGNED64(a) a
+			#define ATTRIBUTE_ALIGNED128(a) a
+#endif
+*/
 
 // Common headers
 #include "btBulletDynamicsCommon.h"
@@ -119,24 +132,6 @@
 #include "BulletCollision/Gimpact/btGImpactShape.h"
 #include "BulletCollision/Gimpact/btQuantization.h"
 #include "BulletCollision/Gimpact/btTriangleShapeEx.h"
-/*
-#include "BulletCollision/Gimpact/gim_array.h"
-#include "BulletCollision/Gimpact/gim_basic_geometry_operations.h"
-#include "BulletCollision/Gimpact/gim_bitset.h"
-//#include "BulletCollision/Gimpact/gim_box_collision.h"
-#include "BulletCollision/Gimpact/gim_box_set.h"
-#include "BulletCollision/Gimpact/gim_clip_polygon.h"
-// previous decl class GIM_CONTACT
-//#include "BulletCollision/Gimpact/gim_contact.h"
-#include "BulletCollision/Gimpact/gim_geom_types.h"
-#include "BulletCollision/Gimpact/gim_geometry.h"
-#include "BulletCollision/Gimpact/gim_hash_table.h"
-#include "BulletCollision/Gimpact/gim_linear_math.h"
-#include "BulletCollision/Gimpact/gim_math.h"
-#include "BulletCollision/Gimpact/gim_memory.h"
-#include "BulletCollision/Gimpact/gim_radixsort.h"
-#include "BulletCollision/Gimpact/gim_tri_collision.h"
-*/
 
 // DYNAMICS
 
@@ -182,29 +177,6 @@
 // MATHS
 #include "LinearMath/btStackAlloc.h"
 #include "LinearMath/btPoolAllocator.h"
-
-//#include "LinearMath/btAabbUtil2.h"
-//#include "LinearMath/btAlignedAllocator.h"
-//#include "LinearMath/btAlignedObjectArray.h"
-//#include "LinearMath/btConvexHull.h"
-//#include "LinearMath/btDefaultMotionState.h"
-//#include "LinearMath/btGeometryUtil.h"
-//#include "LinearMath/btHashMap.h"
-//#include "LinearMath/btIDebugDraw.h"
-//#include "LinearMath/btList.h"
-//#include "LinearMath/btMatrix3x3.h"
-//#include "LinearMath/btMinMax.h"
-//#include "LinearMath/btMotionState.h"
-//#include "LinearMath/btQuadWord.h"
-//#include "LinearMath/btQuaternion.h"
-//#include "LinearMath/btQuickprof.h"
-//#include "LinearMath/btRandom.h"
-//#include "LinearMath/btScalar.h"
-//#include "LinearMath/btStackAlloc.h"
-//#include "LinearMath/btTransform.h"
-///#include "LinearMath/btTransformUtil.h"
-//#include "LinearMath/btVector3.h"
-
 
 //THREADING
 

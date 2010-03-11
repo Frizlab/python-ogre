@@ -39,7 +39,7 @@ class SmokeApplication(sf.Application):
         self.fountainNode = sceneManager.getRootSceneNode().createChildSceneNode()
         
         psm = ogre.ParticleSystemManager.getSingleton()
-        self.particleSystem2 = sceneManager.createParticleSystem('fountain1', 'Examples/Smoke')
+        self.particleSystem2 = sceneManager.createParticleSystem("Smoke", "Examples/Smoke") #'fountain1', 'Examples/Smoke')
         node = self.fountainNode.createChildSceneNode()
         node.attachObject(self.particleSystem2)
         ogre.LogManager.getSingleton().logMessage( "INNER COUNT -- ANDY" )

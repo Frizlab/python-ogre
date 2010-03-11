@@ -8,11 +8,6 @@
 #include <set>
 #include <map>
 
-#if defined __APPLE_CC__
-    #include "strings.h"
-    #include "Carbon/Carbon.h"
-#endif
-
 #include "python_ogre_masterlist.h"
 
 typedef HashMap<Ogre::String, unsigned short> OgreHashMapStringUshortOuter;
@@ -31,49 +26,5 @@ inline void instantiate(){
  #include "python_ogre_sizeof.h"
  
 } } }
-
-
-
-// This code is VERY UNTESTED and PROBABLY BROKEN
-// Uee the CVS version of Ogre !!!!
-// #ifndef OGRE_VERSION_1.4        // these are needed for the 1.2.x SDK
-//     #include "OgreEventListeners.h"
-//     #include "OgreEventQueue.h"
-//     #include "OgreKeyEvent.h"
-//     #include "OgreMouseEvent.h"
-
-// namespace Ogre {
-// class CombinedListener : public FrameListener, public KeyListener,
-//                  public MouseListener, public MouseMotionListener
-// {
-// public:
-//     CombinedListener() {}
-//     virtual ~CombinedListener() {}
-//     
-//     // KeyListener methods
-//     virtual void keyClicked(KeyEvent *e) {}
-//     virtual void keyPressed(KeyEvent *e) {}
-//     virtual void keyReleased(KeyEvent *e) {}
-//     
-//     // MouseListener methods
-//     virtual void mouseClicked(MouseEvent *e) {}
-//     virtual void mousePressed(MouseEvent *e) {}
-//     virtual void mouseReleased(MouseEvent *e) {}
-//     virtual void mouseEntered(MouseEvent *e) {}
-//     virtual void mouseExited(MouseEvent *) {}
-//     
-//     // MouseMotionListener methods
-//     virtual void mouseMoved(MouseEvent *e) {}
-//     virtual void mouseDragged(MouseEvent *e) {}
-//     
-//     // FrameEvent methods
-//     virtual bool frameStarted (const FrameEvent &evt) {return true;}
-//     virtual bool frameEnded (const FrameEvent &evt) {return true;}
-// };
-// 
-// }
-// #endif
-
-
 
 #endif//__python_ogre_h_5B402FBF_8DE8_49C9_AF71_1CF9634B5344__

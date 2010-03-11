@@ -6,10 +6,8 @@
 #include <vector>
 #include <string>
 #include <map>
-#if defined __APPLE_CC__
-    #include "strings.h"
-    #include "Carbon/Carbon.h"
-#endif
+#include "../ogre/python_ogre_include_OGRE.h"
+
 #include "ode/ode.h"
 #include "ode/common.h"
 #include "ode/odecpp.h"

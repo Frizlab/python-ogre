@@ -226,7 +226,7 @@ def generate_code():
 
     defined_symbols = environment.defined_symbols 
     defined_symbols.append( 'VERSION_' + environment.ogresdksample.version )  
-    
+    print environment.ogresdksample.include_dirs
     #
     # build the core Py++ system from the GCCXML created source
     #    
@@ -309,10 +309,16 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    
-#     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_ogresdksample, 
-#                             destPath = environment.ogresdksample.generated_dir, 
-#                             recursive=False )
+    files =  os.listdir( environment.Config.PATH_INCLUDE_sdksample )
+    files_filtered = []
+    for f in files:
+        if f.startswith ("Sample") or f.startswith ("FileSystem"):
+            files_filtered.append (f)
+    print files_filtered
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_sdksample,
+                            destPath = environment.ogresdksample.generated_dir,
+                            recursive=False,
+                            files_in=files_filtered )
     if environment.ogre.version.startswith("1.7"):
         ## have a code generation issue that needs resolving...
         filesToFix=['SdkTrayManager.pypp.cpp']
