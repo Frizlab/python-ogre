@@ -4,14 +4,12 @@ import getpass
 import subprocess
 
 _LOGGING_ON = False
-_PreCompiled = True
-_UserName = getpass.getuser()
+_PRECOMPILED = True
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "7"
 PythonOgrePatchVersion = "0"
 
-_SystemType = os.name ## nt or posix or mac
-_PlatformType = sys.platform ## win32, ??
+_UserName = getpass.getuser()
 
 UseSystem = "--usesystem" in sys.argv or (os.environ.has_key('USESYSTEM') and eval(os.environ['USESYSTEM'].title()))
 if "--usesystem" in sys.argv:
@@ -22,7 +20,7 @@ def log(instring):
     if _LOGGING_ON:
         print __file__, "LOG::", instring
 
-def isWindows():
+def isWindows():     
     if os.name == 'nt':
         return True
     return False
@@ -93,13 +91,13 @@ elif isMac(): ## it's Mac OS X
     version = pathlist[pathlist.index('Versions') + 1]
     python_include_dirs = '/'.join(pathlist[:pathlist.index('Versions') + 2]) + '/include/python' + version
     python_lib_dirs = ''
-    sdks=[]
-    base='/Developer/SDKs'
+    sdks = []
+    base = '/Developer/SDKs'
     for x in os.listdir(base):
          if os.path.isdir(os.path.join(base, x)):
-            sdks.append(os.path.join(base,x))
+            sdks.append(os.path.join(base, x))
     sdks.sort()
-    MAC_SDK=sdks[-1]
+    MAC_SDK = sdks[-1]
     MAC_ARCH = os.uname()[4] # need to force the architecture on the compile and link
     MAC_ARCH_b = 'x86' # FIX -- need to detect if on ppc and change this for boost build
     MAC_ADDR = '32' # default to 32 bit
@@ -135,7 +133,7 @@ except ImportError:
         if UseSystem:
             s = 'PythonOgreConfig_system'
         else:
-            s = 'PythonOgreConfig_' + _SystemType ## + '.py'
+            s = 'PythonOgreConfig_' + os.name # 'nt', 'posix' etc
 
         Config = __import__(s)
         _ConfigSet = True
@@ -149,7 +147,7 @@ if not _ConfigSet:
     ##
     ## PLEASE use an external PythonOgreConfig_<username>.py to hold these value !!!!
     ##
-    print "\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % (_SystemType)
+    print "\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % (os.name)
     sys.exit(-1)
 
 ## BIG assumption about where you want things put
@@ -175,7 +173,7 @@ downloadPath = os.path.abspath("downloads")
 wget = "wget -c -nc "
 if isMac():
     try:
-        subprocess.check_call(['curl','--version'], stdout=file('/dev/null','w'))
+        subprocess.check_call(['curl', '--version'], stdout=file('/dev/null', 'w'))
         wget = "curl -C- -L -O -s "
     except: #check_call will raise this is it can't find curl
         pass # so leave wget alone
@@ -215,7 +213,7 @@ if _USE_THREADS:
     if isWindows():
         defined_symbols.append('BOOST_HAS_WINTHREADS')
 
-if int(PythonOgreMajorVersion) >=1 and int(PythonOgreMinorVersion) >= 7:
+if int(PythonOgreMajorVersion) >= 1 and int(PythonOgreMinorVersion) >= 7:
     defined_symbols.append ('HAVE_OGRE_BUILDSETTINGS_H') # Ogre 1.7 it uses the cmake buildsettings include
 
 
@@ -381,7 +379,7 @@ class cg(module):
             base = 'Cg-2.2_October2009_x86'
         source = [
 #            [wget, " http://developer.download.nvidia.com/cg/Cg_2.0/2.0.0015/" + base + ".tgz", downloadPath]
-             [wget, " http://developer.download.nvidia.com/cg/Cg_2.2/" + base+ ".tgz", downloadPath]
+             [wget, " http://developer.download.nvidia.com/cg/Cg_2.2/" + base + ".tgz", downloadPath]
         ]
         buildCmds = [
             [0, _sudo + ' ' + tar + " xvzf " + os.path.join(downloadPath, base) + ".tgz --overwrite", ROOT], # unpack it directly into 'our' root
@@ -393,7 +391,7 @@ class cg(module):
             [wget, "http://developer.download.nvidia.com/cg/Cg_2.2/Cg-2.2_October2009.dmg", downloadPath ]
         ]
         buildCmds = [
-            [0,'open '+ os.path.join(downloadPath,'Cg-2.2_October2009.dmg'), os.getcwd()]
+            [0, 'open ' + os.path.join(downloadPath, 'Cg-2.2_October2009.dmg'), os.getcwd()]
         ]
 
 
@@ -467,7 +465,7 @@ class cmake(module):
             [0, cp + r"-R  CMake\ 2.8-0.app/Contents/* " + PREFIX, os.path.join(os.getcwd(), base) ],
         ]
         source = [
-            [wget, "http://www.cmake.org/files/v2.8/"+base+".tar.gz", downloadPath],
+            [wget, "http://www.cmake.org/files/v2.8/" + base + ".tar.gz", downloadPath],
         ]
 
     elif isWindows():
@@ -512,13 +510,13 @@ class boost_python(module):
     only installs boost_python on Linux
     """
     version = "1.42.0"
-    source =[]
+    source = []
     boostDir = os.path.join(os.getcwd(), "boost_python")
     buildCmds = [
         [0, unzip + ' ' + os.path.join(_thirdPartyDir, "boost_python.zip"), '' ],
-        [0, 'bjam -j%i release --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, PREFIX), boostDir ],
+        [0, 'bjam -j%i release --with-python --with-thread --with-date_time --prefix=%s' % (NUMBER_OF_CORES, PREFIX), boostDir ],
         [0, 'echo This may take a while -- copying each include file individually!!', ''],
-        [0, _sudo + ' bjam  install --with-python  --prefix=%s' %( PREFIX), boostDir ],
+        [0, _sudo + ' bjam  install --with-python  --prefix=%s' % (PREFIX), boostDir ],
         ]
         
         
@@ -580,7 +578,7 @@ class boost(module):
            ## [0, 'chmod -R +rw *', os.path.join(os.getcwd(), base)],
             ##[0, PREFIX + '/bin/bjam release install --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), base) ],
             ##[0, PREFIX + '/bin/bjam release install --with-python --with-thread --with-date_time --prefix='+PREFIX, os.path.join(os.getcwd(), 'boost-trunk') ],
-            [0, PREFIX + '/bin/bjam -j%i release install --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, PREFIX), os.path.join(os.getcwd(), base) ],
+            [0, PREFIX + '/bin/bjam -j%i release install --with-python --with-thread --with-date_time --prefix=%s' % (NUMBER_OF_CORES, PREFIX), os.path.join(os.getcwd(), base) ],
            # [0, 'make', os.path.join(os.getcwd(), base)],
            # [0, 'make install', os.path.join(os.getcwd(), base)],
         ]
@@ -603,8 +601,8 @@ class boost(module):
             ## and now boost
             [0, tar + ' zxf ' + os.path.join(downloadPath, base) + '.tar.gz', ''],
             [0, 'chmod -R +rw *', os.path.join(os.getcwd(), base) ],
-            [0, './bootstrap.sh  --without-icu --with-libraries=python,thread,date_time --prefix=%s' %( PREFIX), os.path.join(os.getcwd(), base) ],
-            [0, './bjam -j%i release install architecture=%s address-model=%s --with-python --with-thread --with-date_time --prefix=%s' %(NUMBER_OF_CORES, MAC_ARCH_b, MAC_ADDR, PREFIX), os.path.join(os.getcwd(), base) ],
+            [0, './bootstrap.sh  --without-icu --with-libraries=python,thread,date_time --prefix=%s' % (PREFIX), os.path.join(os.getcwd(), base) ],
+            [0, './bjam -j%i release install architecture=%s address-model=%s --with-python --with-thread --with-date_time --prefix=%s' % (NUMBER_OF_CORES, MAC_ARCH_b, MAC_ADDR, PREFIX), os.path.join(os.getcwd(), base) ],
 #            [0, "./configure --with-toolset=darwin --with-libraries=python,thread,date_time --prefix=%s --without-icu --with-bjam=../root/usr/bin/bjam" % PREFIX, os.path.join(os.getcwd(), base)],
 #            [0, 'make', os.path.join(os.getcwd(), base)],
 #            [0, 'make install', os.path.join(os.getcwd(), base)],
@@ -644,7 +642,7 @@ class boost(module):
         # If we are not given a LIB_Boost, use the version we are building.
         if Config.LIB_Boost is None:
             if isMac():  # latest version of boost build on mac generate a 'nice' boost lib name
-                lib="libboost_python"
+                lib = "libboost_python"
             else:
                 import subprocess
                 gccp = subprocess.Popen(["gcc", "--version"], stdout=subprocess.PIPE)
@@ -669,42 +667,42 @@ class ogre(pymodule):
     myLibraryPaths = []
     myLibraries = ['OgreMain']
     libraries = myLibraries
-    CCFLAGS=""
+    CCFLAGS = ""
     if isWindows():
-        version = "1.6.4"
+        version = "1.7.0"
         source = [
-            [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-6-4.zip", downloadPath],
+            [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-7-0.zip", downloadPath],
             [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
         ]
 
         buildCmds = [
-            [0, unzip + os.path.join(downloadPath, "ogre-v1-6-4.zip"), os.getcwd()  ],
+            [0, unzip + os.path.join(downloadPath, "ogre-v1-7=0.zip"), os.getcwd()  ],
             [0, unzip + os.path.join(downloadPath, "OgreDependencies_VC9_Eihort_20080203.zip"), Config.PATH_Ogre  ],
             [0, 'echo Please use MSVC Express Edition to build Ogre Release.', '']
         ]
         try:
             if Config._SVN:
-                version="1.7.0-RC1"
+                version = "1.7.x-SVN"
         except:
             pass
         # requirements to build a precompiled header on the fly
-        if _PreCompiled:
+        if _PRECOMPILED:
             pchstop = 'python_ogre_precompiled.h'
             pchbuild = 'buildpch.cpp'
             pchincludes = ['python_ogre_precompiled.h']
 
-        libs = [boost.lib, 'OgreMain']
-        if not Config._SVN:
-            moduleLibs = [os.path.join(boost.PATH_LIB,boost.lib),
-                          os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'OgreMain'),
-                          os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'cg'),
-                          ]
-        else:
-            moduleLibs = [os.path.join(boost.PATH_LIB,boost.lib),
-                          os.path.join(Config.PATH_Ogre,'bin','Release', 'OgreMain'),
-                          os.path.join(Config.PATH_Ogre,'bin','Release', 'OgreProperty'),
-                          os.path.join(Config.PATH_Ogre,'bin','Release', 'cg'),
-                          ]
+        libs = [boost.lib, 'OgreMain', 'OgreProperty']
+#         if not Config._SVN:
+#             moduleLibs = [os.path.join(boost.PATH_LIB, boost.lib),
+#                           os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'OgreMain'),
+#                           os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'cg'),
+#                           ]
+#         else:
+        moduleLibs = [os.path.join(boost.PATH_LIB, boost.lib),
+                      os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgreMain'),
+                      os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgreProperty'),
+                      os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'cg'),
+                      ]
         lib_dirs = [
             boost.PATH_LIB,
             Config.PATH_LIB_Ogre_OgreMain,
@@ -717,8 +715,8 @@ class ogre(pymodule):
         LINKFLAGS = ''
 
     elif isLinux():
-        version = "1.7.0RC1"
-        base = "ogre-v1-7-0RC1"
+        version = "1.7.0"
+        base = "ogre-v1-7-0"
         baseDir = 'ogre'
         ##https://sourceforge.net/projects/ogre/files/ogre/1.7/ogre-v1-7-0RC1.tar.bz2/download
 
@@ -726,17 +724,15 @@ class ogre(pymodule):
             [wget, "http://downloads.sourceforge.net/ogre/" + base + ".tar.bz2", downloadPath],
         ]
 
-        buildCmds = [
-            [0, tar + " jxf " + os.path.join(downloadPath, base) + ".tar.bz2 --overwrite", os.getcwd() ],
-            [0, "patch -s -N -i ./python-ogre/patch/ogre_%s.patch -p0 " % version, os.getcwd()],
-#            [0, "patch -s -N -i ./python-ogre/patch/ogre_1.6.1.patch -p0 ", os.getcwd()],
-            [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
-            [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
-            [0, "./configure --prefix=%s --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')], #--with-gui=Xt
-            [0, "make -j%i" % NUMBER_OF_CORES, os.path.join(os.getcwd(), 'ogre')],
- #          [0, "make", os.path.join(os.getcwd(), 'ogre')],
-            [0, _sudo + " make install", os.path.join(os.getcwd(), 'ogre')],
-        ]
+#         buildCmds = [
+#             [0, tar + " jxf " + os.path.join(downloadPath, base) + ".tar.bz2 --overwrite", os.getcwd() ],
+#             [0, "patch -s -N -i ./python-ogre/patch/ogre_%s.patch -p0 " % version, os.getcwd()],
+#             [0, "aclocal", os.path.join(os.getcwd(), 'ogre')],
+#             [0, "./bootstrap", os.path.join(os.getcwd(), 'ogre')],
+#             [0, "./configure --prefix=%s --disable-devil" % PREFIX, os.path.join(os.getcwd(), 'ogre')], #--with-gui=Xt
+#             [0, "make -j%i" % NUMBER_OF_CORES, os.path.join(os.getcwd(), 'ogre')],
+#             [0, _sudo + " make install", os.path.join(os.getcwd(), 'ogre')],
+#         ]
 
         buildCmds = [
             [0, tar + " jxf " + os.path.join(downloadPath, base) + ".tar.bz2 --overwrite", os.getcwd() ],
@@ -773,7 +769,7 @@ class ogre(pymodule):
             [0, "cp OgreRenderSystem.h Ogre", os.path.join(os.getcwd(), 'ogre', 'OgreMain', 'include') ],
             [0, "cp OgrePrerequisites.h Ogre", os.path.join(os.getcwd(), 'ogre', 'OgreMain', 'include') ],
             [0, "xcodebuild -project ogre/Mac/Ogre/Ogre.xcodeproj -configuration Release -sdk %s" % (MAC_SDK), ''],
-            [0, "xcodebuild -project ogre/Mac/Samples/Samples.xcodeproj -configuration Release -sdk %s" %(MAC_SDK), ''],
+            [0, "xcodebuild -project ogre/Mac/Samples/Samples.xcodeproj -configuration Release -sdk %s" % (MAC_SDK), ''],
             [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd(), 'ogre', "Mac", "build", "Release") ],
             [0, "cp -R *.framework ~/Library/Frameworks", os.path.join(os.getcwd(), 'ogre', "Dependencies") ]
         ]
@@ -798,7 +794,7 @@ class ois(pymodule):
             [cvs, "-z3 -d:pserver:anonymous@wgois.cvs.sourceforge.net:/cvsroot/wgois co -D 01Jan2009 -P ois", os.getcwd()]
         ]
         buildCmds = [
-            [0, "xcodebuild -project ois/Mac/XCode-2.2/OIS.xcodeproj -configuration Release -sdk %s " %(MAC_SDK), ''],
+            [0, "xcodebuild -project ois/Mac/XCode-2.2/OIS.xcodeproj -configuration Release -sdk %s " % (MAC_SDK), ''],
             [0, 'cp -R ois/Mac/XCode-2.2/build/Release/OIS.Framework ~/Library/Frameworks ', '']
         ]
 
@@ -826,7 +822,7 @@ class ois(pymodule):
         ]
 
     if isWindows():
-        if _PreCompiled:
+        if _PRECOMPILED:
             pchstop = 'OIS.h'
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'OIS.h']
@@ -839,7 +835,7 @@ class ois(pymodule):
     elif isLinux():
         libs = ['OIS', boost.lib]
     else: # MAC
-        libs = ['OIS.dylib',boost.lib]
+        libs = ['OIS.dylib', boost.lib]
 
     include_dirs = [
         boost.PATH,
@@ -860,27 +856,23 @@ class cegui(pymodule):
 
     if isWindows():
         version = "0.7.1"
-        if _PreCompiled:
+        if _PRECOMPILED:
             pchstop = 'cegui.h'
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'cegui.h']
         libs = [boost.lib, 'CEGUIBase', 'OgreMain']
-        bp = os.path.join(Config.PATH_LIB_CEGUI,'..','bin')
-        moduleLibs=[os.path.join(bp,'CEGUIBase'),
-            os.path.join(bp,'CEGUIExpatParser'),
-            os.path.join(bp,'CEGUIFalagardWRBase'),
+        bp = os.path.join(Config.PATH_LIB_CEGUI, '..', 'bin')
+        moduleLibs = [os.path.join(bp, 'CEGUIBase'),
+            os.path.join(bp, 'CEGUIExpatParser'),
+            os.path.join(bp, 'CEGUIFalagardWRBase'),
             ]
         if PythonOgreMajorVersion == "1" and int(PythonOgreMinorVersion) < 7 and not Config._SVN:
             libs.append('OgreGUIRenderer')
 #            moduleLibs.append(os.path.join(bp,'OgreGUIRenderer'))
-            moduleLibs.append(os.path.join(Config.PATH_LIB_Ogre_OgreMain,'OgreGUIRenderer'))
+            moduleLibs.append(os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'OgreGUIRenderer'))
         else:
             libs.append('CEGUIOgreRenderer')
-#            moduleLibs.append(os.path.join(bp,'CEGUIOgreRenderer'))
-            if not Config._SVN:
-                moduleLibs.append(os.path.join(Config.PATH_LIB_Ogre_OgreMain,'CEGUIOgreRenderer'))
-            else:
-                moduleLibs.append(os.path.join(bp,'CEGUIOgreRenderer'))
+            moduleLibs.append(os.path.join(bp, 'CEGUIOgreRenderer'))
 
     elif isLinux():
         libs = [boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
@@ -921,8 +913,8 @@ class cegui(pymodule):
             [0, unzip + " " + os.path.join(downloadPath, "CEGUI-0.7.1.zip"), os.getcwd()],
             [0, unzip + " " + os.path.join(downloadPath, "CEGUI-DEPS-0.7.x-r1-vc9.zip"), os.path.join(os.getcwd(), base) ],
             #[0, 'move CEGUI-0.6.0\dependencies .', os.path.join(os.getcwd(), base) ],
-            [0, sed_ + ' -s "s/OGRE_RENDERER = false/OGRE_RENDERER = true/" config.lua ', os.path.join(os.getcwd(), base, 'projects','premake')],
-            [0, sed_ + ' -s "s/SAMPLES_OGRE = false/SAMPLES_OGRE = true/" config.lua ', os.path.join(os.getcwd(), base, 'projects','premake')],
+            [0, sed_ + ' -s "s/OGRE_RENDERER = false/OGRE_RENDERER = true/" config.lua ', os.path.join(os.getcwd(), base, 'projects', 'premake')],
+            [0, sed_ + ' -s "s/SAMPLES_OGRE = false/SAMPLES_OGRE = true/" config.lua ', os.path.join(os.getcwd(), base, 'projects', 'premake')],
             [0, 'echo Now run build_vs2008.bat from the CEGUI projects\premake directory', ''],
             [0, 'echo then use MSVC to build the CEGUI Release project', ''],
             [0, 'echo WARNING - Check that RTTI is enabled in the compiler options', ''],
@@ -959,7 +951,7 @@ class ode(pymodule):
     if isWindows():
         odeLibraryName = 'ode_single'
         libs = [boost.lib, odeLibraryName, 'User32'] # needed for MessageBox function
-        moduleLibs = [os.path.join(boost.PATH_LIB,boost.lib)]
+        moduleLibs = [os.path.join(boost.PATH_LIB, boost.lib)]
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_ODE,
@@ -1077,9 +1069,9 @@ class ogreode(pymodule):
         libs.append('ode_single')
 
     ModuleName = 'OgreOde'
-    moduleLibs = [os.path.join(Config.PATH_LIB_OgreOde,'OgreOde_Core'),
-                    os.path.join(Config.PATH_LIB_OgreOdePrefab,'OgreOde_Prefab'),
-                    os.path.join(Config.PATH_LIB_OgreOdeLoader,'OgreOde_Loader')
+    moduleLibs = [os.path.join(Config.PATH_OgreOde,'bin','Release', 'OgreOde_Core'),
+                    os.path.join(Config.PATH_OgreOde,'bin','Release', 'OgreOde_Prefab'),
+                    os.path.join(Config.PATH_OgreOde, 'bin','Release','OgreOde_Loader')
                     ]
 
 class quickgui(pymodule):
@@ -1244,7 +1236,7 @@ class nxogre(pymodule):
 
 
 class ogrevideo(pymodule):
-    version = "r96"
+    version = "r109"
     parent = "ogre/addons"
     base = 'ogrevideo'
     ##
@@ -1308,6 +1300,7 @@ class plib(pymodule):
         libs = [ boost.lib, "GL" ] # Note sure what linux libraries are needed
 
 class physx(pymodule):
+    active=False
     version = "2.8.1"
     parent = "ogre/physics"
     cflags = ""
@@ -1337,7 +1330,7 @@ class physx(pymodule):
             [0, 'sed -i s/"#ifdef WIN32"/"#if (defined WIN32) \&\& !(defined __PYTHONOGRE_BUILD_CODE)"/ NxMath.h',
                             'c:\\program files\\NVIDIA Corporation\\NVIDIA PhysX SDK\\v2.8.1\\SDKs\\Foundation\\include']
         ]
-        moduleLibs = [os.path.join(boost.PATH_LIB,boost.lib)]
+        moduleLibs = [os.path.join(boost.PATH_LIB, boost.lib)]
     elif isLinux():
         libs = [boost.lib, 'NxCharacter', 'NxCooking', 'PhysXCore', 'PhysXLoader' ]
         source = [
@@ -1353,9 +1346,9 @@ class physx(pymodule):
         ]
 
     ModuleName = "PhysX"
-    moduleLibs = [os.path.join(Config.PATH_LIB_PhysX,'../../../bin/win32','NxCharacter'),
-                    os.path.join(Config.PATH_LIB_PhysX,'../../../bin/win32','NxCooking'),
-                    os.path.join(Config.PATH_LIB_PhysX,'../../../bin/win32','PhysXLoader')
+    moduleLibs = [os.path.join(Config.PATH_LIB_PhysX, '../../../bin/win32', 'NxCharacter'),
+                    os.path.join(Config.PATH_LIB_PhysX, '../../../bin/win32', 'NxCooking'),
+                    os.path.join(Config.PATH_LIB_PhysX, '../../../bin/win32', 'PhysXLoader')
                     ]
 
 class ogreal(pymodule):
@@ -1377,8 +1370,8 @@ class ogreal(pymodule):
         lib_dirs = [ boost.PATH_LIB
                 , Config.PATH_LIB_Ogre_OgreMain
                 # change with latest ogg -- 
-                , os.path.join(Config.PATH_OGG, 'win32', 'VS2008','Win32','Release')
-                , os.path.join(Config.PATH_VORBIS, 'win32', 'VS2008','Win32','Release') #'Vorbis_Static_Release')
+                , os.path.join(Config.PATH_OGG, 'win32', 'VS2008', 'Win32', 'Release')
+                , os.path.join(Config.PATH_VORBIS, 'win32', 'VS2008', 'Win32', 'Release') #'Vorbis_Static_Release')
                 #, os.path.join(Config.PATH_VORBIS, 'win32', 'VorbisEnc_Static_Release')
                 #, os.path.join(Config.PATH_VORBIS, 'win32', 'VorbisFile_Static_Release')
                 , os.path.join(Config.PATH_OPENAL, 'Release') #'libs','Win32')
@@ -1407,8 +1400,8 @@ class ogreal(pymodule):
             [0, "unzip -q -o  " + os.path.join(downloadPath, "libvorbis-1.2.3.zip"), ''],
             [0, "ren libvorbis-1.2.3 vorbis", ''],
         ]
-        moduleLibs=[os.path.join(Config.PATH_OPENAL, 'redist','OpenAL32'),
-                    os.path.join(Config.PATH_OPENAL, 'redist','wrap_oal')
+        moduleLibs = [os.path.join(Config.PATH_OPENAL, 'redist', 'OpenAL32'),
+                    os.path.join(Config.PATH_OPENAL, 'redist', 'wrap_oal')
                     ]
     else:
         lib_dirs = [
@@ -1467,12 +1460,12 @@ class ogrevideoffmpeg(pymodule):
     else:
         libs = [boost.lib, 'OgreMain', 'avformat', 'avcodec', 'avutil', 'z', 'GL', 'GLU', 'Xxf86vm', 'Xext', 'X11' ]
     ModuleName = "ogrevideoffmpeg"
-    moduleLibs = [ os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','avcodec-52' ),
-                os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','avdevice-52' ),
-                os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','avformat-52' ),
-                os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','avutil-49' ),
-                os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','libogg-0' ),
-                os.path.join(Config.PATH_THIRDPARTY, 'extra','bin','swscale-0' )
+    moduleLibs = [ os.path.join(Config.PATH_THIRDPARTY, 'extra', 'bin', 'avcodec-52'),
+                os.path.join(Config.PATH_THIRDPARTY, 'extra', 'bin', 'avdevice-52'),
+                os.path.join(Config.PATH_THIRDPARTY, 'extra', 'bin', 'avformat-52'),
+                os.path.join(Config.PATH_THIRDPARTY, 'extra', 'bin', 'avutil-49'),
+                os.path.join(Config.PATH_THIRDPARTY, 'extra', 'bin', 'libogg-0'),
+                os.path.join(Config.PATH_THIRDPARTY, 'extra', 'bin', 'swscale-0')
                 ]
 
 class ogredshow(pymodule):
@@ -1498,6 +1491,7 @@ class ogredshow(pymodule):
     ModuleName = "ogredshow"
 
 class et(pymodule):  ## editable terrain
+    active=False
     version = "2.3.1"
     parent = "ogre/addons"
     if isLinux():
@@ -1525,11 +1519,11 @@ class bullet(pymodule):
 
     build ReleaseDLL and copy generated libs into a single directory ie (PATH_Bullet, 'out/release_dll8/libs')
     """
-    version = "2.75"
+    version = "2.76"
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
-    libs = [boost.lib, 'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody', 'libBulletMultiThreaded','libGIMPACTUtils']
+    libs = [boost.lib, 'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody', 'libBulletMultiThreaded', 'libGIMPACTUtils']
     if isWindows():
         libs.append('libbulletMath')
     else:
@@ -1556,6 +1550,9 @@ class bullet(pymodule):
         ]
         CCFLAGS = ' -D"NDEBUG" -D"_CONSOLE" -D"_MBCS"  '
     else:
+        libs = [boost.lib, 'BulletCollision', 'BulletDynamics',
+                'BulletSoftBody', 'BulletMultiThreaded', 'GIMPACTUtils',
+                'LinearMath', 'BulletFileLoader']
         source = [
             [wget, "http://bullet.googlecode.com/files/" + base + ".zip", downloadPath]
         ]
@@ -1571,13 +1568,11 @@ class ogrebulletc(pymodule):
     parent = "ogre/physics"
     libs = [boost.lib, 'OgreMain',
         'libBulletCollision', 'libBulletDynamics', 'libBulletMultiThreaded',
-        'libBulletSoftBody', 
+        'libBulletSoftBody',
         'libConvexDecomposition'
         ]
     if isLinux():
        libs.append('libLinearMath')
-    else:
-       libs.append('libbulletmath')
     include_dirs = [
         boost.PATH,
         Config.PATH_INCLUDE_Bullet,
@@ -1596,6 +1591,9 @@ class ogrebulletc(pymodule):
     if isWindows():
         CCFLAGS = ' -DWIN32 -DNDEBUG -D_WINDOWS -D_PRECOMP '
         LINKFLAGS = '  /NODEFAULTLIB:LIBCMT.lib  '
+        libs = [boost.lib, 'OgreMain','BulletCollision', 'BulletDynamics',
+                'BulletSoftBody', 'BulletMultiThreaded', 'GIMPACTUtils',
+                'LinearMath', 'BulletFileLoader','ConvexDecomposition']
     else:
         CCFLAGS = ' -D_PRECOMP -fno-inline '
     ModuleName = 'OgreBulletC'
@@ -1611,7 +1609,9 @@ class ogrebulletd(pymodule):
         'libBulletMultiThreaded', 'libConvexDecomposition'
         ]
     if isWindows():
-        libs.append('libbulletMath')
+        libs = [boost.lib, 'OgreMain','BulletCollision', 'BulletDynamics',
+                'BulletSoftBody', 'BulletMultiThreaded', 'GIMPACTUtils',
+                'LinearMath', 'BulletFileLoader','ConvexDecomposition']
     else:
         libs.append('libLinearMath')
 
@@ -1769,6 +1769,7 @@ class hydrax(pymodule):
             include_dirs.insert(0, p)
 
 class hikari(pymodule):
+    active=False
     version = "r23"
     name = 'hikari'
     parent = "ogre/gui"
@@ -1788,7 +1789,7 @@ class hikari(pymodule):
     descLink = "http://hikari-library.googlecode.com/"
 
 class mygui(pymodule):
-    active = True
+    active = False
     version = "3.0"
     parent = "ogre/gui"
     source = [
@@ -1812,7 +1813,7 @@ class mygui(pymodule):
     ModuleName = "mygui"
     descText = "MyGUI Interface System"
     descLink = "http://my-gui.sourceforge.net/"
-    moduleLibs = [os.path.join(Config.PATH_mygui, 'Shared','release','MyGUI')]
+    moduleLibs = [os.path.join(Config.PATH_mygui, 'Shared', 'release', 'MyGUI')]
 
 class canvas(pymodule):
     version = "1.0"
@@ -1961,7 +1962,7 @@ class ogreoggsound(pymodule):
         Config.PATH_LIB_Ogre_OgreMain,
         Config.PATH_LIB_ogreoggsound
     ]
-    moduleLibs=[os.path.join(Config.PATH_LIB_ogreoggsound,'OgreOggSound')]
+    moduleLibs = [os.path.join(Config.PATH_LIB_ogreoggsound, 'OgreOggSound')]
     libs = [boost.lib, 'OgreMain', 'OgreOggSound' ]
     ModuleName = "ogreoggsound"
     descText = "Ogre OGG Sound Module"
@@ -1982,7 +1983,7 @@ if ogre.version.startswith ("1.7"):
             Config.PATH_LIB_Ogre_OgreMain,
         ]
         libs = [boost.lib, 'OgreTerrain', 'OgrePaging', 'OgreMain' ]
-        moduleLibs = [os.path.join(Config.PATH_Ogre,'bin','Release', 'OgreTerrain'),
+        moduleLibs = [os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgreTerrain'),
              ]
 
         ModuleName = "ogreterrain"
@@ -2004,7 +2005,7 @@ if ogre.version.startswith ("1.7"):
         libs = [boost.lib, 'OgrePaging', 'OgreMain' ]
         ModuleName = "ogrepaging"
         descText = "OgrePaging: New Paging Manager in Ogre"
-        moduleLibs = [os.path.join(Config.PATH_Ogre,'bin','Release', 'OgrePaging'),
+        moduleLibs = [os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgrePaging'),
              ]
 
     class ogrertshadersystem(pymodule):
@@ -2023,7 +2024,7 @@ if ogre.version.startswith ("1.7"):
         libs = [boost.lib, 'OgreRTShaderSystem', 'OgreMain' ]
         ModuleName = "ogrertshadersystem"
         descText = "OgreRTShaderSystem: New Real Time Shader System in Ogre"
-        moduleLibs = [os.path.join(Config.PATH_Ogre,'bin','Release', 'OgreRTShaderSystem'),
+        moduleLibs = [os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgreRTShaderSystem'),
              ]
 
     class ogresdksample(pymodule):
@@ -2034,6 +2035,7 @@ if ogre.version.startswith ("1.7"):
             boost.PATH,
             Config.PATH_INCLUDE_Ogre,
             Config.PATH_INCLUDE_sdksample,
+            os.path.join(Config.PATH_INCLUDE_sdksample,'..','..','Browser','include'), #needed for filesystemimpl
             Config.PATH_INCLUDE_OIS
         ]
         lib_dirs = [
@@ -2041,7 +2043,7 @@ if ogre.version.startswith ("1.7"):
             Config.PATH_LIB_Ogre_OgreMain,
             Config.PATH_LIB_OIS
         ]
-        libs = [boost.lib, 'OgreMain', 'OIS_static', 'User32']
+        libs = [boost.lib, 'OgreMain', 'OIS', 'User32']
         ModuleName = "ogresdksample"
         descText = "OgreSDKSample: New SDK Sample Framework in Ogre"
 
@@ -2060,12 +2062,12 @@ if ogre.version.startswith ("1.7"):
             os.path.join(Config.BASE_DIR, "SkyX", "SkyX", "SkyX", "bin")
         ]
         libs = [boost.lib, 'OgreMain', 'SkyX' ]
-        moduleLibs = [os.path.join(Config.BASE_DIR, "SkyX", "SkyX", "SkyX", "bin","SkyX")]
+        moduleLibs = [os.path.join(Config.BASE_DIR, "SkyX", "SkyX", "SkyX", "bin", "SkyX")]
         ModuleName = "skyx"
         descText = "SkyX: Great sky"
 
     class awesomium(pymodule):
-        active=False
+        active = False
         version = "1.5"
         name = 'awesomium'
         parent = "ogre/addons"
@@ -2080,12 +2082,12 @@ if ogre.version.startswith ("1.7"):
             os.path.join(Config.BASE_DIR, "awesomium")
         ]
         libs = [boost.lib, 'OgreMain', 'Awesomium' ]
-        moduleLibs = [os.path.join(Config.BASE_DIR,"awesomium")]
+        moduleLibs = [os.path.join(Config.BASE_DIR, "awesomium")]
         ModuleName = "awesomium"
         descText = "Awesomium: WebGUI in Ogre "
 
         
-class newton2 ( module ):
+class newton2 (module):
     source_version = "2.16"
     if isLinux():
         source_version = "2.13"
@@ -2178,12 +2180,13 @@ class ogrerefapp(pymodule):
     ModuleName = 'OgreRefApp'
 
 class ogrenewt(pymodule):
+    active=False
     version = "r2429"
     parent = "ogre/physics"
     base = 'ogreaddons/ogrenewt'
     if isWindows():
         libs = ['Newton', boost.lib, 'OgreNewt_Main', 'OgreMain']
-        moduleLibs=[os.path.join(Config.PATH_LIB_Newton,'Newton')]
+        moduleLibs = [os.path.join(Config.PATH_LIB_Newton, 'Newton')]
     elif isLinux():
         libs = ['Newton', boost.lib, 'OgreNewt', 'OgreMain']
     else:
@@ -2242,6 +2245,7 @@ class ogrenewt(pymodule):
     ModuleName = 'OgreNewt'
 
 class ogrenewt2(pymodule):
+    active=False
     version = "r2764_2.11"
     parent = "ogre/physics"
     base = 'ogreaddons/ogrenewt2'
@@ -2276,10 +2280,10 @@ class ogrenewt2(pymodule):
     include_dirs = [
         boost.PATH,
         Config.PATH_Newton2,
-        os.path.join(Config.PATH_Newton2,'dMath'),
-        os.path.join(Config.PATH_Newton2,'dAnimation'),
-        os.path.join(Config.PATH_Newton2,'dContainers'),
-        os.path.join(Config.PATH_Newton2,'dCustomJoints'),
+        os.path.join(Config.PATH_Newton2, 'dMath'),
+        os.path.join(Config.PATH_Newton2, 'dAnimation'),
+        os.path.join(Config.PATH_Newton2, 'dContainers'),
+        os.path.join(Config.PATH_Newton2, 'dCustomJoints'),
         Config.PATH_INCLUDE_Ogre,
         Config.PATH_INCLUDE_OgreNewt2,
         Config.PATH_INCLUDE_Ogre_Dependencies, #needed for OIS/OIS.h
@@ -2290,7 +2294,7 @@ class ogrenewt2(pymodule):
         Config.PATH_LIB_OgreNewt2,
         Config.PATH_LIB_Ogre_OgreMain,
     ]
-    moduleLibs=[os.path.join(Config.PATH_Newton2,'x32','dll_vs9','newton'),
+    moduleLibs = [os.path.join(Config.PATH_Newton2, 'x32', 'dll_vs9', 'newton'),
                 os.path.join(Config.PATH_LIB_OgreNewt2, 'OgreNewt')
                 ]
     if isMac():
@@ -2366,7 +2370,7 @@ projects = {
 if ogre.version.startswith ("1.7"):
     projects['ogrepaging'] = ogrepaging
     projects['ogreterrain'] = ogreterrain
-    projects['ogrertshadersystem']=ogrertshadersystem
+    projects['ogrertshadersystem'] = ogrertshadersystem
     projects['ogresdksample'] = ogresdksample
     projects['skyx'] = skyx
     projects['awesomium'] = awesomium
@@ -2429,7 +2433,7 @@ for name, cls in projects.items():
     elif isWindows():
         cls.cflags += ' -D"_HAS_TR1=0" ' # to solve an issue with <map> include with MSVC 9 and advanced feature pack and gccxml ?????
         if Config._SVN: # building Ogre 1.7
-            cls.include_dirs.insert (0, os.path.join ( Config.PATH_Ogre, 'include') ) # puts buildsettings.h in the path
+            cls.include_dirs.insert (0, os.path.join (Config.PATH_Ogre, 'include')) # puts buildsettings.h in the path
             cls.CCFLAGS += " -DHAVE_OGRE_BUILDSETTINGS_H "
 
     if not hasattr(cls, 'ModuleName'):

@@ -1,8 +1,4 @@
-#if defined __APPLE_CC__
-    #include "strings.h"
-    #include "Carbon/Carbon.h"
-#endif
-#include "Ogre.h"  // need to include this
+#include "../ogre/python_ogre_include_OGRE.h"
 #include "QuickGUI.h"
 
 // First we create a magic namespace to hold all our aliases

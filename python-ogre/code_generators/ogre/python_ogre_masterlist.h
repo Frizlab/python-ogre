@@ -3,15 +3,12 @@
 Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add missing files as needed.
 
 */
-
-// Feb 2010 -- fix to force the GCC compiler version when building cache with GCCXML...
-#include "OgrePlatform.h"
-
-#if (OGRE_COMPILER == OGRE_COMPILER_GNUC ) && defined (__PYTHONOGRE_BUILD_CODE )
-#define OGRE_COMP_VER 420
-#endif
-
-#include "Ogre.h"
+/*
+include ogre.h but sometime we need to tweak defines etc to get gccxml to work
+and as this is needed by many modules we have moves the 'tweaking' to a seperate
+include file that everyone can use.
+*/
+#include "./python_ogre_include_OGRE.h"
 #include "OgreStableHeaders.h"
 
 #include "OgreAlignedAllocator.h"
@@ -134,3 +131,7 @@ Nov 21 2007:  Major change to use Ogre.h and OgreStableHeaders.h, and then add m
 #include "OgreMaterial.h"
 #include "OgreString.h"
 #include "OgreMath.h"
+// New for 1.7
+#if (OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 7) || (OGRE_VERSION_MAJOR >1 )
+     #include "Property/OgreProperty.h"
+#endif

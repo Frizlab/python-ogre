@@ -1,12 +1,5 @@
-#if defined __APPLE_CC__
-    #include "strings.h"
-    #include "Carbon/Carbon.h"
-#endif
-#include "OgrePlatform.h"
-#if (OGRE_COMPILER == OGRE_COMPILER_GNUC ) && defined (__PYTHONOGRE_BUILD_CODE )
-#define OGRE_COMP_VER 420
-#endif
-#include "Ogre.h"
+#include "../ogre/python_ogre_include_OGRE.h"
+
 #include "OgrePortal.h"
 #include "OgrePCZSceneNode.h"
 #include "OgrePCZone.h"

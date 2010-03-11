@@ -129,13 +129,20 @@ def ManualExclude ( mb ):
             ,'::btSliderConstraint::testLinLimits2'
             ,'::btDynamicsWorld::setInternalTickCallback' # linux
             
-            # new as jan 2010
-            ,'::btAlignedObjectArray< float >::at'
-            ,'::btAlignedObjectArray< unsigned short >::at'
-            ,'::btAlignedObjectArray< unsigned int >::at'
-            ,'::btAlignedObjectArray< int >::at'
-            ,'::btAlignedObjectArray< short >::at'
-            ]
+#             # new as jan 2010
+#             ,'::btAlignedObjectArray< float >::at'
+#             ,'::btAlignedObjectArray< unsigned short >::at'
+#             ,'::btAlignedObjectArray< unsigned int >::at'
+#             ,'::btAlignedObjectArray< int >::at'
+#             ,'::btAlignedObjectArray< short >::at'
+#             ,'::btAlignedObjectArray< btHashInt >::at'
+#
+#             ,'::btAlignedObjectArray< float >::expandNonInitializing'
+#             ,'::btAlignedObjectArray< short >::expandNonInitializing'
+#             ,'::btAlignedObjectArray< unsigned short >::expandNonInitializing'
+#             ,'::btAlignedObjectArray< unsigned int >::expandNonInitializing'
+
+          ]
     for e in excludes:
         try:
             global_ns.member_functions(e).exclude()
@@ -178,6 +185,34 @@ def ManualExclude ( mb ):
              ,'::btAlignedAllocator< btMaterial*, 16u >'
              ,'::btAlignedAllocator< btPlane*, 16u >'
              ,'::btGeometryUtil'
+             ,'::btAlignedAllocator< btChunk*, 16u >'
+             ,'::btAlignedAllocator< short, 16u >'
+             ,'::btAlignedAllocator< short*, 16u >'
+             # btHashString::btHashString doesn't have a default constructor
+             # looks like 'fundemental' types are not working'
+             ,'::btAlignedObjectArray< btHashInt >'
+             ,'::btAlignedObjectArray< btHashPtr >'
+             ,'::btAlignedObjectArray< btTransform >'
+             ,'::btAlignedObjectArray< btTriangle >'
+             ,'::btAlignedObjectArray< btTypedConstraint::btConstraintInfo1 >'
+             ,'::btAlignedObjectArray< char* >'
+             ,'::btAlignedObjectArray< char const* >'
+             ,'::btAlignedObjectArray< btHashString >'
+             ,'::btAlignedObjectArray< float >'
+             ,'::btAlignedObjectArray< short >'
+             ,'::btAlignedObjectArray< int >'
+             ,'::btAlignedObjectArray< unsigned short >'
+             ,'::btAlignedObjectArray< unsigned int >'
+             ,'::btAlignedObjectArray< short* >'
+             ,'::btAlignedObjectArray< int* >'
+             ,'::btHashMap< btHashPtr, void* >'
+             ,'::btHashMap< btHashPtr, char const* >'
+             ,'::btHashMap< btHashInt, int >'
+             ,'::btHashMap< btHashString, int >'
+             ,'::btHashMap< btHashInt, btTriangleInfo >'
+             ,'::btTriangleInfoMap'
+             
+             ,'::btDefaultSerializer'  # btHashInt::btHashInt no default const
 
             ]
             
@@ -219,7 +254,7 @@ def ManualExclude ( mb ):
                 o.exclude()
     global_ns.class_('btQuaternion').operators("operator-", arg_types=[]).exclude()
     
-    noncopy = ['btDbvtBroadphase','btRaycastVehicle']
+    noncopy = ['btDbvtBroadphase','btRaycastVehicle','btAlignedObjectArray< btHashInt >']
     for c in noncopy:
         main_ns.class_(c).noncopyable = True
     
@@ -502,7 +537,7 @@ def generate_code():
     
     ManualFixes ( mb )
     ManualExclude ( mb )
-    common_utils.Auto_Functional_Transformation ( main_ns  )
+    common_utils.Auto_Functional_Transformation ( main_ns ,special_vars=['btScalar *'] )
     
     
     #

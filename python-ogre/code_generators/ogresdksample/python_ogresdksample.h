@@ -1,8 +1,5 @@
-#include "OgrePlatform.h"
-#if (OGRE_COMPILER == OGRE_COMPILER_GNUC ) && defined (__PYTHONOGRE_BUILD_CODE )
-#define OGRE_COMP_VER 420
-#endif
-#include "Ogre.h"
+#include "../ogre/python_ogre_include_OGRE.h"
+#include "FileSystemLayer.h"
 #include "SdkSample.h"
 #include "SampleContext.h"
 

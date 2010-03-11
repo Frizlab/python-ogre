@@ -48,6 +48,10 @@ typedef std::vector<float> stdVectorFloat;
 
 //typedef Ogre::MapIterator<std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition, std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >, std::allocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::GpuConstantDefinition> > > >\
 //	MapIteratorGpuConstantDefinition;
+
+typedef std::map<unsigned int, Ogre::GpuLogicalIndexUse, std::less<unsigned int>, Ogre::STLAllocator<std::pair<unsigned int const, Ogre::GpuLogicalIndexUse>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > \
+    stdMapUnsignedIntOgreGpuLogicalIndexUse ;
+
 typedef std::vector<std::pair<unsigned, unsigned>, std::allocator<std::pair<unsigned, unsigned> > >\
 	stdVectorUnsignedUnsigned;
 		
@@ -85,7 +89,11 @@ typedef std::pair<unsigned char, unsigned char> stdPairUnsignedCharUnsignedChar;
 typedef std::pair<bool,Ogre::Vector3> stdPairBoolVector3;
 typedef std::vector< bool > stdVectorBool;
 typedef std::vector< unsigned int > stdVectorUnsignedInt;
-
+typedef std::pair<bool, std::string> stdPairBoolString;
+typedef std::pair<std::string const, Ogre::Node* > stdPairStringOgreNode;
+typedef std::pair<std::string const, unsigned short> stdPairStringUnsignedShort;
+typedef std::pair<std::string const, Ogre::MovableObject*> stdPairStringOgreMovableObject;
+typedef std::pair<std::string const, Ogre::SharedPtr<Ogre::Resource> > stdPariStringOgreSharePtrResource;
 
 
 
@@ -416,7 +424,7 @@ typedef Ogre::String String;
 
 
 
-#if OGRE_VERSION_MINOR != 7
+#if OGRE_VERSION_MINOR < 7
     typedef Ogre::Material::LodDistanceIterator LodDistanceIterator;
 #else
     // typedef Ogre::MapIteratorWrapper<Ogre::AnimationStateMap, Ogre::AnimationStateMap::iterator> MapIteratorWrapperAnimationStateMap;
@@ -445,6 +453,7 @@ typedef Ogre::String String;
     // typedef Ogre::MapIteratorWrapper<Ogre::Pose::VertexOffsetMap, Ogre::Pose::VertexOffsetMap::const_iterator> MapIteratorWrapperVertexOffsetMapConst;
     // typedef Ogre::IteratorWrapper<Ogre::Pose::VertexOffsetMap, Ogre::Pose::VertexOffsetMap::const_iterator,Ogre::Pose::VertexOffsetMap::mapped_type> IteratorWrapperVertexOffsetMapConst;
     // typedef Ogre::IteratorWrapper<Ogre::Pose::VertexOffsetMap, Ogre::Pose::VertexOffsetMap::iterator,Ogre::Pose::VertexOffsetMap::mapped_type> IteratorWrapperVertexOffsetMap;
+    typedef std::map<std::basic_string<char, std::char_traits<char>, std::allocator<char> >,Ogre::PropertyValue,std::less<std::basic_string<char, std::char_traits<char>, std::allocator<char> > >,Ogre::STLAllocator<std::pair<const std::basic_string<char, std::char_traits<char>, std::allocator<char> >, Ogre::PropertyValue>, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > > stdMapOgrePropertyValue;
     typedef Ogre::Singleton<Ogre::LodStrategyManager> SingletonLodStrategyManager;
     typedef Ogre::SharedPtr<Ogre::GpuSharedParameters> SharedPtrGpuSharedParameters;
     

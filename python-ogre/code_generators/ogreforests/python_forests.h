@@ -1,9 +1,6 @@
 #include <string>
 
-#if defined __APPLE_CC__
-    #include "strings.h"
-    #include "Carbon/Carbon.h"
-#endif
+#include "../ogre/python_ogre_include_OGRE.h"
 
 #include "PagedGeometry.h"
 #include "GrassLoader.h"

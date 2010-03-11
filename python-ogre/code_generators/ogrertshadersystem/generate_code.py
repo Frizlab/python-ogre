@@ -69,7 +69,16 @@ def ManualExclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-    ex = ["::Ogre::RTShader::SGMaterialSerializerListener::createSGPassList"]
+    ex =    ['::Ogre::RTShader::SGMaterialSerializerListener::createSGPassList',
+            # issue with cannot access protected class declared in class 'Ogre::RTShader::ProgramProcessor'
+            '::Ogre::RTShader::ProgramProcessor::generateLocalSplitParameters',
+            '::Ogre::RTShader::ProgramProcessor::mergeParameters',
+            '::Ogre::RTShader::ProgramProcessor::mergeParametersByPredefinedCombinations',
+            '::Ogre::RTShader::ProgramProcessor::mergeParametersReminders',
+            '::Ogre::RTShader::ProgramProcessor::rebuildFunctionInvocations',
+            '::Ogre::RTShader::ProgramProcessor::rebuildParameterList',
+            '::Ogre::RTShader::ProgramProcessor::replaceParametersReferences'
+            ]
     for c in ex:
         try:
             main_ns.member_function(c).exclude()
@@ -127,7 +136,7 @@ def ManualFixes ( mb ):
             c.alias = "stdVectoRTShaderProgramProcessorMergeParameter"
     #c = main_ns.class_('std::vector<Ogre::RTShader::ProgramProcessor::MergeParameter,Ogre::STLAllocator<Ogre::RTShader::ProgramProcessor::MergeParameter, Ogre::CategorisedAllocPolicy<MEMCATEGORY_GENERAL> > >')
     #c.alias = "stdVectoRTShaderProgramProcessorMergeParameter"
-    sys.exit(-1)
+#     sys.exit(-1)
     for c in main_ns.classes():
         if "SGPass" in c.name:
             print "Excluding:", c
@@ -339,13 +348,15 @@ def generate_code():
         ## have a code generation issue that needs resolving...
         filesToFix=['CGProgramProcessor.pypp.cpp', 'GLSLProgramProcessor.pypp.cpp','HLSLProgramProcessor.pypp.cpp',
                     'ProgramProcessor.pypp.cpp', 'stdMapRTShaderParameterOperand.pypp.cpp', 
-                    'stdMapRTShaderParameterParameter.pypp.cpp',]
+                    'stdMapRTShaderParameterParameter.pypp.cpp',
+                    'CGProgramProcessor.pypp.cpp']
         for filename in filesToFix:
-            fname = os.path.join( environment.ogre.generated_dir, filename)
+            fname = os.path.join( environment.ogrertshadersystem.generated_dir, filename)
             try:
                 f = open(fname, 'r')
                 buf = f.read()
                 f.close()
+                print "CHECKING:", fname
                 if (" MEMCATEGORY_GENERAL" in buf) or ("<MEMCATEGORY_GENERAL" in buf):
                     buf = buf.replace ( " MEMCATEGORY_GENERAL", " Ogre::MEMCATEGORY_GENERAL")
                     buf = buf.replace ( "<MEMCATEGORY_GENERAL", "<Ogre::MEMCATEGORY_GENERAL")

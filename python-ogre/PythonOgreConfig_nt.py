@@ -2,7 +2,7 @@ import os
 import sys
 import getpass
 
-SDK=False # Changes Ogre include path settings
+SDK=True # Changes Ogre include path settings
 
 _UserName = getpass.getuser()
 _SVN = False    # if building from Ogre svn
@@ -31,7 +31,7 @@ PATH_LIB_date_time_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/date_time/buil
 if (getpass.getuser() == 'amiller' ):  # special for Andy's machine as I tend to build against multiple python versions
    PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
    PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python_' +PythonVersionString +'/build/msvc-9.0/release/threading-multi')
-   _SVN = True
+#    _SVN = True
 
 PATH_LIB_Boost = os.path.join(PATH_Boost, 'stage/lib' )
 PATH_LIB_Thread_STATIC = PATH_LIB_Boost
@@ -51,6 +51,8 @@ if _SVN:
     PATH_Ogre =         os.path.join(BASE_DIR, 'ogre')
 else:
     PATH_Ogre = "c:\\ogre"
+if SDK:
+    PATH_Ogre =         "C:\\development\\ogre"
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.7.1')
 
@@ -91,7 +93,7 @@ PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
 PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
-PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.75') 
+PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.76')
 PATH_PhysX=         "c:/program files/NVIDIA Corporation/NVIDIA Physx SDK/v2.8.1/SDKs"
 PATH_Theora=        os.path.join(BASE_DIR,'ogrevideo','trunk','TheoraVideoPlugin')
 
@@ -116,7 +118,7 @@ PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
 
 PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
 PATH_INCLUDE_ogreoggsound = os.path.join(PATH_ogreoggsound,'include')
-PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'Release')
+PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'lib')
  
 
     
@@ -151,7 +153,8 @@ PATH_LIB_quickgui =             PATH_quickgui
 PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'lib')
 PATH_LIB_PhysX =                os.path.join(PATH_PhysX,'lib/win32')
 #PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
-PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release_dll8/libs' )
+#PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release_dll8/libs' )
+PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'lib', 'Release' )
 
 # PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/debug8/libs' )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
@@ -175,7 +178,7 @@ PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_Ogre,'Components','RTShade
 PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
 PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
-PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include"),
+PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include")
     
     
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
@@ -201,9 +204,9 @@ PATH_INCLUDE_VORBIS=        os.path.join( PATH_VORBIS, 'include' )
 # #                         ]
 ##PATH_INCLUDE_OgreBullet =   PATH_OgreBullet
                         
-PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'include')
-PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab/include')
-PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader/include')
+PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'Core','include')
+PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab','include')
+PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader','include')
 PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
 PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_INCLUDE_CEGUI, 'RendererModules','Ogre')
 PATH_INCLUDE_quickgui =     PATH_quickgui
@@ -256,17 +259,23 @@ PATH_INCLUDE_opensteer = os.path.join(PATH_opensteer, 'include')
 PATH_INCLUDE_opensteer_opensteer = os.path.join(PATH_opensteer, 'include', 'OpenSteer')
 
 if SDK:
-    PATH_Ogre =         "C:\\OgreSDK"
-    PATH_CEGUI =        PATH_Ogre
+    PATH_Ogre =         "C:\\development\\ogre"
+#     PATH_CEGUI =        PATH_Ogre
     PATH_OIS =          PATH_Ogre
-    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'include') 
-    PATH_INCLUDE_OIS =          os.path.join(PATH_Ogre,'include/OIS')   
-    PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'include/CEGUI')
-    PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'samples','include')
-    PATH_INCLUDE_ogrepcz = os.path.join(PATH_Ogre,'include', 'opt')
-    PATH_INCLUDE_Ogre_Dependencies = os.path.join(PATH_Ogre,'include') 
-    PATH_LIB_Ogre_OgreMain =        os.path.join( PATH_Ogre, 'lib' )
-    PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib')
-    PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'lib') 
-    PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib' )
-    PATH_LIB_pcz =                  os.path.join( PATH_Ogre, 'lib','opt' )
+    PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'include','OGRE')
+    PATH_INCLUDE_OIS =          os.path.join(PATH_Ogre,'include','OIS')
+#     PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'include/CEGUI')
+#    PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples','Common','include')
+    PATH_INCLUDE_Ogre_Dependencies = os.path.join(PATH_Ogre,'include')
+    PATH_LIB_Ogre_OgreMain =        os.path.join( PATH_Ogre, 'lib', 'release' )
+#     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib', 'release')
+    PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'lib', 'release')
+#     PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib', 'release' )
+    PATH_LIB_pcz =                  os.path.join( PATH_Ogre, 'lib', 'release','opt' )
+    PATH_INCLUDE_ogrepaging =   os.path.join(PATH_INCLUDE_Ogre,'Paging')
+    PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_INCLUDE_Ogre,'RTShaderSystem')
+    PATH_INCLUDE_ogreterrain =   os.path.join(PATH_INCLUDE_Ogre,'Terrain')
+    PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeZone' )
+    PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeSceneManager' )
+    PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include")
+    PATH_INCLUDE_ogrepcz = os.path.join(PATH_INCLUDE_Ogre,'Plugins','PCZSceneManager')

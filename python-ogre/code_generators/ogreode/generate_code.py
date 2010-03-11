@@ -48,6 +48,10 @@ import common_utils.var_checker as varchecker
 import common_utils.ogre_properties as ogre_properties
 from common_utils import docit
 
+# setup a shortcut to the logger functions
+from common_utils import log_exclude as log_exclude
+from common_utils import log_include as log_include
+
 MAIN_NAMESPACE = ['OgreOde','OgreOde_Prefab', 'OgreOde_Loader']
 
 ############################################################
@@ -72,14 +76,17 @@ def ManualExclude ( mb ):
                 '::OgreOde::EntityInformer::getIndices', ## unsigned int const *
 #                 '::OgreOde::RagdollFactory::requestTypeFlags', # causes issues with moveableobjectfactory
                 '::OgreOde::EntityInformer::getBoneVertices',  # hand wrapped
-                '::OgreOde::TriangleMeshData::getIndices' ## needs to be hand wrapped
-                
-               
+                '::OgreOde::TriangleMeshData::getIndices', ## needs to be hand wrapped
+#                 '::OgreOde::PlaneBoundedRegionGeometryPlaneListener::planesAt',
+                '::OgreOde::World::fastStep', # it's not in the external lib
                 ]
     for e in excludes:
-        print "Excluding:", e
-        global_ns.member_functions(e).exclude() 
-        
+        try:
+            global_ns.member_functions(e).exclude()
+            log_exclude(e)
+        except:
+            log_exclude(e, False) # log it failing
+
     global_ns.namespace( 'OgreOde' ).class_("CircularBuffer<OgreOde::BodyState*>").exclude() 
     #
     # Exclude problem variables
@@ -88,9 +95,11 @@ def ManualExclude ( mb ):
                 '::OgreOde::Utility::Infinity'
                 ]
     for e in excludes:
-        print "Excluding:", e
-        global_ns.variable(e).exclude() 
-    
+        try:
+            global_ns.variable(e).exclude()
+            log_exclude(e)
+        except:
+            log_exclude(e, False) # log it failing
     #
     # Exclude problem classes
     #
@@ -101,12 +110,16 @@ def ManualExclude ( mb ):
                 'MaintainedList<OgreOde::Geometry>',
                 'MaintainedList<OgreOde::Joint>',
                 'MaintainedList<OgreOde::JointGroup>', 
-                'MaintainedList<OgreOde::Space>'
+                'MaintainedList<OgreOde::Space>',
+                'PlaneBoundedRegionGeometry'  # has std::list <plane> causing an issue
                 ]
     for e in excludes:
-        print "Excluding:", e
-        global_ns.namespace( 'OgreOde' ).class_(e).exclude()
-        
+        try:
+            global_ns.namespace( 'OgreOde' ).class_(e).exclude()
+            log_exclude(e)
+        except:
+            log_exclude(e, False) # log it failing
+            
     #global_ns.namespace("Ogre").class_('list<Ogre::Plane>').include(already_exposed=True)  
     
     try: # this only works with ogre 1.7 so wrap in a try..
@@ -115,7 +128,7 @@ def ManualExclude ( mb ):
     except:
         print "FAIL ON 1"
     try: # this only works with ogre 1.7 so wrap in a try..
-        global_ns.class_('::std::list<Ogre::Plane>').include(already_exposed=True)
+        global_ns.class_('::std::list< Ogre::Plane >').include(already_exposed=True)  #std::list< Ogre::Plane >
         print "***SPECIAL 2 OK ***"
     except:
         print "FAIL ON 2"
