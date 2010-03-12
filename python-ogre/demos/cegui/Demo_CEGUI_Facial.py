@@ -128,20 +128,32 @@ class FacialAnimationApplication(SampleFramework.Application):
 		
     def _createGUI(self):
 
-         # Initiaslise CEGUI Renderer
-        self.guiRenderer = cegui.OgreCEGUIRenderer(self.renderWindow,ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+        # Initiaslise CEGUI Renderer
+        if CEGUI.Version__.startswith ("0.6"):
+            self.guiRenderer = cegui.OgreCEGUIRenderer(self.renderWindow,ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+            self.system = cegui.System(self.guiRenderer)
+        else:
+            self.guiRenderer = cegui.OgreRenderer.bootstrapSystem()
+            self.system = cegui.System.getSingleton()
+
 
         # create cegui system and log name facial.log
-        self.system = cegui.System(self.guiRenderer)
         cegui.Logger.getSingleton().loggingLevel = cegui.Insane
 
         # Load Cegui Scheme
-        cegui.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
+        if CEGUI.Version__.startswith ("0.6"):
+            CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
+        else:
+            CEGUI.SchemeManager.getSingleton().create("TaharezLookSkin.scheme")
+
         self.system.setDefaultMouseCursor("TaharezLook", "MouseArrow")
         self.system.setDefaultFont("BlueHighway-12")
 
         # Load Layout 
-        sheet = cegui.WindowManager.getSingleton().loadWindowLayout("facial.layout", False)
+        if CEGUI.Version__.startswith ("0.6"):
+            sheet = cegui.WindowManager.getSingleton().loadWindowLayout("facial.layout", False)
+        else:
+            sheet = cegui.WindowManager.getSingleton().loadWindowLayout("facial.layout")
         self.system.setGUISheet (sheet)
         sheet.enabled=True
 	
