@@ -1,91 +1,51 @@
-# this code is in the public domain
-# 
-#  This demo shows simple drag and drop. Two frames each contain a grid
-#  of Static Images. Each (slot) static image is assigned dragndrop events.
-#  Move the static image containing the icon to different slots.
-#
-#  This is based on a dragndrop example provided by Crazy Eddie:
-#  http://www.cegui.org.uk/modules/newbb/viewtopic.php?topic_id=1040&forum=2&post_id=5852#forumpost5852
-#
-#
-#  Shows:  
-#      Simple DragnDrop
-#      Creating a list of events (hope this is correct)
-#      Mouse Enter/Leaves Events & Change Mouse Cursor       
-#      Setting properties by Strings     
-#      Example control creation using UDIM
-#      Simple Tooltip Text / injectTimePulse
+#/***************************************************************************
+# *   Copyright (C) 2004 - 2008 Paul D Turner & The CEGUI Development Team
+# *
+# *   Permission is hereby granted, free of charge, to any person obtaining
+# *   a copy of this software and associated documentation files (the
+# *   "Software"), to deal in the Software without restriction, including
+# *   without limitation the rights to use, copy, modify, merge, publish,
+# *   distribute, sublicense, and/or sell copies of the Software, and to
+# *   permit persons to whom the Software is furnished to do so, subject to
+# *   the following conditions:
+# *
+# *   The above copyright notice and this permission notice shall be
+# *   included in all copies or substantial portions of the Software.
+# *
+# *   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+# *   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+# *   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+# *   IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+# *   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+# *   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# *   OTHER DEALINGS IN THE SOFTWARE.
+# ***************************************************************************/
+
 
 import sys
 sys.path.insert(0,'..')
 import PythonOgreConfig
 
 import ogre.renderer.OGRE as ogre
-import ogre.gui.CEGUI as cegui
+import ogre.io.OIS as OIS
+import ogre.gui.CEGUI as CEGUI
 import SampleFramework
 
 from CEGUI_framework import *
 
 
-CONTAINER_POS = 0.05
-CONTAINER_SIZE = 0.90
-
 def createUVector2( x, y):
-    return CEGUI.UVector2(cegui.UDim(x,0), cegui.UDim(y,0))
+    return CEGUI.UVector2(CEGUI.UDim(x,0), CEGUI.UDim(y,0))
 
-        
-def CreateControl(widget_name,name,parent,pos,size,text='',showframe=False):
-
-    control = cegui.WindowManager.getSingleton().createWindow(widget_name, name)
-    parent.addChildWindow(control)
-    control.setPosition (createUVector2( pos[0],pos[1]) )
-    control.setSize(createUVector2(size[0], size[1]))
-    control.minimumSize = cegui.Size(0.01,0.01)
-    control.maximumSize = cegui.Size(1.0,1.0)
-    control.text = text
-    control.frameEnabled = showframe
-    return control	
-
-
-
-# Drag and Drop Events
-def handleDragEnter(args):
-
-    # set frame colour for window on drag enter
-    args.window.setProperty("FrameColours", "tl:FF00FF00 tr:FF00FF00 bl:FF00FF00 br:FF00FF00")
+def handle_ItemDropped(args):
+    if not args.window.getChildCount():
+        # add dragdrop item as child of target if target has no item already
+        args.window.addChildWindow(args.dragDropItem)
+        # Now we must reset the item position from it's 'dropped' location,
+        # since we're now a child of an entirely different window
+        args.dragDropItem.setPosition(
+            createUVector2(0.05, 0.05) )
     return True
-
-def handleDragLeave(args):
-    # change to mouse move cursor 
-    cegui.System.getSingleton().setDefaultMouseCursor("TaharezLook", "MouseMoveCursor")
-
-    # reset frame colours
-    args.window.setProperty("FrameColours", "tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF")
-    return True
-
-def handleDragDropped(args):
-
-    # change to normal mouse cursor 
-    cegui.System.getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow")
-    # set frame colour and add image to frame static grid
-    args.window.setProperty("FrameColours", "tl:FFFFFFFF tr:FFFFFFFF bl:FFFFFFFF br:FFFFFFFF")
-    args.window.addChildWindow(args.dragDropItem)
-    args.dragDropItem.position = CEGUI.UVector2(cegui_reldim (CONTAINER_POS), cegui_reldim (CONTAINER_POS))
-    args.dragDropItem.setSize(CEGUI.UVector2(cegui_reldim(CONTAINER_SIZE), cegui_reldim(CONTAINER_SIZE)))
-    print "UserData:",args.window.getUserData()
-
-    return True
-
-def onMouseEnters(args):
-    #print "You have Mouse Entery" 
-    # change to mouse move cursor 
-    cegui.System.getSingleton().setDefaultMouseCursor("TaharezLook", "MouseMoveCursor")
-    
-
-def onMouseLeaves(args):
-    #print "You have Mouse Left" 
-    # change to mouse move cursor 
-    cegui.System.getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow")
 
 
 
@@ -94,158 +54,78 @@ class GEUIApplication(SampleFramework.Application):
 
     def __init__(self):
         SampleFramework.Application.__init__(self)
-        self.guiRenderer=0
-        self.system =0
-        self.img = []    # static images for frames
-        self.ec = []     # events for each static image
-        self.ec1 = 0     # events for icon image change mouse cursor
-        self.ec2 = 0
-        self.keep=[]
-
-    def _createGUI(self):
-       
-        # initiaslise CEGUI Renderer
-        self.guiRenderer = cegui.OgreCEGUIRenderer(self.renderWindow,ogre.RenderQueueGroupID.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
-        self.system = cegui.System(self.guiRenderer)
-        cegui.Logger.getSingleton().loggingLevel = cegui.Insane
-
-        # load TaharezLook scheme
-        cegui.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
-        self.system.setDefaultMouseCursor("TaharezLook", "MouseArrow")
-
-        # default layout
-        sheet = cegui.WindowManager.getSingleton().createWindow("DefaultWindow", "root_wnd")
-        self.system.setGUISheet (sheet)
-
-        # control colours
-        blue = cegui.colour(0.0, 0.0, 1.0, 0.5)
-        red  = cegui.colour(1.0, 0.0, 0.0, 0.5)
-        green  = cegui.colour(0.0, 1.0, 0.0, 1.0)
-        blue_back = cegui.colour(0.0, 0.0, 1.0, 1.0)
-        red_back = cegui.colour(1.0, 0.0, 0.0, 1.0)
-
-
-        # setup tooltip
-        self.system.setDefaultTooltip("TaharezLook/Tooltip" )
-        tip = self.system.getDefaultTooltip()
-
-        # displayTime
-        #     the number of seconds the tooltip should be displayed for before it automatically
-        #     de-activates itself. 
-        #     0 indicates that the tooltip should never timesout and auto-deactivate.
-        # hoverTime
-        #     the number of seconds the mouse should hover stationary over the target window 
-        #     before the tooltip gets activated. 
-        # fadeTime
-        #     number of seconds that should be taken to fade the tooltip into and out of 
-        #     visibility.  
-
-        #tip.displayTime=0.80
-        tip.hoverTime = 0.10
-        tip.fadeTime=1.0
-
-        # an edit box 
-        editBox = CreateControl("TaharezLook/MultiLineEditbox", "an edit control",sheet,[0.10,0.80],[0.80,0.80],'')
-        editBox.text="The above static text control was created using UDIM"
-        editBox.text+="UDIM is the new 'unified' co-ord system replacement for relative/absolute coords"
-        editBox.text+=" The basic concept is UDIM(scale,offset) where:"
-        editBox.text+="         scale is the relative component usually 0.0 to 1.0"
-        editBox.text+="         offset is the absolute component in pixels "
-        editBox.readOnly=True 
-
-        # create static text box UDIM
-        stat =cegui.WindowManager.getSingleton().createWindow("TaharezLook/StaticText", "Label")
-        stat.windowHeight=cegui.UDim(0.05,0)         # %window parents height,offset  pixels parent 
-        stat.windowWidth=cegui.UDim(0.80,0)          # %window parents width, offset  pixels parent 
-        stat.windowXPosition = cegui.UDim(0.10,0)    # %position parent window width,offset  pixels parent 
-        stat.windowYPosition = cegui.UDim(0.05,0)    # %position parent window height,offset  pixels parent  
-        stat.text = "Drag Above Icon to different cells in frame window"
-        img = cegui.ImagesetManager.getSingleton().getImageset("TaharezLook").getImage("ListboxSelectionBrush")
-        stat.backgroundImage = img
-        stat.backgroundColours = cegui.ColourRect(red,red,red,red) #colrect
-        stat.textColours =  (1.0,1.0,1.0) # white
-        stat.frameColours = blue
-        stat.horizontalFormatting=cegui.Centred # LeftAligned 
-  
-        #sheet.addChildWindow(stat)
-
-        # creates first frame window
-        frs=cegui.WindowManager.getSingleton().createWindow("TaharezLook/FrameWindow", "Rucksack")
-        frs.setPosition (CEGUI.UVector2(cegui_reldim (0.03), cegui_reldim (0.05)))
-        frs.setSize(CEGUI.UVector2(cegui_reldim(0.45), cegui_reldim(0.6)))
-        frs.text = "Test Frame"
-        sheet.addChildWindow(frs)
-
-        # creates second frame window
-        feq=cegui.WindowManager.getSingleton().createWindow("TaharezLook/FrameWindow", "Equipped Items")
-        feq.setPosition (CEGUI.UVector2(cegui_reldim (0.5), cegui_reldim (0.05)))
-        feq.setSize(CEGUI.UVector2(cegui_reldim(0.45), cegui_reldim(0.6)))
-        feq.text = "Test Frame 2"
-        sheet.addChildWindow(feq)
-       
-        # add a number of 'slots' to each frame window
-        # the slots will act as targets for drag/drop  
-        # the slots ust normal StaticText widgets with the relevant event handlers attached
-
-        # create 4x4 staic image grid for each frame
-        cols = 4
-        rows = 4
-        deltax=1.0/cols
-        deltay=1.0/rows
-
-        for x in [frs,feq]: 
-            for xp in range(cols):
-                for yp in range(rows):
-                    name = "Slot" + str(xp) + str(yp) + x.name.c_str()
-                    self.keep.append(name)
-                    c = CreateControl("TaharezLook/StaticImage",name,x,[xp*deltax,yp*deltay],[deltax,deltay],'Image1',1)
-                    c.setUserData (name)
-                    print "UserData:",c.getUserData()
-                    
-                    self.img.append(c) 
-
-        # create events for each slot
-        for slot in self.img: 
-            self.ec.append(slot.subscribeEvent(slot.EventDragDropItemEnters, handleDragEnter,""))
-            self.ec.append(slot.subscribeEvent(slot.EventDragDropItemLeaves, handleDragLeave,""))
-            self.ec.append(slot.subscribeEvent(slot.EventDragDropItemDropped, handleDragDropped,""))
-
-
-        # create a drag/drop container
-        item=cegui.WindowManager.getSingleton().createWindow("DragContainer", "theItem")
-        item.position = CEGUI.UVector2(cegui_reldim (CONTAINER_POS), cegui_reldim (CONTAINER_POS))
-        item.setSize(CEGUI.UVector2(cegui_reldim(CONTAINER_SIZE), cegui_reldim(CONTAINER_SIZE)))
-
-
-
-        # create a static iamge as drag container's contents and parent to drag container
-        itemIcon=cegui.WindowManager.getSingleton().createWindow("TaharezLook/StaticImage", "theContainer")
-        itemIcon.setPosition (CEGUI.UVector2(cegui_reldim (0.0), cegui_reldim (0.0)) )
-        itemIcon.setSize(CEGUI.UVector2(cegui_reldim(1.0), cegui_reldim(1.0)))
-
-        # set image
-        itemIcon.setProperty("Image", "set:TaharezLook image:CloseButtonNormal")
-        # disable to allow inputs to pass through.
-        itemIcon.disable
-        itemIcon.tooltipText ="Drag Me"
-       
-        # add itemIcon to drag drop container 
-        item.addChildWindow(itemIcon)
-
-        # events to change mouse cursor
-        self.ec1= item.subscribeEvent(item.EventMouseEnters,onMouseEnters, "")        
-        self.ec2= item.subscribeEvent(item.EventMouseLeaves,onMouseLeaves, "")        
-
-        # set starting slot for the item
-        startslot=self.img[0]
-        startslot.addChildWindow(item)  
-
+        self.CEGUIRenderer = 0
+        self.CEGUISystem = 0
 
     def _createScene(self):
+
         sceneManager = self.sceneManager
         sceneManager.ambientLight = ogre.ColourValue(0.25, 0.25, 0.25)
-        self._createGUI()
 
+        # initiaslise CEGUI Renderer
+        if CEGUI.Version__.startswith ("0.6"):
+            self.CEGUIRenderer = CEGUI.OgreRenderer(self.renderWindow,
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+            self.CEGUIRenderer = CEGUI.System(self.GUIRenderer)
+        else:
+            self.CEGUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            self.CEGUIRenderer = CEGUI.System.getSingleton()
+
+        CEGUI.Logger.getSingleton().loggingLevel = CEGUI.Insane
+
+        # load TaharezLook scheme
+        if CEGUI.Version__.startswith ("0.6"):
+            CEGUI.SchemeManager.getSingleton().loadScheme("WindowsLook.scheme")
+        else:
+            CEGUI.SchemeManager.getSingleton().create("WindowsLook.scheme")
+
+        # load font and setup default if not loaded via scheme
+        if CEGUI.Version__.startswith ("0.6"):
+            if not CEGUI.FontManager.getSingleton().isFontPresent("DejaVuSans-10.font"):
+                try:
+                    CEGUI.FontManager.getSingleton().createFont("DejaVuSans-10.font")
+                except:
+                    ## assume font is defined in loaded scheme
+                    pass
+            CEGUI.System.getSingleton().setDefaultMouseCursor("WindowsLook", "MouseArrow")
+            CEGUI.System.getSingleton().setDefaultFont("DejaVuSans-10")
+
+            # load the drive icons imageset
+            CEGUI.ImagesetManager.getSingleton().createImageset("DriveIcons.imageset")
+            ## load the initial layout
+            CEGUI.System.getSingleton().setGUISheet(
+                CEGUI.WindowManager.getSingleton().loadWindowLayout("DragDropDemo.layout", False))
+        else:
+            CEGUI.FontManager.getSingleton().create("DejaVuSans-10.font")
+            CEGUI.System.getSingleton().setDefaultMouseCursor("WindowsLook", "MouseArrow")
+            CEGUI.System.getSingleton().setDefaultFont("DejaVuSans-10")
+
+            # load the drive icons imageset
+            CEGUI.ImagesetManager.getSingleton().create("DriveIcons.imageset")
+
+
+            ## load the initial layout
+            CEGUI.System.getSingleton().setGUISheet(
+                CEGUI.WindowManager.getSingleton().loadWindowLayout("DragDropDemo.layout"))
+
+        ## setup events
+        self._subscribeEvents()
+
+
+    def _subscribeEvents(self):
+        wmgr = CEGUI.WindowManager.getSingleton()
+
+
+        # Subscribe the same handler to each of the twelve slots
+        base_name = "Root/MainWindow/Slot"
+        for i in range(1,13):
+            try:
+                # get the window pointer for this slot
+                wnd =  wmgr.getWindow(base_name + CEGUI.PropertyHelper.intToString(i))
+                wnd.subscribeEvent(
+                    CEGUI.Window.EventDragDropItemDropped, handle_ItemDropped,"")
+            except CEGUI.Exception, e:
+                print e
 
     def _createCamera(self):
         self.camera = self.sceneManager.createCamera("PlayerCam")
@@ -261,8 +141,8 @@ class GEUIApplication(SampleFramework.Application):
         del self.camera
         del self.sceneManager
         del self.frameListener
-        del self.system
-        del self.guiRenderer
+        del self.CEGUISystem
+        del self.CEGUIRenderer
         del self.root
         del self.renderWindow        
      
@@ -273,11 +153,25 @@ class CEGUIFrameListener(GuiFrameListener):
 
         self.keepRendering = True   # whether to continue rendering or not
 
-    def frameStarted(self, evt):
-        # injectTimePulse needed when using tooltips
-	cegui.System.getSingleton().injectTimePulse( evt.timeSinceLastFrame)
-        return GuiFrameListener.frameStarted(self,evt)
+        # Subscribe handler to deal with user closing the frame window
+        try:
+            main_wnd = CEGUI.WindowManager.getSingleton().getWindow("Root/MainWindow")
+            main_wnd.subscribeEvent(
+                CEGUI.FrameWindow.EventCloseClicked, self, "handle_CloseButton")
 
+        # if something goes wrong, log the issue but do not bomb!
+        except CEGUI.Exception, e:
+            print e
+
+    def handle_CloseButton(self, args):
+        self.keepRendering = False
+        return True
+
+    def frameStarted(self, evt):
+        if not self.keepRendering:
+            return False
+        else:
+            return GuiFrameListener.frameStarted(self,evt)
 
 
 if __name__ == '__main__':
