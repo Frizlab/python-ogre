@@ -90,10 +90,15 @@ def ManualExclude ( mb ):
             main_ns.member_variable(c).exclude()
         except:
             print "failed to exclude:", c
-    ex=["Ogre::RTShader::ShaderGenerator::SGPass","Ogre::RTShader::ProgramProcessor"]
+    ex=['::Ogre::RTShader::ShaderGenerator::SGPass',
+        '::Ogre::RTShader::ProgramProcessor',
+        '::Ogre::RTShader::TargetRenderState', # not exposed in the lib
+        '::Ogre::RTShader::UniformParameter', # const not exposed
+        ]
     for c in ex:
         try:
             main_ns.class_(c).exclude()
+            print "Excluded:", c
         except:
             print "failed to exclude:", c
  
