@@ -72,7 +72,7 @@ def ManualExclude ( mb ):
         
     excludes = ['::OgreBulletCollisions::DebugTriangleDrawCallback'
             ,'::OgreBulletCollisions::ObjectState'  # problem in motionstate
-            ]        
+            ]
     for e in excludes:
         print "Excluding:",e
         main_ns.class_(e).exclude()

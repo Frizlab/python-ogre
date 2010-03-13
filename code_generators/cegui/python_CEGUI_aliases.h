@@ -1,3 +1,10 @@
+#if ( CEGUI_VERSION_MINOR >= 7 )
+    typedef ::CEGUI::NamedXMLResourceManager< CEGUI::Font, CEGUI::Font_xmlHandler >    NamedXMLResourceManagerFont;
+    typedef ::CEGUI::RefCounted< CEGUI::FormattedRenderedString > RefCountedFormattedRenderedString;
+    typedef ::CEGUI::NamedXMLResourceManager< CEGUI::Imageset, CEGUI::Imageset_xmlHandler >  NamedXMLResourceManagerImageset;
+    typedef ::CEGUI::NamedXMLResourceManager< CEGUI::Scheme, CEGUI::Scheme_xmlHandler >  NamedXMLResourceManagerScheme;
+#endif
+
 #if 1
 typedef std::vector<CEGUI::ListboxItem*> ListBoxItemPtrVector;
 // typedef std::vector<CEGUI::Scheme::AliasMapping> AliasMappingVector;

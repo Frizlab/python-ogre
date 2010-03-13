@@ -172,8 +172,23 @@ public:
             else
                 boost::python::call<void>(mSubscriber, 
                                         static_cast<const CEGUI::MouseEventArgs&>(args) );
-                                        
-#if CEGUI_VERSION_MINOR > 5 && CEGUI_VERSION_PATCH > 0
+
+        else if (dynamic_cast<CEGUI::DisplayEventArgs *>((CEGUI::EventArgs *)&args))
+            if (mMethod.length() > 0 )
+                boost::python::call_method<void>(mSubscriber, mMethod.c_str(),
+                                        static_cast<const CEGUI::DisplayEventArgs&>(args) );
+            else
+                boost::python::call<void>(mSubscriber,
+                                        static_cast<const CEGUI::DisplayEventArgs&>(args) );
+
+        else if (dynamic_cast<CEGUI::ResourceEventArgs *>((CEGUI::EventArgs *)&args))
+            if (mMethod.length() > 0 )
+                boost::python::call_method<void>(mSubscriber, mMethod.c_str(),
+                                        static_cast<const CEGUI::ResourceEventArgs&>(args) );
+            else
+                boost::python::call<void>(mSubscriber,
+                                        static_cast<const CEGUI::ResourceEventArgs&>(args) );
+
          else if (dynamic_cast<CEGUI::TreeEventArgs *>((CEGUI::EventArgs *)&args))
            if (mMethod.length() > 0 )
                boost::python::call_method<void>(mSubscriber, mMethod.c_str(),
@@ -181,7 +196,7 @@ public:
            else
                boost::python::call<void>(mSubscriber, 
                                         static_cast<const CEGUI::TreeEventArgs&>(args) );
-#endif
+
         else if (dynamic_cast<CEGUI::WindowEventArgs *>((CEGUI::EventArgs *)&args))
             if (mMethod.length() > 0 )
                 boost::python::call_method<void>(mSubscriber, mMethod.c_str(), 
@@ -417,6 +432,36 @@ WRAPPER_REGISTRATION_WindowManager =[
         bp::return_value_policy< bp::reference_existing_object,bp::default_call_policies >());',
    ]
    
+WRAPPER_DEFINITION_ImageSetManager =\
+"""
+// ovreload on create not working correctly
+::CEGUI::Imageset& Imageset_create ( ::CEGUI::ImagesetManager & me, const ::CEGUI::String& xml_filename, const ::CEGUI::String& resource_group = "",
+              ::CEGUI::XMLResourceExistsAction action = ::CEGUI::XREA_RETURN)
+{
+    return me.create(xml_filename,resource_group,action);
+}
+"""
+WRAPPER_REGISTRATION_ImageSetManager =[
+    'def ("create", &::Imageset_create,\
+        ( bp::arg("xml_filename"), bp::arg("resource_group")="", bp::arg("action")=::CEGUI::XREA_RETURN ), \
+        bp::return_value_policy< bp::reference_existing_object,bp::default_call_policies >());',
+   ]
+
+WRAPPER_DEFINITION_FontManager =\
+"""
+// ovreload on create not working correctly
+::CEGUI::Font& FontManager_create ( ::CEGUI::FontManager & me, const ::CEGUI::String& xml_filename, const ::CEGUI::String& resource_group = "",
+              ::CEGUI::XMLResourceExistsAction action = ::CEGUI::XREA_RETURN)
+{
+    return me.create(xml_filename,resource_group,action);
+}
+"""
+WRAPPER_REGISTRATION_FontManager =[
+    'def ("create", &::FontManager_create,\
+        ( bp::arg("xml_filename"), bp::arg("resource_group")="", bp::arg("action")=::CEGUI::XREA_RETURN ), \
+        bp::return_value_policy< bp::reference_existing_object,bp::default_call_policies >());',
+   ]
+   
    
 def apply_reg ( class_, code ):
     for c in code:
@@ -427,19 +472,26 @@ def apply( mb ):
 # #     mb.add_registration_code( WRAPPER_REGISTRATION_General )
 #     
 
-    rt = mb.class_( 'EventSet' )
+    rt = mb.class_( '::CEGUI::EventSet' )
     rt.add_declaration_code( WRAPPER_DEFINITION_EventSet )
     rt.add_registration_code( WRAPPER_REGISTRATION_EventSet )
 
-    rt = mb.class_( 'String' )
+    rt = mb.class_( '::CEGUI::String' )
     rt.add_declaration_code( WRAPPER_DEFINITION_String )
     rt.add_registration_code( WRAPPER_REGISTRATION_String )
 
-    rt = mb.class_( 'Window' )
+    rt = mb.class_( '::CEGUI::Window' )
     rt.add_declaration_code( WRAPPER_DEFINITION_Window )
     apply_reg( rt,  WRAPPER_REGISTRATION_Window )
 
-    rt = mb.class_( 'WindowManager' )
+    rt = mb.class_( '::CEGUI::WindowManager' )
     rt.add_declaration_code( WRAPPER_DEFINITION_WindowManager )
     apply_reg( rt,  WRAPPER_REGISTRATION_WindowManager )
 
+    rt = mb.class_( '::CEGUI::ImagesetManager' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_ImageSetManager )
+    apply_reg( rt,  WRAPPER_REGISTRATION_ImageSetManager )
+
+    rt = mb.class_( '::CEGUI::FontManager' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_FontManager )
+    apply_reg( rt,  WRAPPER_REGISTRATION_FontManager )
