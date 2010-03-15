@@ -53,9 +53,7 @@ class SimpleScenes_Buggy ( SimpleScenes ):
         ## it doesn't need a body) and keep track of it
         ei = OgreOde.EntityInformer(entity,ogre.Matrix4.getScale(node.getScale()))
         geom = ei.createSingleStaticBox(self._world, self._space)
-        print "SETTING",geom
-        entity.setUserObject(geom)
-        print "GETTING", entity.getUserObject()
+        entity.setUserAny(geom)
         self._geoms.append(geom)
 
         ## The self.car is what we'll want to look at

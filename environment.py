@@ -5,6 +5,8 @@ import subprocess
 
 _LOGGING_ON = False
 _PRECOMPILED = True
+_DEBUG = False
+
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "7"
 PythonOgrePatchVersion = "0"
@@ -533,7 +535,10 @@ class boost(module):
         PATH_LIB_THREAD = Config.PATH_LIB_Thread_STATIC
         PATH_LIB_DATETIME = Config.PATH_LIB_date_time_STATIC
         base = 'boost_1_42_0'
-        lib = 'boost_python-vc90-mt-1_42'
+        if _DEBUG:
+            lib = 'boost_python-vc90-mt-gd-1_42'
+        else:
+            lib = 'boost_python-vc90-mt-1_42'
         versionBase = '1_42' ## the version used on the library name
     else:
         base = 'boost_1_41_0'
@@ -667,7 +672,6 @@ class ogre(pymodule):
     myLibraryPaths = []
     myLibraries = ['OgreMain']
     libraries = myLibraries
-    CCFLAGS = ""
     if isWindows():
         version = "1.7.0"
         source = [
@@ -691,21 +695,33 @@ class ogre(pymodule):
             pchbuild = 'buildpch.cpp'
             pchincludes = ['python_ogre_precompiled.h']
 
-        libs = [boost.lib, 'OgreMain', 'OgreProperty']
+        if _DEBUG:
+            libs = [boost.lib, 'OgreMain_d', 'OgreProperty_d']
+        else:
+            libs = [boost.lib, 'OgreMain', 'OgreProperty']
 #         if not Config._SVN:
 #             moduleLibs = [os.path.join(boost.PATH_LIB, boost.lib),
 #                           os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'OgreMain'),
 #                           os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'cg'),
 #                           ]
 #         else:
-        moduleLibs = [os.path.join(boost.PATH_LIB, boost.lib),
-                      os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgreMain'),
-                      os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgreProperty'),
-                      os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'cg'),
-                      ]
+        if _DEBUG:
+            moduleLibs = [os.path.join(boost.PATH_LIB, boost.lib),
+                          os.path.join(Config.PATH_Ogre, 'bin', 'Debug', 'OgreMain_d'),
+                          os.path.join(Config.PATH_Ogre, 'bin', 'Debug', 'OgreProperty_d'),
+                          os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'cg'),
+                          ]
+        else:
+            moduleLibs = [os.path.join(boost.PATH_LIB, boost.lib),
+                          os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgreMain'),
+                          os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgreProperty'),
+                          os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'cg'),
+                          ]
         lib_dirs = [
             boost.PATH_LIB,
             Config.PATH_LIB_Ogre_OgreMain,
+            Config.PATH_LIB_Ogre_OgreMain_debug,
+
         ]
         include_dirs = [
             boost.PATH,
@@ -828,7 +844,10 @@ class ois(pymodule):
             pchincludes = ['boost/python.hpp', 'OIS.h']
 
         if Config.SDK:
-            libs = ['OIS', boost.lib]
+            if _DEBUG:
+                libs = ['OIS_d', boost.lib]
+            else:
+                libs = ['OIS', boost.lib]
         else:
             libs = ['OIS_static', boost.lib]
         libs.append("User32") # needed for static linking
@@ -844,6 +863,7 @@ class ois(pymodule):
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_OIS,
+        Config.PATH_LIB_OIS_debug,
     ]
     ModuleName = 'OIS'
     if os.sys.platform == 'darwin':
@@ -860,19 +880,29 @@ class cegui(pymodule):
             pchstop = 'cegui.h'
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'cegui.h']
-        libs = [boost.lib, 'CEGUIBase', 'OgreMain']
         bp = os.path.join(Config.PATH_LIB_CEGUI, '..', 'bin')
-        moduleLibs = [os.path.join(bp, 'CEGUIBase'),
-            os.path.join(bp, 'CEGUIExpatParser'),
-            os.path.join(bp, 'CEGUIFalagardWRBase'),
-            ]
+        if _DEBUG:
+            libs = [boost.lib, 'CEGUIBase_d', 'OgreMain_d', 'msvcrtd']
+            moduleLibs = [os.path.join(bp, 'CEGUIBase_d'),
+                os.path.join(bp, 'CEGUIExpatParser_d'),
+                os.path.join(bp, 'CEGUIFalagardWRBase_d'),
+                ]
+        else:
+            libs = [boost.lib, 'CEGUIBase', 'OgreMain']
+            moduleLibs = [os.path.join(bp, 'CEGUIBase'),
+                os.path.join(bp, 'CEGUIExpatParser'),
+                os.path.join(bp, 'CEGUIFalagardWRBase'),
+                ]
         if PythonOgreMajorVersion == "1" and int(PythonOgreMinorVersion) < 7 and not Config._SVN:
             libs.append('OgreGUIRenderer')
-#            moduleLibs.append(os.path.join(bp,'OgreGUIRenderer'))
             moduleLibs.append(os.path.join(Config.PATH_LIB_Ogre_OgreMain, 'OgreGUIRenderer'))
         else:
-            libs.append('CEGUIOgreRenderer')
-            moduleLibs.append(os.path.join(bp, 'CEGUIOgreRenderer'))
+            if _DEBUG:
+                libs.append('CEGUIOgreRenderer_d')
+                moduleLibs.append(os.path.join(bp, 'CEGUIOgreRenderer_d'))
+            else:
+                libs.append('CEGUIOgreRenderer')
+                moduleLibs.append(os.path.join(bp, 'CEGUIOgreRenderer'))
 
     elif isLinux():
         libs = [boost.lib, 'CEGUIBase', 'OgreMain', 'CEGUIOgreRenderer' ]
@@ -932,6 +962,7 @@ class cegui(pymodule):
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
+        Config.PATH_LIB_Ogre_OgreMain_debug,
         Config.PATH_LIB_CEGUI,
         Config.PATH_LIB_Ogre_Dependencies,
     ]
@@ -1250,8 +1281,9 @@ class ogrevideo(pymodule):
     include_dirs = [
         boost.PATH,
         Config.PATH_INCLUDE_Ogre,
-        Config.PATH_INCLUDE_Theora,
-        Config.PATH_INCLUDE_TheoraDemo
+        Config.PATH_INCLUDE_ogrevideo,
+        Config.PATH_DEMO_ogrevideo,
+        Config.PATH_INCLUDE_libtheoraplayer,
     ]
 
     for d in Config.PATH_INCLUDE_OggVorbisTheora:
@@ -1271,10 +1303,10 @@ class ogrevideo(pymodule):
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
-        Config.PATH_LIB_Theora,
+        Config.PATH_LIB_ogrevideo,
         Config.PATH_LIB_OPENAL
     ]
-    libs = [boost.lib, 'Plugin_TheoraVideoSystem', 'OgreMain', 'openal32' ]
+    libs = [boost.lib, 'Plugin_OgreVideo', 'OgreMain', 'openal32' ]
     moduleLibs = [ os.path.join(Config.PATH_OPENAL, 'redist', 'OpenAL32'),
                 os.path.join(Config.PATH_OPENAL, 'redist', 'wrap_oal')
                 ]
@@ -2021,7 +2053,7 @@ if ogre.version.startswith ("1.7"):
             boost.PATH_LIB,
             Config.PATH_LIB_Ogre_OgreMain,
         ]
-        libs = [boost.lib, 'OgreRTShaderSystem', 'OgreMain' ]
+        libs = [boost.lib, 'OgreRTShaderSystem', 'OgreMain', 'OgreProperty' ]
         ModuleName = "ogrertshadersystem"
         descText = "OgreRTShaderSystem: New Real Time Shader System in Ogre"
         moduleLibs = [os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgreRTShaderSystem'),

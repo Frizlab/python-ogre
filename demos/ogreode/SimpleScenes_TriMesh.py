@@ -30,7 +30,7 @@ class SimpleScenes_TriMesh ( SimpleScenes_BoxStack ):
         ## Turn it into a triangle mesh static geometry
         ei = OgreOde.EntityInformer (entity,node._getFullTransform())
         geom = ei.createStaticTriangleMesh(self._world, self._space)
-        entity.setUserObject (geom)
+        entity.setUserAny (geom)
         self._geoms.append(geom)
 
     ## Destructor, manually destroy the entity and node, since they're 

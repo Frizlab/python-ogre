@@ -1,14 +1,9 @@
 
 def header_files( version ):
     return [  'Ogre.h'
-# # # #              ,'TheoraVideoController.h'
-# # # #             ,'TheoraMovieClip.h'
-# # # #             ,'TheoraAudioDriver.h'
-# # # #             ,"SoundManager.h"
-            
-            ,"TheoraVideoManager.h"
-            ,"TheoraVideoClip.h"
-            ,"TheoraAudioInterface.h"
+            ,"OgreVideoManager.h"
+            ,"OgreVideoExport.h"
+            ,"OgreTheoraDataStream."
             ,"OpenAL_AudioInterface.h"
             ,'OgreExternalTextureSource.h'
             ,'OgreExternalTextureSourceManager.h'

@@ -27,6 +27,8 @@ import environment
 
 if os.name=='nt':
     builddir = "c:/temp/build_dir" + "_" + environment.PythonVersionString
+    if environment._DEBUG:
+        builddir += "_D"
 else:
     builddir = "build_dir" + "_" + environment.PythonVersionString
 
@@ -53,7 +55,10 @@ def get_ccflags(cls):
         CCFLAGS += ' /DBOOST_PYTHON_MAX_ARITY=19 /DBOOST_PYTHON_NO_PY_SIGNATURES '
         CCFLAGS += '  /nologo -Zm200 '
         CCFLAGS += ' /W3 /wd4675' # warning level  -Zc:wchar_t
-        CCFLAGS += ' /TP /MD /Zc:forScope /EHs /c  /Ob2 /Oi /O2 /Ot /Oy /GS- /GR /Ox '
+        if environment._DEBUG:
+            CCFLAGS += ' /TP /MDd /Zc:forScope /EHs /c  /Od /D_DEBUG '
+        else:
+            CCFLAGS += ' /TP /MD /Zc:forScope /EHs /c  /Ob2 /Oi /O2 /Ot /Oy /GS- /GR /Ox '
     elif environment.isLinux():
         CCFLAGS = ' `pkg-config --cflags OGRE` '        ## needs to change I think :)
         CCFLAGS += ' -I'
@@ -105,8 +110,11 @@ def get_source_files(cls, _dir, usepch = False):
 def get_linkflags():
     if environment.isWindows():
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /OPT:NOREF /OPT:NOICF /OPT:NOWIN98 /subsystem:console " # no change
-        LINKFLAGS = " /MAP /MAPINFO:EXPORTS /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /subsystem:console " # 7 minutes 25% smaller 16.6 Meg
         #LINKFLAGS = " /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console " ### LONG Link , 80 minutes - 15.7 meg
+        if environment._DEBUG:
+            LINKFLAGS = " /MAP /DEBUG /MAPINFO:EXPORTS /NOLOGO /INCREMENTAL:NO /DLL /subsystem:console "
+        else:
+            LINKFLAGS = " /MAP /MAPINFO:EXPORTS /NOLOGO /OPT:REF /INCREMENTAL:NO /DLL /OPT:ICF /subsystem:console "
     if environment.isLinux():
         if os.sys.platform <> 'darwin':
             LINKFLAGS = ' `pkg-config --libs OGRE` -lstdc++ '

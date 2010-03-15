@@ -120,11 +120,10 @@ class  DemoConsole():
             edit_text += '\n'
             # get history window
             history = self.d_root.getChild(self.HistoryID)
-            print dir(history)
             # append new text to history output
             history.setText(history.getText() + edit_text)
             # scroll to bottom of history output
-            history.setCaratIndex(-1)
+            history.setCaratIndex(0)
             # erase text in text entry box.
             editbox.setText("")
 
@@ -178,11 +177,13 @@ class GEUIApplication(SampleFramework.Application):
 
         # initiaslise OgreCEGUI Renderer
  
-        self.CEGUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow,
-                ogre.RenderQueueGroupID.RENDER_QUEUE_OVERLAY,
-                False, 3000,
-                self.sceneManager)
-        self.CEGUISystem = CEGUI.System(self.CEGUIRenderer)
+        if CEGUI.Version__.startswith ("0.6"):
+            self.CEGUIRenderer = CEGUI.OgreRenderer(self.renderWindow,
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+            self.CEGUIsystem = CEGUI.System(self.GUIRenderer)
+        else:
+            self.CEGUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            self.CEGUIsystem = CEGUI.System.getSingleton()
 
         ## set the logging level
         CEGUI.Logger.getSingleton().loggingLevel = CEGUI.Insane
@@ -191,12 +192,21 @@ class GEUIApplication(SampleFramework.Application):
         winMgr = CEGUI.WindowManager.getSingleton()
 
         # Load the scheme to initialse the VanillaSkin which we use in this sample
-        CEGUI.SchemeManager.getSingleton().loadScheme("VanillaSkin.scheme")
-        # set default mouse image
-        CEGUI.System.getSingleton().setDefaultMouseCursor("Vanilla-Images", "MouseArrow")
+        if CEGUI.Version__.startswith ("0.6"):
+            CEGUI.SchemeManager.getSingleton().loadScheme("VanillaSkin.scheme")
+            # set default mouse image
+            CEGUI.System.getSingleton().setDefaultMouseCursor("Vanilla-Images", "MouseArrow")
+            # load an image to use as a background
+            CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
+        else:
+            CEGUI.SchemeManager.getSingleton().create("VanillaSkin.scheme")
+            # set default mouse image
+            CEGUI.System.getSingleton().setDefaultMouseCursor("Vanilla-Images", "MouseArrow")
+            # load an image to use as a background
+            CEGUI.ImagesetManager.getSingleton().createFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
 
-        # load an image to use as a background
-        CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
+        
+
 
         # here we will use a StaticImage as the root, then we can use
         # it to place a background image
@@ -212,11 +222,17 @@ class GEUIApplication(SampleFramework.Application):
         # install this as the root GUI sheet
         CEGUI.System.getSingleton().setGUISheet(background)
 
-        if not CEGUI.FontManager.getSingleton().isFontPresent("Iconified-12"):
-		    CEGUI.FontManager.getSingleton().createFont("Iconified-12.font")
+        if CEGUI.Version__.startswith ("0.6"):
+            if not CEGUI.FontManager.getSingleton().isFontPresent("Iconified-12"):
+    		    CEGUI.FontManager.getSingleton().createFont("Iconified-12.font")
+            # load some demo windows and attach to the background 'root'
+            background.addChildWindow(winMgr.loadWindowLayout("VanillaWindows.layout", False))
+        else:
+            if not CEGUI.FontManager.getSingleton().isDefined("Iconified-12"):
+    		    CEGUI.FontManager.getSingleton().create("Iconified-12.font")
+            # load some demo windows and attach to the background 'root'
+            background.addChildWindow(winMgr.loadWindowLayout("VanillaWindows.layout"))
 
-        # load some demo windows and attach to the background 'root'
-        background.addChildWindow(winMgr.loadWindowLayout("VanillaWindows.layout", False))
 
         # create an instance of the console class.
         self.d_console = DemoConsole("Demo")

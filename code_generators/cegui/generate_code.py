@@ -89,13 +89,16 @@ def filter_declarations( mb ):
 
          
     ## class to exclude
-    excludes=['::CEGUI::FactoryModule','::CEGUI::ScriptFunctor','::CEGUI::CEGUIRQListener'
-        ]
+    excludes=['::CEGUI::FactoryModule',
+            '::CEGUI::ScriptFunctor',
+            '::CEGUI::CEGUIRQListener',
+            '::CEGUI::RefCounted< CEGUI::FormattedRenderedString >' # not in the debug version
+            ]
     for e in excludes:
         try:
             CEGUI_ns.class_( e ).exclude()     
         except:
-            pass
+            print "FAILED to exclude:", e
     ## now have functions in String that return uint arrays a need to be wrapped
     sc = CEGUI_ns.class_( "String" )
     sc.member_functions('data').exclude()
@@ -192,8 +195,9 @@ def filter_declarations( mb ):
         for c in e:
             global_ns.member_functions(c).exclude()
             
-            
-    
+    cls = CEGUI_ns.class_('::CEGUI::RefCounted< CEGUI::BoundSlot >')
+    cls.operator('==').exclude() # not in debug build
+
 def set_call_policies( mb ):
     CEGUI_ns = mb.global_ns.namespace ('CEGUI')
 

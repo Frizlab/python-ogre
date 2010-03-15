@@ -66,10 +66,14 @@ class GEUIApplication(SampleFramework.Application):
         ##       obsolete
         ##    e) sceneManager
  
-        self.CEGUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow,
-                ogre.RenderQueueGroupID.RENDER_QUEUE_OVERLAY,
-                False, 3000,
-                self.sceneManager)
+        ## setup GUI system
+        if CEGUI.Version__.startswith ("0.6"):
+            self.CEGUIRenderer = CEGUI.OgreRenderer(self.renderWindow,
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+            self.CEGUISystem = CEGUI.System(self.CEGUIRenderer)
+        else:
+            self.CEGUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            self.GUIsystem = CEGUI.System.getSingleton()
 
         ## Note it is also possible to initialise the OgreCEGUI renderer
         ## with out the scenemanager, e.g:
@@ -80,7 +84,7 @@ class GEUIApplication(SampleFramework.Application):
         ##  However you must call setTargetSceneManager before rendering 
         ##   self.CEGUIRenderer.setTargetSceneManager(self.sceneManager)
 
-        self.CEGUISystem = CEGUI.System(self.CEGUIRenderer)
+#         self.CEGUISystem = CEGUI.System(self.CEGUIRenderer)
 
         ## set the logging level
         CEGUI.Logger.getSingleton().loggingLevel = CEGUI.Insane
@@ -105,7 +109,10 @@ class GEUIApplication(SampleFramework.Application):
         ## Load TaharezLook imageset by making use of the ImagesetManager
         ## singleton.
 
-        taharezImages = CEGUI.ImagesetManager.getSingleton().createImageset("TaharezLook.imageset")
+        if CEGUI.Version__.startswith ("0.6"):
+            taharezImages = CEGUI.ImagesetManager.getSingleton().createImageset("TaharezLook.imageset")
+        else:
+            taharezImages = CEGUI.ImagesetManager.getSingleton().create("TaharezLook.imageset")
 
         ## The next thing we do is to set a default mouse cursor image. This is
         ## not strictly essential, although it is nice to always have a visible
@@ -130,7 +137,10 @@ class GEUIApplication(SampleFramework.Application):
         ##
         ## Fonts are loaded via the FontManager singleton.
 
-        CEGUI.FontManager.getSingleton().createFont("Commonwealth-10.font")
+        if CEGUI.Version__.startswith ("0.6"):
+            CEGUI.FontManager.getSingleton().createFont("Commonwealth-10.font")
+        else:
+            CEGUI.FontManager.getSingleton().create("Commonwealth-10.font")
 
         ## The widgets that we will be using for this sample are the
         ## TaharezLook widgets,
@@ -154,7 +164,10 @@ class GEUIApplication(SampleFramework.Application):
         ## Use the SchemeManager singleton to load in a scheme that 
         ## registers widgets, for TaharezLook.
 
-        CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookWidgets.scheme")
+        if CEGUI.Version__.startswith ("0.6"):
+            CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookWidgets.scheme")
+        else:
+            CEGUI.SchemeManager.getSingleton().create("TaharezLookWidgets.scheme")
 
 
         ## Now the system is initialised, we can actually create some
@@ -234,6 +247,11 @@ class GEUIApplication(SampleFramework.Application):
         ## we set the window's text to "Hello World!", so that this text 
         ## will appear as the caption in the FrameWindow's titlebar.
         wnd.setText("Hello World!")
+
+        # need to do this else we get a crash probably as we are missing an
+        # event handler
+        # disable frame and standard background
+        wnd.setProperty ("FrameEnabled", "false")
 
 
     def _createCamera(self):

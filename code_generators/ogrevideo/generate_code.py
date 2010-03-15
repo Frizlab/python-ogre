@@ -77,9 +77,12 @@ def ManualExclude ( mb ):
             ,'::Ogre::TheoraVideoManager::getDefaultNumPrecachedFrames'
             ]
     for e in excludes:
-        print "excluding ", e
-        main_ns.member_functions(e).exclude()
-        
+        try:
+            main_ns.member_functions(e).exclude()
+            print "excluding ", e
+        except:
+            print "Unable to exclude: ", e
+
     ### Free Functions
     excludes = []
     for e in excludes:
@@ -560,8 +563,8 @@ def generate_code():
     ## copied to the generaated directory..
     if AUDIO:
        additional_files=[
-               os.path.join( environment.Config.PATH_INCLUDE_TheoraDemo, 'OpenAL_AudioInterface.h'),
-               os.path.join( environment.Config.PATH_INCLUDE_TheoraDemo, 'OpenAL_AudioInterface.cpp'),
+               os.path.join( environment.Config.PATH_DEMO_ogrevideo, 'OpenAL_AudioInterface.h'),
+               os.path.join( environment.Config.PATH_DEMO_ogrevideo, 'OpenAL_AudioInterface.cpp'),
                ]            
        for sourcefile in additional_files:
            p,filename = os.path.split(sourcefile)

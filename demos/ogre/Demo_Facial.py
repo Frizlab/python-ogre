@@ -43,12 +43,12 @@ class TutorialApplication(SampleFramework.Application):
 
         plane = ogre.Plane(ogre.Vector3(0, 1, 0), 0)
         mm = ogre.MeshManager.getSingleton()
-        mm.createPlane('ground', 'general', plane, 1500, 1500, 20, 20,
+        mm.createPlane('ground', 'General', plane, 1500, 1500, 20, 20,
                        True, 1, 5, 5, ogre.Vector3(0, 0, 1),
-                       ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
+                       ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY,
                        True,True )
 
-   
+
         ent = sceneManager.createEntity("GroundEntity", "ground")
         ent.setMaterialName("Examples/Rockwall")
         sceneManager.getRootSceneNode().createChildSceneNode().attachObject(ent)

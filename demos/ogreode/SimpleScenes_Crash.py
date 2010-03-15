@@ -93,7 +93,7 @@ class SimpleScenes_Crash( SimpleScenes ):
         self._apacheself._space.setAutoCleanup(False)  
 
         ## Create the physical body of the helicopter
-        OgreOde.BoxMass apache_mass(1.5,Vector3(1.4,1.46,4.24))
+#         OgreOde.BoxMass apache_mass(1.5,Vector3(1.4,1.46,4.24))
         self._apache = OgreOde.Body(self._world)  ## NEW
         self._apache_body_node.attachObject(self._apache)
         self._apache.setMass(apache_mass)
@@ -109,7 +109,7 @@ class SimpleScenes_Crash( SimpleScenes ):
         OgreOde.TransformGeometry* trans = OgreOde.TransformGeometry(self._world, self._apacheself._space) ## NEW
         trans.setBody(self._apache)
 
-        self._apache_body.setUserObject(trans)
+        self._apache_body.setUserAny(trans)
 
         OgreOde.BoxGeometry* geom = OgreOde.BoxGeometry(Vector3(1.4,1.46,4.24), world, 0) ## NEW
         trans.setEncapsulatedGeometry(geom)
@@ -239,7 +239,7 @@ class SimpleScenes_Crash( SimpleScenes ):
                 geom = OgreOde.BoxGeometry(Vector3(1.0,1.0,1.0),self._world, self._space)  ## NEW
                 ## Tie the collision geometry to the physical body
                 geom.setBody(body)
-                box.setUserObject(geom)
+                box.setUserAny(geom)
 
                 ## Keep track of the ODE objects for house keeping
                 self._bodies.append(body)

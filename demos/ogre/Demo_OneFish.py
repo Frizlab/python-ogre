@@ -192,13 +192,9 @@ class TutorialApplication(SampleFramework.Application):
         self.animationStates.append(fishLookAtAnimationState)
         self.animationSpeeds.append(ogre.Math.RangeRandom(0.5, 1.5))
 
-        print "\n\n\n\n"
-        print self.animationStates
-        print "\n\n\n\n"
-
         plane = ogre.Plane(ogre.Vector3(0, 1, 0), -10)
         mm = ogre.MeshManager.getSingleton()
-        mm.createPlane('ground', 'general', plane, 1500, 1500, 20, 20,
+        mm.createPlane('ground', 'General', plane, 1500, 1500, 20, 20,
                        True, 1, 5, 5, ogre.Vector3(0, 0, 1),
                        ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, ogre.HardwareBuffer.HBU_STATIC_WRITE_ONLY, 
                        True,True )

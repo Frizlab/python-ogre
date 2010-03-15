@@ -163,24 +163,27 @@ class CompositorDemo():
 
 ##-----------------------------------------------------------------------------------
     def createScene(self):
-        print "***5"
-        self.mSceneMgr.setShadowTechnique(Ogre.SHADOWTYPE_TEXTURE_MODULATIVE) 
+        self.mSceneMgr.setShadowTechnique(Ogre.SHADOWTYPE_TEXTURE_MODULATIVE)
         self.mSceneMgr.setShadowFarDistance(1000) 
         ## setup GUI system
-        print "**6"
-        
-        self.mGUIRenderer = CEGUI.OgreCEGUIRenderer(self.mWindow, Ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.mSceneMgr) 
-        ## load scheme and set up defaults
-        print "***7"
-        self.mGUISystem = CEGUI.System(self.mGUIRenderer, configFile="CompositorDemoCegui.config") 
-        CEGUI.System.getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow") 
-        print "**8"
-        Ogre.MovableObject.setDefaultVisibilityFlags(0x00000001) 
+        if CEGUI.Version__.startswith ("0.6"):
+            self.mGUIRenderer = CEGUI.OgreRenderer(self.renderWindow,
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+            self.mGUISystem = CEGUI.System(self.mGUIRenderer,configFile="CompositorDemoCegui.config")
+            # load TaharezLook scheme
+            CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
+        else:
+            self.mGUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            self.mGUISystem = CEGUI.System.getSingleton()
+            # load TaharezLook scheme
+            CEGUI.SchemeManager.getSingleton().create("TaharezLookSkin.scheme")
+
+        CEGUI.System.getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow")
+        Ogre.MovableObject.setDefaultVisibilityFlags(0x00000001)
 
         ## Set ambient light
         self.mSceneMgr.setAmbientLight(Ogre.ColourValue(0.3, 0.3, 0.2)) 
-        print "****a"
-        l = self.mSceneMgr.createLight("Light2") 
+        l = self.mSceneMgr.createLight("Light2")
         dir_ = Ogre.Vector3(-1,-1,0) 
         dir_.normalise() 
         l.setType(Ogre.Light.LT_DIRECTIONAL) 
@@ -188,7 +191,6 @@ class CompositorDemo():
         l.setDiffuseColour(1, 1, 0.8) 
         l.setSpecularColour(1, 1, 1) 
 
-        print "****b"
 
         ## House
         pEnt = self.mSceneMgr.createEntity( "1", "tudorhouse.mesh" ) 
