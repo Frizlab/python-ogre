@@ -333,7 +333,7 @@ class SimpleScenes (OgreOde.CollisionListener, OgreOde.StepListener):
                 num = node.numAttachedObjects()
                 for cur in range ( num ) :
                     obj = node.getAttachedObject(cur)
-                    if (obj.getMovableType() != OgreOde.Body.MovableType): 
+                    if (obj.getMovableType() != "OgreOde::Body"):
                         clearList.append(obj)
     
                 ## Destroy the node by name
