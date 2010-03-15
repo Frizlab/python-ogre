@@ -20,6 +20,8 @@ import SampleFramework as sf
 from SimpleScenes_BoxStack import *
 from SimpleScenes_TriMesh import *
 from SimpleScenes_Chain import *
+# from SimpleScenes_Crash import *
+
 from SimpleScenes_Joints import *
 from SimpleScenes_Buggy import *
 from SimpleScenes_Zombie_NoAny import *
@@ -202,7 +204,8 @@ class SimpleScenesApplication(sf.Application):
                 
                 entity = sceneManager.createEntity(name, "plane.mesh")
                 entity.setQueryFlags (STATIC_GEOMETRY_QUERY_MASK)
-                entity.setUserObject(self._plane)
+#                 entity.setUserObject(self._plane)
+                entity.setUserAny(self._plane)
                 entity.setCastShadows(False)
                 s.addEntity(entity, ogre.Vector3(x,0,z))
         s.build()    
@@ -284,10 +287,10 @@ class SimpleScenesApplication(sf.Application):
                 del self._test
                 self._test = SimpleScenes_TriMesh(self._world)
                 changed = True
-#             elif (Keyboard.isKeyDown(OIS.KC_F6)):
-#                 del self._test
-#                 self._test = SimpleScenes_Crash(self._world)
-#                 changed = True
+            elif (Keyboard.isKeyDown(OIS.KC_F6)):
+                del self._test
+                self._test = SimpleScenes_Crash(self._world)
+                changed = True
             elif (Keyboard.isKeyDown(OIS.KC_F5)):
                 del self._test
                 self._test = SimpleScenes_Joints(self._world)

@@ -719,21 +719,31 @@ class ShadowsApplication ( SampleFramework.Application ):
             self.mLight.setSpotlightRange(Ogre.Degree(80),Ogre.Degree(90)) 
 
     def setupGUI( self ):
+    
         ## setup GUI system
-        self.mGUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow, 
-            Ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager) 
+        if CEGUI.Version__.startswith ("0.6"):
+            self.mGUIRenderer = CEGUI.OgreRenderer(self.renderWindow,
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+            self.mGUISystem = CEGUI.System(self.mGUIRenderer)
+            # load TaharezLook scheme
+            CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
+        else:
+            self.mGUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            self.mGUISystem = CEGUI.System.getSingleton()
+            # load TaharezLook scheme
+            CEGUI.SchemeManager.getSingleton().create("TaharezLookSkin.scheme")
 
-        self.mGUISystem = CEGUI.System(self.mGUIRenderer) 
-
-        CEGUI.Logger.getSingleton().setLoggingLevel(CEGUI.Informative) 
+        CEGUI.Logger.getSingleton().setLoggingLevel(CEGUI.Informative)
 
         ## load scheme and set up defaults
-        CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme") 
-        self.mGUISystem.setDefaultMouseCursor("TaharezLook", "MouseArrow") 
+        self.mGUISystem.setDefaultMouseCursor("TaharezLook", "MouseArrow")
         self.mGUISystem.setDefaultFont("BlueHighway-12") 
 
-        sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout( "shadows.layout", False)  
-        self.mGUISystem.setGUISheet(sheet) 
+        if CEGUI.Version__.startswith ("0.6"):
+            sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout( "shadows.layout", False)
+        else:
+            sheet = CEGUI.WindowManager.getSingleton().loadWindowLayout( "shadows.layout")
+        self.mGUISystem.setGUISheet(sheet)
 
         ## Tooltips aren't big enough, do our own
         ##self.mGUISystem.setDefaultTooltip("TaharezLook/Tooltip") 
@@ -782,8 +792,11 @@ class ShadowsApplication ( SampleFramework.Application ):
             self,"handleMouseLeave" ) 
         ## Populate projection
         ## Get a select image to be used for highlighting items in listbox when mouse moves over them
-        selectImage = CEGUI.ImagesetManager.getSingleton().getImageset("TaharezLook").getImage("MultiListSelectionBrush") 
-        li = CEGUI.ListboxTextItem("Uniform", self.UNIFORM) 
+        if CEGUI.Version__.startswith ("0.6"):
+            selectImage = CEGUI.ImagesetManager.getSingleton().getImageset("TaharezLook").getImage("MultiListSelectionBrush")
+        else:
+            selectImage = CEGUI.ImagesetManager.getSingleton().get("TaharezLook").getImage("MultiListSelectionBrush")
+        li = CEGUI.ListboxTextItem("Uniform", self.UNIFORM)
         li.setSelectionBrushImage(selectImage) 
         li.setTooltipText("Uniform: Shadows are rendered and projected using a uniform "
             "frustum for the whole light coverage. Simple and lowest quality.") 

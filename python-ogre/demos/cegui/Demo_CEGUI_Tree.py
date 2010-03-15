@@ -161,22 +161,14 @@ class GuiApplication ( SampleFramework.Application ):
 
         ## get scheme characteristics
         SCHEME_DICT = getSchemeDict('TaharezLook')
-        ##print SCHEME_DICT['SCHEME_FILE_NAME']
-        ##print SCHEME_DICT['IMAGES_FILE_NAME']
-        ##print SCHEME_DICT['STATICIMAGE_NAME']
-        ##print SCHEME_DICT['TOOLTIP_NAME']
-        ##print SCHEME_DICT['LAYOUT_FILE_NAME']
-        ##print SCHEME_DICT['BRUSH_NAME']
 
         ## load scheme and set up defaults
 
         if CEGUI.Version__.startswith ("0.6"):
             CEGUI.SchemeManager.getSingleton().loadScheme(SCHEME_DICT['SCHEME_FILE_NAME'])
-#             CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLookSkin.scheme")
         else:
             CEGUI.SchemeManager.getSingleton().create(SCHEME_DICT['SCHEME_FILE_NAME'])
 
-        
         self.GUIsystem.setDefaultMouseCursor(SCHEME_DICT['IMAGES_FILE_NAME'],  "MouseArrow") 
         ########
 
@@ -222,12 +214,12 @@ class GuiApplication ( SampleFramework.Application ):
         ## load tree layout
         if CEGUI.Version__.startswith ("0.6"):
             TreeDemoWindow = winMgr.loadWindowLayout(SCHEME_DICT['LAYOUT_FILE_NAME'], False)
+            background.addChildWindow(winMgr.getWindow('DemoWindow'))
+            background.addChildWindow(winMgr.getWindow('MaterialEditor'))
         else:
             TreeDemoWindow = winMgr.loadWindowLayout(SCHEME_DICT['LAYOUT_FILE_NAME'])
-        ########
-        
-        background.addChildWindow(winMgr.getWindow('DemoWindow'))
-        background.addChildWindow(winMgr.getWindow('MaterialEditor'))
+            background.addChildWindow(TreeDemoWindow)
+
 
         ## activate the background window
         background.activate()
@@ -237,7 +229,7 @@ class GuiApplication ( SampleFramework.Application ):
         if CEGUI.Version__.startswith ("0.6"):
             drives = CEGUI.ImagesetManager.getSingleton().createImageset("DriveIcons.imageset")
         else:
-            drives = CEGUI.Imageset_xmlHandler("DriveIcons.imageset", "General").getObject()
+            drives = CEGUI.ImagesetManager.getSingleton().create("DriveIcons.imageset")
         iconArray = []
         iconImages = [ "Artic",\
                        "Black",\

@@ -15,8 +15,8 @@ sys.path.append(r"c:\python25\lib\site-packages")
 import PythonOgreConfig
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
-import multiprocessing as mp
-import ctypes as ctypes
+# import multiprocessing as mp
+# import ctypes as ctypes
 
 
 class SmokeApplication(sf.Application):
@@ -51,11 +51,11 @@ class SmokeApplication(sf.Application):
         #print dir(oo)
         #d = oo.getData()
         #print "DATA:", d
-        self.queue = mp.Queue()
-        p = mp.Process(target=self.test) #args=(q,))
-        p.start()
-        
-        self.queue.put ( a1 )
+#         self.queue = mp.Queue()
+#         p = mp.Process(target=self.test) #args=(q,))
+#         p.start()
+#
+#         self.queue.put ( a1 )
         
     def __del__(self):
         del self.particleSystem2

@@ -69,6 +69,16 @@ def hotkeysHandler(e):
     else:
         return False
     return True
+    
+def sizedHandler(e):
+    print "Sized"
+    return True
+def sizedHandler1(e):
+    print "Sized1"
+    return True
+def sizedHandler2(e):
+    print "Sized2"
+    return True
 
 class GEUIApplication(SampleFramework.Application):
 
@@ -83,33 +93,39 @@ class GEUIApplication(SampleFramework.Application):
         sceneManager = self.sceneManager
         sceneManager.ambientLight = ogre.ColourValue(0.25, 0.25, 0.25)
 
-        # initiaslise CEGUI Renderer
-        self.CEGUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow,
-                ogre.RenderQueueGroupID.RENDER_QUEUE_OVERLAY,
-                False, 3000,
-                self.sceneManager)
-
-        self.CEGUISystem = CEGUI.System(self.CEGUIRenderer)
-        CEGUI.Logger.getSingleton().loggingLevel = CEGUI.Insane
-
-        # load TaharezLook scheme
-        CEGUI.SchemeManager.getSingleton().loadScheme("WindowsLook.scheme")
-
-        ## load the default font
-        if not CEGUI.FontManager.getSingleton().isFontPresent("DejaVuSans-10.font"):
-            d_font = CEGUI.FontManager.getSingleton().createFont("DejaVuSans-10.font")
+        ## setup GUI system
+        if CEGUI.Version__.startswith ("0.6"):
+            self.CEGUIRenderer = CEGUI.OgreRenderer(self.renderWindow,
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+            self.CEGUIsystem = CEGUI.System(self.GUIRenderer)
+            # load TaharezLook scheme
+            CEGUI.SchemeManager.getSingleton().loadScheme("WindowsLook.scheme")
+            ## load the default font
+            if not CEGUI.FontManager.getSingleton().isFontPresent("DejaVuSans-10.font"):
+                d_font = CEGUI.FontManager.getSingleton().createFont("DejaVuSans-10.font")
+            else:
+                d_font = CEGUI.FontManager.getSingleton().getFont("DejaVuSans-10")
+            wndlook = CEGUI.ImagesetManager.getSingleton().getImageset("WindowsLook")
         else:
-            d_font = CEGUI.FontManager.getSingleton().getFont("DejaVuSans-10")
+            self.CEGUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            self.CEGUIsystem = CEGUI.System.getSingleton()
+            # load TaharezLook scheme
+            CEGUI.SchemeManager.getSingleton().create("WindowsLook.scheme")
+            ## load the default font
+            d_font = CEGUI.FontManager.getSingleton().create("DejaVuSans-10.font")
+            wndlook = CEGUI.ImagesetManager.getSingleton().get("WindowsLook")
+
+        CEGUI.Logger.getSingleton().loggingLevel = CEGUI.Insane
 
         # to look more like a real application, we override the autoscale setting
         # for both skin and font
-        wndlook = CEGUI.ImagesetManager.getSingleton().getImageset("WindowsLook")
         wndlook.setAutoScalingEnabled(False)
         d_font.setProperty("AutoScaled", "false")
 
         # set the mouse cursor
         d_system = CEGUI.System.getSingletonPtr()
-        d_system.setDefaultMouseCursor(wndlook.getImage("MouseArrow"))
+        self.mousearrow = wndlook.getImage("MouseArrow") # we need to ensure the mousetexture remains around
+        d_system.setDefaultMouseCursor(self.mousearrow)
 
         # set the default tooltip type
         d_system.setDefaultTooltip("WindowsLook/Tooltip")
@@ -124,6 +140,8 @@ class GEUIApplication(SampleFramework.Application):
         # root window will take care of hotkeys
         d_root.subscribeEvent(
                     CEGUI.Window.EventKeyDown, hotkeysHandler,"")
+        d_root.subscribeEvent(
+                    CEGUI.Window.EventSized, sizedHandler,"")
 
 
         d_system.setGUISheet(d_root)
@@ -142,6 +160,8 @@ class GEUIApplication(SampleFramework.Application):
 
         # create a scrollable pane for our demo content
         d_pane = d_wm.createWindow("WindowsLook/ScrollablePane","DialogPane")
+        print "\n\n",d_pane
+        print type ( d_pane )
         d_pane.setArea(CEGUI.URect( CEGUI.UDim(0,0),
                                     bar_bottom,
                                     CEGUI.UDim(1,0),
@@ -155,9 +175,26 @@ class GEUIApplication(SampleFramework.Application):
         # add a dialog to this pane so we have something to drag around :)
         dlg = d_wm.createWindow("WindowsLook/FrameWindow")
         dlg.setMinSize(CEGUI.UVector2(CEGUI.UDim(0,250),CEGUI.UDim(0,100)))
+        dlg.setSize(CEGUI.UVector2(CEGUI.UDim(0,250),CEGUI.UDim(0,100)))
+
         dlg.setText("Drag me around")
         d_pane.addChildWindow(dlg)
+        d_pane.subscribeEvent(
+                    CEGUI.Window.EventSized, sizedHandler1,"")
+        dlg.subscribeEvent(
+                    CEGUI.Window.EventSized, sizedHandler2,"")
 
+#         self.keep = []
+#         self.keep.append(d_pane)
+#         self.keep.append(d_font)
+#         self.keep.append(d_system)
+#         self.keep.append(dlg)
+#         self.keep.append(d_root)
+#         self.keep.append(bar)
+#         self.keep.append(wndlook)
+#         self.keep.append(d_wm)
+#         print dir(wndlook)
+#         print wndlook.getTexture()
 
     # Creates the menu bar and fills it up :)
     def createMenu(self, bar):

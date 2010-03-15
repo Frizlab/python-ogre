@@ -67,13 +67,29 @@ class GEUIApplication(SampleFramework.Application):
         sceneManager = self.sceneManager
         sceneManager.ambientLight = ogre.ColourValue(0.25, 0.25, 0.25)
 
-        # initiaslise OgreCEGUI Renderer
- 
-        self.CEGUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow,
-                ogre.RenderQueueGroupID.RENDER_QUEUE_OVERLAY,
-                False, 3000,
-                self.sceneManager)
-        self.CEGUISystem = CEGUI.System(self.CEGUIRenderer)
+        ## setup GUI system
+        if CEGUI.Version__.startswith ("0.6"):
+            self.CEGUIRenderer = CEGUI.OgreRenderer(self.renderWindow,
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+            self.CEGUIsystem = CEGUI.System(self.GUIRenderer)
+            # load TaharezLook scheme
+            CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLook.scheme")
+            ## load the default font
+            if not CEGUI.FontManager.getSingleton().isFontPresent("DejaVuSans-10.font"):
+                d_font = CEGUI.FontManager.getSingleton().createFont("DejaVuSans-10.font")
+            else:
+                d_font = CEGUI.FontManager.getSingleton().getFont("DejaVuSans-10")
+            # load an image to use as a background
+            CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
+        else:
+            self.CEGUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            self.CEGUIsystem = CEGUI.System.getSingleton()
+            # load TaharezLook scheme
+            CEGUI.SchemeManager.getSingleton().create("TaharezLook.scheme")
+            ## load the default font
+            d_font = CEGUI.FontManager.getSingleton().create("DejaVuSans-10.font")
+            # load an image to use as a background
+            CEGUI.ImagesetManager.getSingleton().createFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
 
         ## set the logging level
         CEGUI.Logger.getSingleton().loggingLevel = CEGUI.Insane
@@ -81,17 +97,8 @@ class GEUIApplication(SampleFramework.Application):
         ## we will make extensive use of the WindowManager.
         winMgr = CEGUI.WindowManager.getSingleton()
 
-        # load scheme and set up defaults
-        CEGUI.SchemeManager.getSingleton().loadScheme("TaharezLook.scheme")
         CEGUI.System.getSingleton().setDefaultMouseCursor ("TaharezLook", "MouseArrow")
-        # Load font when not present in the scheme
-        fontMgr = CEGUI.FontManager.getSingleton()
-        if not fontMgr.isFontPresent("DejaVuSans-10"): # Request by name, not by file!
-            # First font gets set as the default font automatically
-		    CEGUI.FontManager.getSingleton().createFont("DejaVuSans-10.font")
 
-        # load an image to use as a background
-        CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
 
         # here we will use a StaticImage as the root, then we can use 
         # it to place a background image
@@ -120,7 +127,6 @@ class GEUIApplication(SampleFramework.Application):
         prefix = "TabControlDemo/"
         w = winMgr.loadWindowLayout("TabControlDemo.layout", prefix,"General")
         background.addChildWindow(w)
-        print w.getName()
 
         tc = winMgr.getWindow ("TabControlDemo/Frame/TabControl")
 
@@ -264,7 +270,6 @@ class GEUIApplication(SampleFramework.Application):
                     #    print "Some error occured while adding a tabpage. Please see the logfile." 
                     prefix = prefix + "Text"
                     # This window has just been created while loading the layout
-                    print "is Present", winMgr.isWindowPresent(prefix)
                     if winMgr.isWindowPresent(prefix):
                         txt = winMgr.getWindow(prefix)
                         txt.setText( getPageTextList()[num - 3])

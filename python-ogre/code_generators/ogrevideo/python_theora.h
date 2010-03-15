@@ -1,12 +1,16 @@
-// #include "SoundManager.h"
+#include "../ogre/python_ogre_include_OGRE.h"
 
-#include "TheoraVideoManager.h"
+/*#include "TheoraVideoManager.h"
 #include "TheoraVideoClip.h"
 #include "TheoraAudioInterface.h"
 #include "OpenAL_AudioInterface.h"
+*/
 
+#include "OgreVideoManager.h"
+#include "OgreVideoExport.h"
+#include "OgreTheoraDataStream.h"
+#include "OpenAL_AudioInterface.h"
 
-#include "Ogre.h"
 #include "OgreExternalTextureSource.h"
 #include "OgreExternalTextureSourceManager.h"
 

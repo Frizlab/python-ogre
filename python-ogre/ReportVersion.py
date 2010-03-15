@@ -6,8 +6,13 @@ import logging
 #import BuildModule as bm
 from optparse import OptionParser
 
-import ogre.renderer.OGRE as o
-
+# these are needed for other modules to load successfully
+try:
+    import ogre.renderer.OGRE as o
+    import ogre.io.OIS as o1
+    import ogre.physics.bullet as b1
+except:
+    pass
 #add environment to the path
 sys.path.append(  '.' )
 sys.path.append(  os.path.join(os.getcwd(), 'plugins' ))
@@ -62,13 +67,22 @@ if __name__ == '__main__':
     print
 
     if options.quiet: _quiet = True
+    use_env=False
+    
     try:
         import environment  # in the development space
+        use_env = True
+    except:
+        pass
+
+    if use_env:
+        print "DEVELOPMENT"
         for name,cls in environment.projects.items():
             if cls.active and cls.pythonModule:
                 name='.'.join([cls.parent.replace('/','.'), cls.ModuleName])
                 reportDetails ( name )
-    except:
+    else:
+        print "USING SETUP"
         import setup as s   # lets get the module list from setup.py
         for m in s.PACKAGEDATA["packages"]:
             if m.count('.') == 2: # it's a complete package name

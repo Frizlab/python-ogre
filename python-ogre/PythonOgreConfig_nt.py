@@ -120,8 +120,14 @@ PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
 PATH_INCLUDE_ogreoggsound = os.path.join(PATH_ogreoggsound,'include')
 PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'lib')
  
+PATH_ogrevideo =  os.path.join(BASE_DIR,'ogrevideo','trunk')
+PATH_INCLUDE_ogrevideo  =  os.path.join(PATH_ogrevideo,'include')
+PATH_LIB_ogrevideo      =  os.path.join(PATH_ogrevideo,'lib')
+PATH_DEMO_ogrevideo   =  os.path.join(PATH_ogrevideo, 'demos', 'audio_openal')
 
-    
+PATH_libtheoraplayer = os.path.join(BASE_DIR, "libtheoraplayer")
+PATH_INCLUDE_libtheoraplayer = os.path.join(PATH_libtheoraplayer, "include")
+
         
 ###
 ### these paths assume you've left all the directory structure as standard
@@ -129,6 +135,8 @@ PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'lib')
 ###        
 PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_CEGUI, 'lib')
 PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' ) #, 'Release' )
+PATH_LIB_Ogre_OgreMain_debug =   os.path.join( PATH_Ogre, 'lib' )
+
 if _SVN:
     PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib', 'Release' )
 PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
@@ -139,6 +147,7 @@ PATH_LIB_Newton =               os.path.join( PATH_Newton ,'dll')  ##NOTE Posix 
 PATH_LIB_Newton2 =               os.path.join( PATH_Newton2 ,'x32','lib_vs9_mt')  ##NOTE Posix platforms this lives in 'lib-mt'
 
 PATH_LIB_OIS =                  os.path.join( PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
+PATH_LIB_OIS_debug =                  os.path.join( PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
 PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI, 'lib' )
 PATH_LIB_ODE =                  os.path.join( PATH_ODE, 'lib/ReleaseSingleLib')## probable releaselib for posix
 PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE ) 
@@ -268,8 +277,10 @@ if SDK:
 #    PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples','Common','include')
     PATH_INCLUDE_Ogre_Dependencies = os.path.join(PATH_Ogre,'include')
     PATH_LIB_Ogre_OgreMain =        os.path.join( PATH_Ogre, 'lib', 'release' )
+    PATH_LIB_Ogre_OgreMain_debug =        os.path.join( PATH_Ogre, 'lib', 'debug' )
 #     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib', 'release')
     PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'lib', 'release')
+    PATH_LIB_OIS_debug  =                  os.path.join( PATH_Ogre, 'lib', 'debug')
 #     PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib', 'release' )
     PATH_LIB_pcz =                  os.path.join( PATH_Ogre, 'lib', 'release','opt' )
     PATH_INCLUDE_ogrepaging =   os.path.join(PATH_INCLUDE_Ogre,'Paging')

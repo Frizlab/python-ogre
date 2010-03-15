@@ -83,30 +83,43 @@ class GEUIApplication(SampleFramework.Application):
         sceneManager = self.sceneManager
         sceneManager.ambientLight = ogre.ColourValue(0.25, 0.25, 0.25)
 
-        # initiaslise CEGUI Renderer
-        self.CEGUIRenderer = CEGUI.OgreCEGUIRenderer(self.renderWindow,
-                ogre.RenderQueueGroupID.RENDER_QUEUE_OVERLAY,
-                False, 3000,
-                self.sceneManager)
+        ## setup GUI system
+        if CEGUI.Version__.startswith ("0.6"):
+            self.CEGUIRenderer = CEGUI.OgreRenderer(self.renderWindow,
+                ogre.RENDER_QUEUE_OVERLAY, False, 3000, self.sceneManager)
+            self.CEGUIsystem = CEGUI.System(self.GUIRenderer)
+        else:
+            self.CEGUIRenderer = CEGUI.OgreRenderer.bootstrapSystem()
+            self.CEGUIsystem = CEGUI.System.getSingleton()
 
-        self.CEGUISystem = CEGUI.System(self.CEGUIRenderer)
         CEGUI.Logger.getSingleton().loggingLevel = CEGUI.Insane
 
         winMgr = CEGUI.WindowManager.getSingleton()
 
-        # load scheme and set up defaults
-        CEGUI.SchemeManager.getSingleton().loadScheme ("TaharezLook.scheme")
-        CEGUI.System.getSingleton().setDefaultMouseCursor ("TaharezLook", "MouseArrow")
+        ## load scheme and set up defaults
+        if CEGUI.Version__.startswith ("0.6"):
+            CEGUI.SchemeManager.getSingleton().loadScheme ("TaharezLook.scheme")
+            CEGUI.System.getSingleton().setDefaultMouseCursor ("TaharezLook", "MouseArrow")
+            # load an image to use as a background
+            CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
+            # load all the fonts except Commonwealth which has been already loaded
+            fontDict = getFontDict()
+            for f in fontDict.keys():
+                if not CEGUI.FontManager.getSingleton().isFontPresent(f):
+                    CEGUI.FontManager.getSingleton().createFont(fontDict[f])
+        else:
+            CEGUI.SchemeManager.getSingleton().create ("TaharezLook.scheme")
+            CEGUI.System.getSingleton().setDefaultMouseCursor ("TaharezLook", "MouseArrow")
+            # load an image to use as a background
+            CEGUI.ImagesetManager.getSingleton().createFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
+            # load all the fonts except Commonwealth which has been already loaded
+            fontDict = getFontDict()
+            for f in fontDict.keys():
+                if not CEGUI.FontManager.getSingleton().isDefined(f):
+                    CEGUI.FontManager.getSingleton().create(fontDict[f])
 
-        # load all the fonts except Commonwealth which has been already loaded
-        fontDict = getFontDict()
-        for f in fontDict.keys():
-            if not CEGUI.FontManager.getSingleton().isFontPresent(f):
-                CEGUI.FontManager.getSingleton().createFont(fontDict[f])
 
 
-        # load an image to use as a background
-        CEGUI.ImagesetManager.getSingleton().createImagesetFromImageFile("BackgroundImage", "GPN-2000-001437.tga")
 
         # here we will use a StaticImage as the root, then we 
         # can use it to place a background image
@@ -126,7 +139,10 @@ class GEUIApplication(SampleFramework.Application):
         CEGUI.System.getSingleton().setDefaultTooltip ("TaharezLook/Tooltip")
 
         # load some demo windows and attach to the background 'root'
-        background.addChildWindow (winMgr.loadWindowLayout ("FontDemo.layout", False))
+        if CEGUI.Version__.startswith ("0.6"):
+            background.addChildWindow (winMgr.loadWindowLayout ("FontDemo.layout", False))
+        else:
+            background.addChildWindow (winMgr.loadWindowLayout ("FontDemo.layout"))
 
         # Add the font names to the listbox
         fontDict = getFontDict()
@@ -187,8 +203,12 @@ class GEUIApplication(SampleFramework.Application):
     def handleFontSelection(self,e):
         lbox = e.window
         if lbox.getFirstSelectedItem():
-            f = CEGUI.FontManager.getSingleton().getFont(
-                    lbox.getFirstSelectedItem().getText())
+            if CEGUI.Version__.startswith ("0.6"):
+                f = CEGUI.FontManager.getSingleton().getFont(
+                        lbox.getFirstSelectedItem().getText())
+            else:
+                f = CEGUI.FontManager.getSingleton().get(
+                        lbox.getFirstSelectedItem().getText())
 
             winMgr = CEGUI.WindowManager.getSingleton()
             winMgr.getWindow("FontDemo/FontSample").setFont(f)
