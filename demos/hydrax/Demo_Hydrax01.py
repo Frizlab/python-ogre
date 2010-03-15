@@ -49,9 +49,9 @@ class HydraxListener(sf.FrameListener):
         self.raySceneQuery = self.sceneManager.createRayQuery(ogre.Ray(self.camera.getPosition(),
                                                                     ogre.Vector3().NEGATIVE_UNIT_Y))
 
-    def frameStarted(self, e):
+    def frameRenderingQueued(self, e):
         global mCurrentSkyBox
-        if sf.FrameListener.frameStarted(self, e) == False:
+        if sf.FrameListener.frameRenderingQueued(self, e) == False:
             return False
             
         # Check camera height

@@ -1,18 +1,18 @@
-// Palm HLSL Material - For Hydrax demo application
+// Palm CG Material - For Hydrax demo application
 // Xavier Verguín González 
 
-vertex_program Palm/VP hlsl
+vertex_program Palm/VP cg
 {
-   source Palm.hlsl
+   source Palm.cg
    entry_point main_vp
-   target vs_1_1
+   profiles vs_1_1 arbvp1
 }
 
-fragment_program Palm/FP hlsl
+fragment_program Palm/FP cg
 {
-   source Palm.hlsl
+   source Palm.cg
    entry_point main_fp
-   target ps_2_0
+   profiles ps_2_0 arbfp1
 }
 
 material Palm
