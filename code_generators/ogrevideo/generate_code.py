@@ -75,6 +75,7 @@ def ManualExclude ( mb ):
             ,'::Ogre::TheoraVideoManager::setDefaultNumPrecachedFrames'
             ,'::Ogre::TheoraVideoManager::getNumWorkerThreads'
             ,'::Ogre::TheoraVideoManager::getDefaultNumPrecachedFrames'
+            ,'::TheoraVideoClip::getNextFrame'
             ]
     for e in excludes:
         try:
@@ -168,7 +169,26 @@ def ManualFixes ( mb ):
     global_ns = mb.global_ns
     
     # fix issue where the namespace isn't in the default values
-                 
+    
+    # issues with call policies not being set
+    fix = ['::TheoraVideoManager::getAudioInterfaceFactory',
+            '::TheoraVideoManager::createVideoClip',
+            '::TheoraVideoManager::getSingleton',
+            '::TheoraVideoManager::getSingletonPtr',
+            '::TheoraVideoManager::getVideoClipByName',
+            '::TheoraVideoManager::requestWork',
+            '::TheoraAudioInterfaceFactory::createInstance',
+            '::TheoraVideoClip::getAudioInterface',
+            '::TheoraVideoClip::getNextFrame',
+            '::TheoraVideoClip::getTimer',
+            
+            ]
+    for m in fix:
+        mf = global_ns.member_functions(m)
+        mf.call_policies = call_policies.return_value_policy(
+                call_policies.reference_existing_object )
+
+    
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.

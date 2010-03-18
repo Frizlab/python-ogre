@@ -3,7 +3,7 @@ def header_files( version ):
     return [  'Ogre.h'
             ,"OgreVideoManager.h"
             ,"OgreVideoExport.h"
-            ,"OgreTheoraDataStream."
+            ,"OgreTheoraDataStream.h"
             ,"OpenAL_AudioInterface.h"
             ,'OgreExternalTextureSource.h'
             ,'OgreExternalTextureSourceManager.h'
