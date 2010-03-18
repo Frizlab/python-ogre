@@ -4,14 +4,11 @@
 particle_system Examples/GreenyNimbus
 {
     material        Examples/FlarePointSprite
-	point_rendering	true
-	// point rendering means size is controlled by material
-	// provide fallback sizes for hardware that doesn't support point sprite
-    particle_width  30
-    particle_height 30
+    particle_width	35
+    particle_height 35
     cull_each       false
 	cull_each       false
-    quota           10000
+    quota           5000
     billboard_type  point
     
     // Area emitter
@@ -19,7 +16,7 @@ particle_system Examples/GreenyNimbus
     {
         angle           30
         emission_rate   30
-        time_to_live    5
+        time_to_live    1
         direction       0 1 0
         velocity    	0
         colour_range_start  1 1 0
@@ -43,8 +40,6 @@ particle_system Examples/GreenyNimbus
         green -0.25
         blue -0.25
     }
-
-
 }
 
 // A sparkly purple fountain
@@ -107,8 +102,6 @@ particle_system Examples/Rain
         time_to_live    5
         direction       0 -1 0
         velocity    	50
-        colour_range_start  0.3 1 0.3
-        colour_range_end    0.7 1 0.7
         width           1000
         height          1000
         depth           0
@@ -241,7 +234,7 @@ particle_system Examples/Aureola
         rotation_range_start 0
         rotation_range_end 360
         rotation_speed_range_start 0
-        rotation_speed_range_end 180
+        rotation_speed_range_end 360
     }
 }
 
@@ -377,13 +370,6 @@ particle_system Examples/Snow
 		width	200
 		height	200
 		depth	1
-	}
-
-	affector DeflectorPlane
-	{
-		plane_point	0 0 0
-		plane_normal	0 1 0
-		bounce	0
 	}
 
 	affector DirectionRandomiser

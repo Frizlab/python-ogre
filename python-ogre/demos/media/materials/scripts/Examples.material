@@ -1,11 +1,9 @@
-
-material Examples/EnvMappedRustySteel
+material Examples/SphereMappedRustySteel
 {
 	technique
 	{
 		pass
 		{
-
 			texture_unit
 			{
 				texture RustySteel.jpg
@@ -21,6 +19,7 @@ material Examples/EnvMappedRustySteel
 		}
 	}
 }
+
 material Examples/OgreLogo
 {
 	technique
@@ -36,7 +35,8 @@ material Examples/OgreLogo
 		}
 	}
 }
-material Examples/DarkMaterial
+
+material Examples/BeachStones
 {
 	technique
 	{
@@ -51,6 +51,25 @@ material Examples/DarkMaterial
 		}
 	}
 }
+
+material Examples/TrippySkyBox
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+
+			texture_unit
+			{
+				cubic_texture nm.png separateUV
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+
 material Examples/SpaceSkyBox
 {
 	technique
@@ -68,6 +87,7 @@ material Examples/SpaceSkyBox
 		}
 	}
 }
+
 material Examples/SceneSkyBox1
 {
 	technique
@@ -85,6 +105,7 @@ material Examples/SceneSkyBox1
 		}
 	}
 }
+
 material Examples/SceneCubeMap1
 {
 	technique
@@ -102,6 +123,7 @@ material Examples/SceneCubeMap1
 		}
 	}
 }
+
 material Examples/SceneSkyBox2
 {
 	technique
@@ -119,6 +141,7 @@ material Examples/SceneSkyBox2
 		}
 	}
 }
+
 material Examples/SceneCubeMap2
 {
 	technique
@@ -173,6 +196,24 @@ material Examples/StormySkyBox
 	}
 }
 
+material Examples/EarlyMorningSkyBox
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_write off
+
+			texture_unit
+			{
+				cubic_texture early_morning.jpg separateUV
+				tex_address_mode clamp
+			}
+		}
+	}
+}
+
 
 fragment_program Examples/MorningSkyBoxHDRfp cg
 {
@@ -181,6 +222,7 @@ fragment_program Examples/MorningSkyBoxHDRfp cg
 	profiles ps_2_0 arbfp1
 
 }
+
 material Examples/MorningSkyBox
 {
 	technique
@@ -225,6 +267,7 @@ material Examples/MorningSkyBox
 		}
 	}
 }
+
 fragment_program Examples/MorningCubeMapHDRfp cg
 {
 	source hdr.cg
@@ -232,6 +275,7 @@ fragment_program Examples/MorningCubeMapHDRfp cg
 	profiles ps_2_0 arbfp1
 
 }
+
 material Examples/MorningCubeMap
 {
 	technique
@@ -270,7 +314,6 @@ material Examples/MorningCubeMap
 	}
 }
 
-
 material Examples/EveningSkyBox
 {
 	technique
@@ -284,6 +327,23 @@ material Examples/EveningSkyBox
 			{
 				cubic_texture evening.jpg separateUV
 				tex_address_mode clamp
+			}
+		}
+	}
+}
+
+material Examples/DynamicCubeMap
+{
+	technique
+	{
+		pass
+		{
+			texture_unit
+			{
+				// will be filled in at runtime
+				cubic_texture dyncubemap combinedUVW
+				tex_address_mode clamp
+				env_map cubic_reflection
 			}
 		}
 	}
@@ -306,13 +366,13 @@ material Examples/CloudySky
 		}
 	}
 }
+
 material Examples/RustySteel
 {
 	technique
 	{
 		pass
 		{
-
 			texture_unit
 			{
 				texture RustySteel.jpg
@@ -320,13 +380,13 @@ material Examples/RustySteel
 		}
 	}
 }
+
 material Examples/Chrome
 {
 	technique
 	{
 		pass
 		{
-
 			texture_unit
 			{
 				texture Chrome.jpg
@@ -335,6 +395,7 @@ material Examples/Chrome
 		}
 	}
 }
+
 material Examples/SpaceSkyPlane
 {
 	technique
@@ -343,7 +404,6 @@ material Examples/SpaceSkyPlane
 		{
 			lighting off
 			depth_write off
-			fog_override true none
 
 			texture_unit
 			{
@@ -352,86 +412,76 @@ material Examples/SpaceSkyPlane
 		}
 	}
 }
-material Examples/TextureEffect1
+
+material Examples/OgreDance
 {
 	technique
 	{
 		pass
 		{
-			ambient 0.75 0.75 0.75
+			lighting off
+			scene_blend alpha_blend
 			cull_hardware none
 			cull_software none
 
 			texture_unit
 			{
-				texture BumpyMetal.jpg
-				rotate_anim 0.2
-				wave_xform scale_x sine 1 0.1 0 5
-				wave_xform scale_y sine 0.5 0.2 0.5 3
+				anim_texture ogredance.png 8 2
+				filtering none
 			}
 		}
 	}
 }
-material Examples/TextureEffect2
+
+material Examples/OgreParade : Examples/OgreDance
 {
 	technique
 	{
 		pass
 		{
-
 			texture_unit
 			{
-				texture Water02.jpg
-				scroll_anim 0.5 0
+				scroll 0.5 0
+				scale 0.5 0.5
+				scroll_anim 0 0.5
 			}
 		}
 	}
 }
-material Examples/TextureEffect3
+
+material Examples/OgreSpin : Examples/OgreDance
 {
 	technique
 	{
 		pass
 		{
-			ambient 0.7 0.7 0.7
-			cull_hardware none
-			cull_software none
-
 			texture_unit
 			{
-				texture Water01.jpg
-				scroll_anim -0.25 0.1
-			}
-
-			texture_unit
-			{
-				texture Water01.jpg
-				colour_op_ex add src_texture src_current
-				colour_op_multipass_fallback one one
-				scroll_anim -0.1 0.25
+				texture ogredance_1.png
+				rotate_anim 0.25
+				tex_address_mode clamp
 			}
 		}
 	}
 }
-material Examples/TextureEffect4
+
+material Examples/OgreWobble : Examples/OgreDance
 {
 	technique
 	{
 		pass
 		{
-			ambient 0.3 0.3 0.3
-			scene_blend colour_blend
-			cull_hardware none
-			cull_software none
-
 			texture_unit
 			{
-				texture Water02.jpg
-				scroll_anim 0.01 0.01
+				texture ogredance_6.png
+				wave_xform scale_x sine 1 1.2 0 0.35
+				wave_xform scale_y sine 1 1 0.5 0.25
+				tex_address_mode clamp
 			}
 		}
 	}
 }
+
 material Examples/BumpyMetal
 {
 	technique
@@ -439,8 +489,6 @@ material Examples/BumpyMetal
 		pass
 		{
 			ambient 0.75 0.75 0.75
-			cull_hardware none
-			cull_software none
 
 			texture_unit
 			{
@@ -449,30 +497,34 @@ material Examples/BumpyMetal
 		}
 	}
 }
-material Examples/TransparentTest
+
+material Examples/WaterStream
 {
 	technique
 	{
 		pass
 		{
-			ambient 0.2 0.2 0.2
+			ambient 0.1 0.1 0.1
 			scene_blend add
 			depth_write off
+			cull_software none
+			cull_hardware none
 
 			texture_unit
 			{
 				texture Water01.jpg
-				scroll_anim 0.25 0
+				scroll_anim 0.125 0
 			}
 
 			texture_unit
 			{
 				texture Water01.jpg
-				wave_xform scroll_y sine 0 0.1 0 0.5
+				wave_xform scroll_y sine 0 0.1 0 0.25
 			}
 		}
 	}
 }
+
 material Examples/Flare
 {
 	technique
@@ -482,6 +534,7 @@ material Examples/Flare
 			lighting off
 			scene_blend add
 			depth_write off
+			diffuse vertexcolour
 
 			texture_unit
 			{
@@ -499,10 +552,29 @@ material Examples/Flare2
 			lighting off
 			scene_blend add
 			depth_write off
+			diffuse vertexcolour
 
 			texture_unit
 			{
 				texture flaretrail.png
+			}
+		}
+	}
+}
+material Examples/Flare3
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			scene_blend alpha_blend
+			depth_write off
+			diffuse vertexcolour
+
+			texture_unit
+			{
+				texture flare_alpha.dds
 			}
 		}
 	}
@@ -516,6 +588,7 @@ material Examples/FlarePointSprite
 			lighting off
 			scene_blend add
 			depth_write off
+			diffuse vertexcolour
 
 			point_sprites on
 			point_size 2
@@ -535,8 +608,10 @@ material Examples/Droplet
 	{
 		pass
 		{
+			emissive 0.3 0.3 0.3
 			scene_blend colour_blend
 			depth_write off
+			diffuse vertexcolour
 
 			texture_unit
 			{
@@ -803,6 +878,15 @@ fragment_program Examples/GrassWaverAmbientFp cg
     {
     }
 }
+fragment_program Examples/GrassWaverFp cg
+{
+	source Grass.cg
+	entry_point grass_fp
+	profiles ps_2_0 arbfp1
+    default_params
+    {
+    }
+}
 
 vertex_program Examples/GrassWaverCasterVp cg
 {
@@ -895,6 +979,7 @@ material Examples/GrassBladesShadowCaster
         
       }
 }
+
 material Examples/GrassBladesShadowReceiver
 {
 	// Vertex program waving grass
@@ -1053,6 +1138,7 @@ material Examples/GrassBladesAdditiveFloatTransparentBest
         }
     }
 }
+
 material Examples/GrassBladesAdditiveFloatTransparent
 {
     
@@ -1302,7 +1388,10 @@ material Examples/GrassBlades
         {
 			vertex_program_ref Examples/GrassWaverVp
 			{
-			}            
+			} 
+			fragment_program_ref Examples/GrassWaverFp
+			{
+			}
             
 			alpha_rejection greater 150 
 			scene_blend alpha_blend
@@ -1360,7 +1449,8 @@ material Examples/Aureola
 		{
 			lighting off
 			scene_blend alpha_blend
-			depth_write off
+			depth_write off			
+			diffuse vertexcolour
 			cull_hardware none
 
 			texture_unit
@@ -1490,6 +1580,7 @@ material Examples/LightRibbonTrail
 			lighting off
 			scene_blend add
 			depth_write off
+			diffuse vertexcolour
 
 			texture_unit
 			{
