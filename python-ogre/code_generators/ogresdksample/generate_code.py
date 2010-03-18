@@ -82,9 +82,12 @@ def ManualInclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns    
-     
-    for v in main_ns.class_('Sample').variables():
-        v.include()
+    cl = ['Sample', 'SdkSample','SdkCameraMan']
+    for c in cl:
+        for v in main_ns.class_(c).variables():
+            print "Including Var", v
+            v.include()
+
 #        print v, v.ignore
 #    print dir(v)
 #    sys.exit()
@@ -181,8 +184,10 @@ def FindProtectedVars ( mb ):
     for v in main_ns.variables():
         if v.access_type == 'protected':
             v.set_exportable(True)
-            v._exportable_reason = None
-            print "Protected Variable Exposed:", v
+            v._exportable_reason = "Forced"
+            print "Protected Variable Exposed:", v, v.access_type
+        else:
+            print "VAR:",v, v.access_type
     for c in main_ns.classes():
         print "Class: ", c
             
@@ -309,16 +314,16 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    files =  os.listdir( environment.Config.PATH_INCLUDE_sdksample )
-    files_filtered = []
-    for f in files:
-        if f.startswith ("Sample") or f.startswith ("FileSystem"):
-            files_filtered.append (f)
-    print files_filtered
+#     files =  os.listdir( environment.Config.PATH_INCLUDE_sdksample )
+#     files_filtered = []
+#     for f in files:
+#         if f.startswith ("Sample") or f.startswith ("FileSystem"):
+#             files_filtered.append (f)
+#     print files_filtered
     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_sdksample,
                             destPath = environment.ogresdksample.generated_dir,
                             recursive=False,
-                            files_in=files_filtered )
+                             )
     if environment.ogre.version.startswith("1.7"):
         ## have a code generation issue that needs resolving...
         filesToFix=['SdkTrayManager.pypp.cpp']

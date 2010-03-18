@@ -211,7 +211,8 @@ def ManualExclude ( mb ):
              ,'::btHashMap< btHashString, int >'
              ,'::btHashMap< btHashInt, btTriangleInfo >'
              ,'::btTriangleInfoMap'
-             
+             ,'::btHashMap< btHashPtr, btPointerUid > >' # fails on Linux, maybe coudl be non-copyable
+
              ,'::btDefaultSerializer'  # btHashInt::btHashInt no default const
 
             ]
