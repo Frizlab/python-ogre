@@ -188,7 +188,8 @@ PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'inc
 PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
 PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include")
-    
+PATH_INCLUDE_sdksample = os.path.join(PATH_THIRDPARTY, "sdksample")
+
     
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
 PATH_INCLUDE_NEDMALLOC=      "" #os.path.join(PATH_Ogre,'OgreMain', 'src', 'nedmalloc')
@@ -288,5 +289,6 @@ if SDK:
     PATH_INCLUDE_ogreterrain =   os.path.join(PATH_INCLUDE_Ogre,'Terrain')
     PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeZone' )
     PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeSceneManager' )
-    PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include")
+#     PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include")
+    PATH_INCLUDE_sdksample = os.path.join(PATH_THIRDPARTY, "sdksample")
     PATH_INCLUDE_ogrepcz = os.path.join(PATH_INCLUDE_Ogre,'Plugins','PCZSceneManager')

@@ -147,7 +147,7 @@ PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_INCLUDE_Ogre,'RTShaderSyst
 PATH_INCLUDE_ogreterrain =   os.path.join(PATH_INCLUDE_Ogre,'Terrain')
 PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeZone' )
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeSceneManager' )
-PATH_INCLUDE_sdksample = os.path.join(module_dir, "..", "ogre", "Samples", "Common", "include")
+#####PATH_INCLUDE_sdksample = os.path.join(module_dir, "..", "ogre", "Samples", "Common", "include")
 PATH_INCLUDE_ogrepcz = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'PCZSceneManager')
 
 PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')

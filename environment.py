@@ -295,9 +295,9 @@ class pymodule(module):
 ##
 ####################################################
 class gccxml(module):
-    source_version = "20091110"
+    source_version = "20100101"
     source = [
-        [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 10Nov2009 gccxml", os.getcwd()]
+        [cvs, " -d :pserver:anoncvs@www.gccxml.org:/cvsroot/GCC_XML co -D 01Jan2010 gccxml", os.getcwd()]
     ]
 
     if isLinux() or isMac():
@@ -2065,9 +2065,9 @@ if ogre.version.startswith ("1.7"):
         parent = "ogre/renderer"
         include_dirs = [
             boost.PATH,
-            Config.PATH_INCLUDE_Ogre,
             Config.PATH_INCLUDE_sdksample,
-            os.path.join(Config.PATH_INCLUDE_sdksample,'..','..','Browser','include'), #needed for filesystemimpl
+            Config.PATH_INCLUDE_Ogre,
+            #os.path.join(Config.PATH_INCLUDE_sdksample,'..','..','Browser','include'), #needed for filesystemimpl
             Config.PATH_INCLUDE_OIS
         ]
         lib_dirs = [

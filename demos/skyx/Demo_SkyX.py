@@ -12,6 +12,7 @@ import PythonOgreConfig
 import ogre.renderer.OGRE as ogre
 import SampleFramework as sf
 import ogre.addons.skyx as skyx
+import ogre.io.OIS as OIS
 
 
 # ----------------------------------------------------------------------------
@@ -53,13 +54,16 @@ def getConfigStringFromSkyXAtmosphereOptions( Options ) :
 # ----------------------------------------------------------------------------
 class SkyXDemoListener(sf.FrameListener):
     def __init__ ( self, win, cam, sm, app):
+        global mShowInformation
         sf.FrameListener.__init__(self, win, cam)
         self.sceneManager = sm
         self.keyBuffer = -1
         self.SkyX = app.SkyX
         self.textArea = app.textArea
+        mShowInformation=False
 
     def frameStarted(self, frameEvent):
+        global mShowInformation
         #self.keyboard.capture()
 
         # Check camera height
@@ -79,72 +83,73 @@ class SkyXDemoListener(sf.FrameListener):
 
         # Time
         if (not mShowInformation):
-            self.SkyX.setTimeMultiplier(0.1)
+            self.SkyX.setTimeMultiplier(.1) #0.1)
         else:
             self.SkyX.setTimeMultiplier(0.0)
 
-        # if (mKeyboard.isKeyDown(OIS.KC_1) && !(mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
-            # self.SkyX.setTimeMultiplier(1.0f)
-        # if (mKeyboard.isKeyDown(OIS.KC_1) &&  (mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
-            # self.SkyX.setTimeMultiplier(-1.0f)
+        if (self.Keyboard.isKeyDown(OIS.KC_1) and not (self.Keyboard.isKeyDown(OIS.KC_LSHIFT) or self.Keyboard.isKeyDown(OIS.KC_RSHIFT))):
+            self.SkyX.setTimeMultiplier(1.0)
+        if (self.Keyboard.isKeyDown(OIS.KC_1) and  (self.Keyboard.isKeyDown(OIS.KC_LSHIFT) or self.Keyboard.isKeyDown(OIS.KC_RSHIFT))):
+            self.SkyX.setTimeMultiplier(-1.0)
 
         # # Rayleigh multiplier
-        # if (mKeyboard.isKeyDown(OIS.KC_2) && !(mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_2) and !(self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.RayleighMultiplier += e.timeSinceLastFrame*0.025f
-        # if (mKeyboard.isKeyDown(OIS.KC_2) &&  (mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_2) and  (self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.RayleighMultiplier -= e.timeSinceLastFrame*0.025f
 
         # # Mie multiplier
-        # if (mKeyboard.isKeyDown(OIS.KC_3) && !(mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_3) and !(self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.MieMultiplier += e.timeSinceLastFrame*0.025f
-        # if (mKeyboard.isKeyDown(OIS.KC_3) &&  (mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_3) and  (self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.MieMultiplier -= e.timeSinceLastFrame*0.025f
 
         # # Exposure
-        # if (mKeyboard.isKeyDown(OIS.KC_4) && !(mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_4) and !(self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.Exposure += e.timeSinceLastFrame*0.5f
-        # if (mKeyboard.isKeyDown(OIS.KC_4) &&  (mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_4) and  (self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.Exposure -= e.timeSinceLastFrame*0.5f
 
         # # Inner radius
-        # if (mKeyboard.isKeyDown(OIS.KC_5) && !(mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_5) and !(self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.InnerRadius += e.timeSinceLastFrame*0.25f
-        # if (mKeyboard.isKeyDown(OIS.KC_5) &&  (mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_5) and  (self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.InnerRadius -= e.timeSinceLastFrame*0.25f
 
         # # Outer radius
-        # if (mKeyboard.isKeyDown(OIS.KC_6) && !(mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_6) and !(self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.OuterRadius += e.timeSinceLastFrame*0.25f
-        # if (mKeyboard.isKeyDown(OIS.KC_6) &&  (mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_6) and  (self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.OuterRadius -= e.timeSinceLastFrame*0.25f
 
         # # Number of samples
-        # if (mKeyboard.isKeyDown(OIS.KC_7) && self.keyBuffer < 0 &&!(mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_7) and self.keyBuffer < 0 and!(self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
         # {
             # SkyXOptions.NumberOfSamples ++
             # self.keyBuffer = 0.25f
         # }
-        # if (mKeyboard.isKeyDown(OIS.KC_7) && self.keyBuffer < 0 && (mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_7) and self.keyBuffer < 0 and (self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
         # {
             # SkyXOptions.NumberOfSamples --
             # self.keyBuffer = 0.25f
         # }
 
         # # Height position
-        # if (mKeyboard.isKeyDown(OIS.KC_8) && !(mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_8) and !(self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.HeightPosition += e.timeSinceLastFrame*0.05f
-        # if (mKeyboard.isKeyDown(OIS.KC_8) &&  (mKeyboard.isKeyDown(OIS.KC_LSHIFT) || mKeyboard.isKeyDown(OIS.KC_RSHIFT)))
+        # if (self.Keyboard.isKeyDown(OIS.KC_8) and  (self.Keyboard.isKeyDown(OIS.KC_LSHIFT) || self.Keyboard.isKeyDown(OIS.KC_RSHIFT)))
             # SkyXOptions.HeightPosition -= e.timeSinceLastFrame*0.05f
 
         # self.SkyX.getAtmosphereManager().setOptions(SkyXOptions)
 
         # # Show/Hide information
-        # if (mKeyboard.isKeyDown(OIS.KC_F1) && self.keyBuffer < 0)
-        # {
-            # mShowInformation = !mShowInformation
+        if (self.Keyboard.isKeyDown(OIS.KC_F1) and self.keyBuffer < 0):
+            if not mShowInformation:
+                mShowInformation=True
+            else:
+                mShowInformation=False
 
-            # self.keyBuffer = 0.25f
-        # }
+            self.keyBuffer = 0.25
 
         self.textArea.setCaption(getConfigStringFromSkyXAtmosphereOptions(SkyXOptions))
 
