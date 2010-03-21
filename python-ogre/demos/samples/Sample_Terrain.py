@@ -1,3 +1,21 @@
+# This code is in the Public Domain
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://python-ogre.org/
+#
+# It is likely based on original code from OGRE and/or PyOgre
+# For the latest info, see http://www.ogre3d.org/
+#
+# You may use this sample code for anything you like, it is not covered by the
+# LGPL.
+# -----------------------------------------------------------------------------
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+import ogre.renderer.OGRE as ogre
+import ogre.io.OIS as ois
+import ogre.renderer.ogresdksample as sdk
+import sdk_framework as sf
 import math as Math
 
 PAGING = False
@@ -36,7 +54,7 @@ class sample (sf.sample):
 		self.mBrushSizeTerrainSpace=0.02
 		self.self.mHeightUpdateCountDown=0
 		self.mTerrainPos = ogre.Vector3(1000,0,5000)
-		self.mTerrainsImported= False
+		self.self.mTerrainsImported= False
 
 		self.mInfo["Title"] = "Terrain"
 		self.mInfo["Description"] = "Demonstrates use of the terrain rendering plugin.";
@@ -124,7 +142,7 @@ class sample (sf.sample):
     def frameRenderingQueued(self,  evt)
 		if self.mMode != MODE_NORMAL:
 			# fire ray
-			ray = mTrayMgr.getCursorRay(self.mCamera);
+			ray = self.mTrayMgr.getCursorRay(self.mCamera);
 
 			rayResult = self.self.mTerrainGroup.rayIntersects(ray);
 			if rayResult.hit:
@@ -136,128 +154,79 @@ class sample (sf.sample):
 				brushSizeWorldSpace = TERRAIN_WORLD_SIZE * self.mBrushSizeTerrainSpace;
 				sphere = Sphere(rayResult.position, brushSizeWorldSpace);
 				self.mTerrainGroup.sphereIntersects(sphere, terrainList);
-
-				for (TerrainGroup.TerrainList.iterator ti = terrainList.begin();
-					ti != terrainList.end(); ++ti)
-					doTerrainModify(*ti, rayResult.position, evt.timeSinceLastFrame);
-			}
-			else
-			{
+                ti = terrainList.begin()
+				while ti != terrainList.end():
+#                 for (TerrainGroup.TerrainList.iterator ti = terrainList.begin();
+# 					ti != terrainList.end(); ++ti)
+					doTerrainModify(ti, rayResult.position, evt.timeSinceLastFrame);
+					ti = ti.next()
+			else :
 				self.mEditMarker.setVisible(False);
-			}
-		}
 
-		if (!mFly)
-		{
+		if not self.mFly:
 			# clamp to terrain
-			Vector3 camPos = self.mCamera.getPosition();
-			Ray ray;
-			ray.setOrigin(Vector3(camPos.x, self.mTerrainPos.y + 10000, camPos.z));
-			ray.setDirection(Vector3.NEGATIVE_UNIT_Y);
+			camPos = self.mCamera.getPosition();
+			ray.setOrigin(ogre.Vector3(camPos.x, self.mTerrainPos.y + 10000, camPos.z));
+			ray.setDirection(ogre.Vector3.NEGATIVE_UNIT_Y);
 
-			TerrainGroup.RayResult rayResult = self.self.mTerrainGroup.rayIntersects(ray);
-			Real distanceAboveTerrain = 50;
-			Real fallSpeed = 300;
-			Real newy = camPos.y;
-			if (rayResult.hit)
-			{
-				if (camPos.y > rayResult.position.y + distanceAboveTerrain)
-				{
+			rayResult = self.mTerrainGroup.rayIntersects(ray);
+			distanceAboveTerrain = 50;
+			fallSpeed = 300;
+			newy = camPos.y;
+			if rayResult.hit:
+				if camPos.y > rayResult.position.y + distanceAboveTerrain:
 					self.mFallVelocity += evt.timeSinceLastFrame * 20;
-					self.mFallVelocity = std.min(self.mFallVelocity, fallSpeed);
+					self.mFallVelocity = min(self.mFallVelocity, fallSpeed);
 					newy = camPos.y - self.mFallVelocity * evt.timeSinceLastFrame;
-
-				}
-				newy = std.max(rayResult.position.y + distanceAboveTerrain, newy);
+				newy = max(rayResult.position.y + distanceAboveTerrain, newy);
 				self.mCamera.setPosition(camPos.x, newy, camPos.z);
 				
-			}
 
-		}
-
-		if (self.mHeightUpdateCountDown > 0)
-		{
+		if self.mHeightUpdateCountDown > 0 :
 			self.mHeightUpdateCountDown -= evt.timeSinceLastFrame;
-			if (self.mHeightUpdateCountDown <= 0)
-			{
+			if self.mHeightUpdateCountDown <= 0:
 				self.mTerrainGroup.update();
 				self.mHeightUpdateCountDown = 0;
 
-			}
-
-		}
-
-		if (self.mTerrainGroup.isDerivedDataUpdateInProgress())
-		{
-			mTrayMgr.moveWidgetToTray(mInfoLabel, TL_TOP, 0);
-			mInfoLabel.show();
-			if (mTerrainsImported)
-			{
-				mInfoLabel.setCaption("Building terrain, please wait...");
-			}
-			else
-			{
-				mInfoLabel.setCaption("Updating textures, patience...");
-			}
-
-		}
-		else
-		{
-			mTrayMgr.removeWidgetFromTray(mInfoLabel);
-			mInfoLabel.hide();
-			if (mTerrainsImported)
-			{
+		if self.mTerrainGroup.isDerivedDataUpdateInProgress():
+			self.mTrayMgr.moveWidgetToTray(self.mInfoLabel, TL_TOP, 0);
+			self.mInfoLabel.show();
+			if self.mTerrainsImported:
+				self.mInfoLabel.setCaption("Building terrain, please wait...");
+			else:
+				self.mInfoLabel.setCaption("Updating textures, patience...");
+		else :
+			self.mTrayMgr.removeWidgetFromTray(self.mInfoLabel);
+			self.mInfoLabel.hide();
+			if self.mTerrainsImported:
 				saveTerrains(True);
-				mTerrainsImported = False;
-			}
-		}
+				self.mTerrainsImported = False;
+        return sf.sample.frameRenderingQueued(self, evt)
 
-		return SdkSample.frameRenderingQueued(evt);  # don't forget the parent updates!
-    }
-
-	void saveTerrains(bool onlyIfModified)
-	{
+	def saveTerrains(self, onlyIfModified):
 		self.mTerrainGroup.saveAllTerrains(onlyIfModified);
-	}
 
-	bool keyPressed (const OIS.KeyEvent &e)
-	{
-#if OGRE_PLATFORM != OGRE_PLATFORM_IPHONE
-		switch (e.key)
-		{
-		case OIS.KC_S:
+	def keyPressed (self, e) :
+		key = e.key
+		if key == OIS.KC_S:
 			# CTRL-S to save
-			if (self.mKeyboard.isKeyDown(OIS.KC_LCONTROL) || self.mKeyboard.isKeyDown(OIS.KC_RCONTROL))
-			{
+			if self.mKeyboard.isKeyDown(OIS.KC_LCONTROL) or self.mKeyboard.isKeyDown(OIS.KC_RCONTROL):
 				saveTerrains(True);
-			}
-			else
-				return SdkSample.keyPressed(e);
-			break;
-		case OIS.KC_F10:
+			else:
+				return sf.sample.keyPressed(e);
+		elif key == OIS.KC_F10:
 			# dump
-			{
-				TerrainGroup.TerrainIterator ti = self.self.mTerrainGroup.getTerrainIterator();
-				while (ti.hasMoreElements())
-				{
-					Ogre.uint32 tkey = ti.peekNextKey();
-					TerrainGroup.TerrainSlot* ts = ti.getNext();
-					if (ts.instance && ts.instance.isLoaded())
-					{
-						ts.instance._dumpTextures("terrain_" + StringConverter.toString(tkey), ".png");
-					}
-				}
-			}
-			break;
-		default:
-			return SdkSample.keyPressed(e);
-		}
-#endif
+# 				TerrainGroup.TerrainIterator ti = self.self.mTerrainGroup.getTerrainIterator();
+# 				while (ti.hasMoreElements())
+# 				{
+# 					Ogre.uint32 tkey = ti.peekNextKey();
+# 					TerrainGroup.TerrainSlot* ts = ti.getNext();
+# 					if (ts.instance && ts.instance.isLoaded())
+# 						ts.instance._dumpTextures("terrain_" + StringConverter.toString(tkey), ".png");
+		else:
+			return sf.sample.keyPressed(e);
 
-		return True;
-	}
-
-	void itemSelected(SelectMenu* menu)
+	def itemSelected(self,  menu):
 	{
 		if (menu == mEditMenu)
 		{
@@ -314,8 +283,8 @@ protected:
 # 	SelectMenu* mEditMenu;
 # 	SelectMenu* mShadowsMenu;
 # 	CheckBox* self.mFlyBox;
-# 	OgreBites.Label* mInfoLabel;
-# 	bool self.mTerrainsImported;
+# 	OgreBites.Label* self.mInfoLabel;
+# 	bool self.self.mTerrainsImported;
 # 	ShadowCameraSetupPtr mPSSMSetup;
 #
 # 	typedef std.list<Entity*> EntityList;
@@ -347,7 +316,7 @@ protected:
 				Image img;
 				getTerrainImage(x % 2 != 0, y % 2 != 0, img);
 				self.mTerrainGroup.defineTerrain(x, y, &img);
-				mTerrainsImported = True;
+				self.mTerrainsImported = True;
 			}
 
 		}
@@ -480,10 +449,10 @@ protected:
 
 		# add widget
 		String widgetName = "DebugTex"+ StringConverter.toString(i);
-		Widget* w = mTrayMgr.getWidget(widgetName);
+		Widget* w = self.mTrayMgr.getWidget(widgetName);
 		if (!w)
 		{
-			w = mTrayMgr.createDecorWidget(loc, widgetName, "Ogre/DebugTexOverlay");
+			w = self.mTrayMgr.createDecorWidget(loc, widgetName, "Ogre/DebugTexOverlay");
 		}
 		w.getOverlayElement().setMaterialName(matName);
 
@@ -636,25 +605,25 @@ protected:
 
 	void setupControls()
 	{
-		mTrayMgr.showCursor();
+		self.mTrayMgr.showCursor();
 
 		# make room for the controls
-		mTrayMgr.showLogo(TL_TOPRIGHT);
-		mTrayMgr.showFrameStats(TL_TOPRIGHT);
-		mTrayMgr.toggleAdvancedFrameStats();
+		self.mTrayMgr.showLogo(TL_TOPRIGHT);
+		self.mTrayMgr.showFrameStats(TL_TOPRIGHT);
+		self.mTrayMgr.toggleAdvancedFrameStats();
 
-		mInfoLabel = mTrayMgr.createLabel(TL_TOP, "TInfo", "", 350);
+		self.mInfoLabel = self.mTrayMgr.createLabel(TL_TOP, "TInfo", "", 350);
 
-		mEditMenu = mTrayMgr.createLongSelectMenu(TL_BOTTOM, "EditMode", "Edit Mode", 370, 250, 3);
+		mEditMenu = self.mTrayMgr.createLongSelectMenu(TL_BOTTOM, "EditMode", "Edit Mode", 370, 250, 3);
 		mEditMenu.addItem("None");
 		mEditMenu.addItem("Elevation");
 		mEditMenu.addItem("Blend");
 		mEditMenu.selectItem(0);  # no edit mode
 
-		mFlyBox = mTrayMgr.createCheckBox(TL_BOTTOM, "Fly", "Fly");
+		mFlyBox = self.mTrayMgr.createCheckBox(TL_BOTTOM, "Fly", "Fly");
 		mFlyBox.setChecked(False, False);
 
-		mShadowsMenu = mTrayMgr.createLongSelectMenu(TL_BOTTOM, "Shadows", "Shadows", 370, 250, 3);
+		mShadowsMenu = self.mTrayMgr.createLongSelectMenu(TL_BOTTOM, "Shadows", "Shadows", 370, 250, 3);
 		mShadowsMenu.addItem("None");
 		mShadowsMenu.addItem("Colour Shadows");
 		mShadowsMenu.addItem("Depth Shadows");
@@ -663,7 +632,7 @@ protected:
 		# a friendly reminder
 		StringVector names;
 		names.push_back("Help");
-		mTrayMgr.createParamsPanel(TL_TOPLEFT, "Help", 100, names).setParamValue(0, "H/F1");
+		self.mTrayMgr.createParamsPanel(TL_TOPLEFT, "Help", 100, names).setParamValue(0, "H/F1");
 	}
 
 	void setupContent()
@@ -729,7 +698,7 @@ protected:
 		self.mTerrainGroup.loadAllTerrains(True);
 #endif
 
-		if (mTerrainsImported)
+		if (self.mTerrainsImported)
 		{
 			TerrainGroup.TerrainIterator ti = self.self.mTerrainGroup.getTerrainIterator();
 			while(ti.hasMoreElements())
