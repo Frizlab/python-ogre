@@ -36,7 +36,7 @@ class TransparencyApplication(sf.Application):
 #         planeEntity.setMaterialName('Examples/BumpyMetal')
 
         knotEntity = self.sceneManager.createEntity('Knot', 'knot.mesh')
-        knotEntity.setMaterialName('Examples/TransparentTest')
+        knotEntity.setMaterialName("Examples/WaterStream") #'Examples/Transparent')
 
         rootNode = self.sceneManager.getRootSceneNode()
         #rootNode.attachObject(planeEntity)

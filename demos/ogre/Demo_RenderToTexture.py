@@ -110,7 +110,7 @@ class RenderToTextureApplication(sf.Application,ogre.RenderTargetListener):
  
         #Create an entity from a model (will be loaded automatically)
         knotEnt = sceneManager.createEntity("Knot", "knot.mesh")
-        knotEnt.setMaterialName("Examples/TextureEffect2")
+        knotEnt.setMaterialName("Examples/RustySteel")
 
         ogreHead = sceneManager.createEntity("Head", "ogrehead.mesh")
 

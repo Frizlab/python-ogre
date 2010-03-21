@@ -123,7 +123,7 @@ class NoiseOgreImage(object):
 
         # python-ogre hack
         storageclass = ctypes.c_uint8 * ( bufferSize )
-        cbuffer=storageclass.from_address(ogre.CastInt(pointer))
+        cbuffer=storageclass.from_address(ogre.castAsInt(pointer))
 
         ## copy image buffer to texture
         k = 0
