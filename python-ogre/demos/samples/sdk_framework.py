@@ -14,25 +14,25 @@ sys.path.insert(0,'..')
 import PythonOgreConfig
 import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as ois
-import ogre.renderer.ogresdksample as sdk
+from ogre.renderer.ogresdksample import *
 
-context = sdk.SampleContext   # easy to use shortcut
+context = SampleContext   # easy to use shortcut
 
-class sample (sdk.SdkSample):
+class sample (SdkSample):
     """
     A simple framework class to fix any python issues when using the
     sample sdk class(es)
     """
     def __init__ ( self ):
-        sdk.SdkSample.__init__(self)
+        SdkSample.__init__(self)
         self.mInfo["Help"] = "Not much help here -- enjoy using Python-Ogre.  'F': Stats\b'G' - More stats"
         self.running=True
         
     def frameRenderingQueued(self, evt):
-        return (sdk.SdkSample.frameRenderingQueued(self, evt) and self.running)
+        return (SdkSample.frameRenderingQueued(self, evt) and self.running)
 
     def keyPressed(self,evt):
-        sdk.SdkSample.keyPressed(self, evt)
+        SdkSample.keyPressed(self, evt)
         if evt.key == ois.KC_Q or evt.key == ois.KC_ESCAPE:
             self.running = False
         return True

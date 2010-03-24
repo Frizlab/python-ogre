@@ -1,3 +1,10 @@
+March 21 2010: Release 1.7RC1
+=============================
+Based on Ogre 1.7 SDK
+Many Updates to modules
+Removed a number of 'less popular' modules
+See SVn log for details
+
 November 21 2009: Release 1.7.0 R1029
 =====================================
 Added SkyX module
