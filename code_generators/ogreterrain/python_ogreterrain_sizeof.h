@@ -1,6 +1,9 @@
 // sizeof ( variable );
-sizeof (Ogre::ConstMapIterator<std::map<unsigned int, Ogre::TerrainGroup::TerrainSlot*, std::less<unsigned int>, Ogre::STLAllocator<std::pair<const unsigned int, Ogre::TerrainGroup::TerrainSlot*>, Ogre::CategorisedAllocPolicy<MEMCATEGORY_GENERAL> > > >);
-sizeof (Ogre::MapIterator<std::map<unsigned int, Ogre::TerrainGroup::TerrainSlot*, std::less<unsigned int>, Ogre::STLAllocator<std::pair<const unsigned int, Ogre::TerrainGroup::TerrainSlot*>, Ogre::CategorisedAllocPolicy<MEMCATEGORY_GENERAL> > > >);
-sizeof (Ogre::MapIterator<std::map<unsigned int, Ogre::TerrainGroup::TerrainSlot*, std::less<unsigned int>, Ogre::STLAllocator<std::pair<unsigned int const, Ogre::TerrainGroup::TerrainSlot*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > >);
-sizeof (Ogre::ConstMapIterator<std::map<unsigned int, Ogre::TerrainGroup::TerrainSlot*, std::less<unsigned int>, Ogre::STLAllocator<std::pair<unsigned int const, Ogre::TerrainGroup::TerrainSlot*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > >);
-
+sizeof (Ogre::TerrainGroup::TerrainIterator);
+sizeof (Ogre::TerrainGroup::ConstTerrainIterator);
+sizeof (Ogre::TerrainGroup::TerrainList);
+sizeof (Ogre::TerrainGroup::TerrainSlotMap);
+sizeof (Ogre::MapIteratorWrapper<Ogre::TerrainGroup::TerrainSlotMap, Ogre::TerrainGroup::TerrainSlotMap::const_iterator>);
+sizeof (Ogre::MapIteratorWrapper<Ogre::TerrainGroup::TerrainSlotMap, Ogre::TerrainGroup::TerrainSlotMap::iterator>);
+// sizeof (Ogre::MapIteratorWrapper<Ogre::TerrainGroup::TerrainIterator, Ogre::TerrainGroup::TerrainIterator::const_iterator>);
+// sizeof (Ogre::MapIteratorWrapper<Ogre::TerrainGroup::TerrainIterator, Ogre::TerrainGroup::TerrainIterator::iterator>);

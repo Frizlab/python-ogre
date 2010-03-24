@@ -14,11 +14,15 @@ sys.path.insert(0,'..')
 import PythonOgreConfig
 import ogre.renderer.OGRE as ogre
 import ogre.io.OIS as ois
-import ogre.renderer.ogresdksample as sdk
 import sdk_framework as sf
+import ogre.renderer.ogrepaging as ogrepaging
+import ogre.renderer.ogreterrain as ogreterrain
 import math as Math
+import ctypes as ctypes
+import random as random
 
 PAGING = False
+#PAGING = True
 
 TERRAIN_PAGE_MIN_X= 0
 TERRAIN_PAGE_MIN_Y= 0
@@ -39,730 +43,670 @@ SHADOWS_COLOUR = 1
 SHADOWS_DEPTH = 2
 SHADOWS_COUNT = 3
 
+def Clamp ( val, low, high ):
+    if val < low: return low
+    if val > high: return high
+    return val
+    
+if PAGING:
+    #/ This class just pretends to provide prcedural page content to avoid page loading
+    class DummyPageProvider ( ogrepaging.PageProvider):
+        def __init__  (self):
+            ogrepaging.PageProvider.__init__(self)
+        def prepareProceduralPage(self, page, section):
+            return True
+        def loadProceduralPage(self, page,  section):
+            return True
+        def unloadProceduralPage(self, page, section):
+            return True
+        def unprepareProceduralPage(self, page, section):
+            return True
+
+    mDummyPageProvider= DummyPageProvider()
 
 class sample (sf.sample):
     def __init__ ( self ):
         sf.sample.__init__(self)
-        
-		self.self.mTerrainGroup= 0
-		self.mTerrainPaging=0
-		self.mPageManager= 0
-		self.mFly=False
-		self.mFallVelocity=0
-		self.mMode= MODE_NORMAL
-		self.self.mLayerEdit=1
-		self.mBrushSizeTerrainSpace=0.02
-		self.self.mHeightUpdateCountDown=0
-		self.mTerrainPos = ogre.Vector3(1000,0,5000)
-		self.self.mTerrainsImported= False
 
-		self.mInfo["Title"] = "Terrain"
-		self.mInfo["Description"] = "Demonstrates use of the terrain rendering plugin.";
-		self.mInfo["Thumbnail"] = "thumb_terrain.png";
-		self.mInfo["Category"] = "Environment";
-		self.mInfo["Help"] = "Left click and drag anywhere in the scene to look around. Let go again to show \
-			cursor and access widgets. Use WASD keys to move. Use +/- keys when in edit mode to change content.";
+        self.mTerrainGroup= 0
+        self.mTerrainPaging=0
+        self.mPageManager= 0
+        self.mFly=False
+        self.mFallVelocity=0
+        self.mMode= MODE_NORMAL
+        self.mLayerEdit=1
+        self.mBrushSizeTerrainSpace=0.02
+        self.mHeightUpdateCountDown=0
+        self.mTerrainPos = ogre.Vector3(1000,0,5000)
+        self.mTerrainsImported= False
 
-		# Update terrain at max 20fps
-		self.self.mHeightUpdateRate = 1.0 / 20.0
+        self.mInfo["Title"] = "Terrain"
+        self.mInfo["Description"] = "Demonstrates use of the terrain rendering plugin."
+        self.mInfo["Thumbnail"] = "thumb_terrain.png"
+        self.mInfo["Category"] = "Environment"
+        self.mInfo["Help"] = "Left click and drag anywhere in the scene to look around. Let go again to show \
+            cursor and access widgets. Use WASD keys to move. Use +/- keys when in edit mode to change content."
+
+        # Update terrain at max 20fps
+        self.mHeightUpdateRate = 1.0 / 20.0
 
 
     def testCapabilities(self, caps):
-        if not caps.hasCapability(RSC_VERTEX_PROGRAM) or not caps.hasCapability(RSC_FRAGMENT_PROGRAM):
-			ogre.OGRE_EXCEPT(ogre.Exception.ERR_NOT_IMPLEMENTED, "Your graphics card does not support vertex or fragment shaders, "
-                        "so you cannot run this sample. Sorry!", "Sample_Terrain.testCapabilities");
+        if not caps.hasCapability(ogre.RSC_VERTEX_PROGRAM) or not caps.hasCapability(ogre.RSC_FRAGMENT_PROGRAM):
+            ogre.OGRE_EXCEPT(ogre.Exception.ERR_NOT_IMPLEMENTED, "Your graphics card does not support vertex or fragment shaders, "
+                        "so you cannot run this sample. Sorry!", "Sample_Terrain.testCapabilities")
 
-	def getRequiredPlugins(self):
-		return ogre.StringVector()
+    def getRequiredPlugins(self):
+        return ogre.StringVector()
 
-	def doTerrainModify(self,  terrain, centrepos, timeElapsed):
-		tsPos = ogre.Vector3()
-		terrain.getTerrainPosition(centrepos, tsPos)  ## AJM TO CHECK !!
-		if self.mKeyboard.isKeyDown(OIS.KC_EQUALS) or self.mKeyboard.isKeyDown(OIS.KC_MINUS):
-			if self.mMode == MODE_EDIT_HEIGHT:
-				# we need point coords
-				terrainSize = (terrain.getSize() - 1);
-				startx = (tsPos.x - self.mBrushSizeTerrainSpace) * terrainSize;
-				starty = (tsPos.y - self.mBrushSizeTerrainSpace) * terrainSize;
-				endx = (tsPos.x + self.mBrushSizeTerrainSpace) * terrainSize;
-				endy= (tsPos.y + self.mBrushSizeTerrainSpace) * terrainSize;
-				startx = std.max(startx, 0L);
-				starty = std.max(starty, 0L);
-				endx = std.min(endx, (long)terrainSize);
-				endy = std.min(endy, (long)terrainSize);
-				for y in range (starty, endy+1):
-					for   x in range (startx, endx + 1):
-						tsXdist = (x / terrainSize) - tsPos.x;
-						tsYdist = (y / terrainSize)  - tsPos.y;
+    def doTerrainModify(self,  terrain, centrepos, timeElapsed):
+        tsPos = ogre.Vector3()
+        terrain.getTerrainPosition(centrepos, tsPos)  ## AJM TO CHECK !!
+        if self.mKeyboard.isKeyDown(ois.KC_EQUALS) or self.mKeyboard.isKeyDown(ois.KC_MINUS):
+            if self.mMode == MODE_EDIT_HEIGHT:
+                # we need point coords
+                terrainSize = (terrain.getSize() - 1)
+                startx = (tsPos.x - self.mBrushSizeTerrainSpace) * terrainSize
+                starty = (tsPos.y - self.mBrushSizeTerrainSpace) * terrainSize
+                endx = (tsPos.x + self.mBrushSizeTerrainSpace) * terrainSize
+                endy= (tsPos.y + self.mBrushSizeTerrainSpace) * terrainSize
+                startx = max(startx, 0L)
+                starty = max(starty, 0L)
+                endx = min(endx, terrainSize)
+                endy = min(endy, terrainSize)
+                for y in range (starty, endy+1):
+                    for   x in range (startx, endx + 1):
+                        tsXdist = (x / terrainSize) - tsPos.x
+                        tsYdist = (y / terrainSize)  - tsPos.y
 
-						weight = std.min((Real)1.0,
-							Math.Sqrt(tsYdist * tsYdist + tsXdist * tsXdist) / (0.5 * self.mBrushSizeTerrainSpace));
-						weight = 1.0 - (weight * weight);
+                        weight = min(1.0,
+                            math.Sqrt(tsYdist * tsYdist + tsXdist * tsXdist) / (0.5 * self.mBrushSizeTerrainSpace))
+                        weight = 1.0 - (weight * weight)
 
-						addedHeight = weight * 250.0 * timeElapsed;
-						newheight;
-						if self.mKeyboard.isKeyDown(OIS.KC_EQUALS):
-							newheight = terrain.getHeightAtPoint(x, y) + addedHeight;
-						else :
-							newheight = terrain.getHeightAtPoint(x, y) - addedHeight;
-						terrain.setHeightAtPoint(x, y, newheight);
-				if self.mHeightUpdateCountDown == 0:
-					self.mHeightUpdateCountDown = self.mHeightUpdateRate;
-			elif self.mMode == MODE_EDIT_HEIGHT:
-					layer = terrain.getLayerBlendMap(self.mLayerEdit);
-					# we need image coords
-					imgSize = terrain.getLayerBlendMapSize();
-					startx = (tsPos.x - self.mBrushSizeTerrainSpace) * imgSize;
-					starty = (tsPos.y - self.mBrushSizeTerrainSpace) * imgSize;
-					endx = (tsPos.x + self.mBrushSizeTerrainSpace) * imgSize;
-					endy= (tsPos.y + self.mBrushSizeTerrainSpace) * imgSize;
-					startx = max(startx, 0L);
-					starty = max(starty, 0L);
-					endx = min(endx, (long)imgSize);
-					endy = min(endy, (long)imgSize);
-					for y in range(starty,endy):
-						for x in range(startx,endx) :
-							tsXdist = (x / imgSize) - tsPos.x;
-							tsYdist = (y / imgSize)  - tsPos.y;
+                        addedHeight = weight * 250.0 * timeElapsed
+                        newheight
+                        if self.mKeyboard.isKeyDown(ois.KC_EQUALS):
+                            newheight = terrain.getHeightAtPoint(x, y) + addedHeight
+                        else :
+                            newheight = terrain.getHeightAtPoint(x, y) - addedHeight
+                        terrain.setHeightAtPoint(x, y, newheight)
+                if self.mHeightUpdateCountDown == 0:
+                    self.mHeightUpdateCountDown = self.mHeightUpdateRate
+            elif self.mMode == MODE_EDIT_HEIGHT:
+                    layer = terrain.getLayerBlendMap(self.mLayerEdit)
+                    # we need image coords
+                    imgSize = terrain.getLayerBlendMapSize()
+                    startx = (tsPos.x - self.mBrushSizeTerrainSpace) * imgSize
+                    starty = (tsPos.y - self.mBrushSizeTerrainSpace) * imgSize
+                    endx = (tsPos.x + self.mBrushSizeTerrainSpace) * imgSize
+                    endy= (tsPos.y + self.mBrushSizeTerrainSpace) * imgSize
+                    startx = max(startx, 0L)
+                    starty = max(starty, 0L)
+                    endx = min(endx, imgSize)
+                    endy = min(endy, imgSize)
+                    for y in range(starty,endy):
+                        for x in range(startx,endx) :
+                            tsXdist = (x / imgSize) - tsPos.x
+                            tsYdist = (y / imgSize)  - tsPos.y
 
-							weight = min(1.0,
-								Math.Sqrt(tsYdist * tsYdist + tsXdist * tsXdist) / (0.5 * self.mBrushSizeTerrainSpace));
-							weight = 1.0 - (weight * weight);
+                            weight = min(1.0,
+                                Math.Sqrt(tsYdist * tsYdist + tsXdist * tsXdist) / (0.5 * self.mBrushSizeTerrainSpace))
+                            weight = 1.0 - (weight * weight)
 
-							paint = weight * timeElapsed;
-							imgY = imgSize - y;
-							if self.mKeyboard.isKeyDown(OIS.KC_EQUALS):
-								val = layer.getBlendValue(x, imgY) + paint;
-							else:
-								val = layer.getBlendValue(x, imgY) - paint;
-							val = Math.Clamp(val, 0.0f, 1.0f);
-							layer.setBlendValue(x, imgY, val);
-					layer.update();
+                            paint = weight * timeElapsed
+                            imgY = imgSize - y
+                            if self.mKeyboard.isKeyDown(ois.KC_EQUALS):
+                                val = layer.getBlendValue(x, imgY) + paint
+                            else:
+                                val = layer.getBlendValue(x, imgY) - paint
+                            val = Clamp(val, 0.0, 1.0)
+                            layer.setBlendValue(x, imgY, val)
+                    layer.update()
 
-    def frameRenderingQueued(self,  evt)
-		if self.mMode != MODE_NORMAL:
-			# fire ray
-			ray = self.mTrayMgr.getCursorRay(self.mCamera);
+    def frameRenderingQueued(self,  evt):
+        if self.mMode != MODE_NORMAL:
+            # fire ray
+            ray = self.mTrayMgr.getCursorRay(self.mCamera)
 
-			rayResult = self.self.mTerrainGroup.rayIntersects(ray);
-			if rayResult.hit:
-				self.mEditMarker.setVisible(True);
-				self.mEditNode.setPosition(rayResult.position);
+            rayResult = self.mTerrainGroup.rayIntersects(ray)
+            if rayResult.hit:
+                self.mEditMarker.setVisible(True)
+                self.mEditNode.setPosition(rayResult.position)
 
-				# figure out which terrains this affects
-				terrainList =TerrainGroup.TerrainList()
-				brushSizeWorldSpace = TERRAIN_WORLD_SIZE * self.mBrushSizeTerrainSpace;
-				sphere = Sphere(rayResult.position, brushSizeWorldSpace);
-				self.mTerrainGroup.sphereIntersects(sphere, terrainList);
+                # figure out which terrains this affects
+                terrainList =ogreterrain.TerrainGroup.TerrainList()
+                brushSizeWorldSpace = TERRAIN_WORLD_SIZE * self.mBrushSizeTerrainSpace
+                sphere = ogre.Sphere(rayResult.position, brushSizeWorldSpace)
+                self.mTerrainGroup.sphereIntersects(sphere, terrainList)
+                print "\n", terrainList
                 ti = terrainList.begin()
-				while ti != terrainList.end():
-#                 for (TerrainGroup.TerrainList.iterator ti = terrainList.begin();
-# 					ti != terrainList.end(); ++ti)
-					doTerrainModify(ti, rayResult.position, evt.timeSinceLastFrame);
-					ti = ti.next()
-			else :
-				self.mEditMarker.setVisible(False);
+                print ti
+                while ti != terrainList.end():
+                    print "\n IN LOOP:", ti
+#                 for (TerrainGroup.TerrainList.iterator ti = terrainList.begin()
+#                   ti != terrainList.end() ++ti)
+                    doTerrainModify(ti, rayResult.position, evt.timeSinceLastFrame)
+                    ti = ti.next()
+            else :
+                self.mEditMarker.setVisible(False)
 
-		if not self.mFly:
-			# clamp to terrain
-			camPos = self.mCamera.getPosition();
-			ray.setOrigin(ogre.Vector3(camPos.x, self.mTerrainPos.y + 10000, camPos.z));
-			ray.setDirection(ogre.Vector3.NEGATIVE_UNIT_Y);
+        if not self.mFly:
+            # clamp to terrain
+            camPos = self.mCamera.getPosition()
+            ray = ogre.Ray()
+            ray.setOrigin(ogre.Vector3(camPos.x, self.mTerrainPos.y + 10000, camPos.z))
+            ray.setDirection(ogre.Vector3().NEGATIVE_UNIT_Y)
 
-			rayResult = self.mTerrainGroup.rayIntersects(ray);
-			distanceAboveTerrain = 50;
-			fallSpeed = 300;
-			newy = camPos.y;
-			if rayResult.hit:
-				if camPos.y > rayResult.position.y + distanceAboveTerrain:
-					self.mFallVelocity += evt.timeSinceLastFrame * 20;
-					self.mFallVelocity = min(self.mFallVelocity, fallSpeed);
-					newy = camPos.y - self.mFallVelocity * evt.timeSinceLastFrame;
-				newy = max(rayResult.position.y + distanceAboveTerrain, newy);
-				self.mCamera.setPosition(camPos.x, newy, camPos.z);
-				
+            rayResult = self.mTerrainGroup.rayIntersects(ray)
+            distanceAboveTerrain = 50
+            fallSpeed = 300
+            newy = camPos.y
+            if rayResult.hit:
+                if camPos.y > rayResult.position.y + distanceAboveTerrain:
+                    self.mFallVelocity += evt.timeSinceLastFrame * 20
+                    self.mFallVelocity = min(self.mFallVelocity, fallSpeed)
+                    newy = camPos.y - self.mFallVelocity * evt.timeSinceLastFrame
+                newy = max(rayResult.position.y + distanceAboveTerrain, newy)
+                self.mCamera.setPosition(camPos.x, newy, camPos.z)
 
-		if self.mHeightUpdateCountDown > 0 :
-			self.mHeightUpdateCountDown -= evt.timeSinceLastFrame;
-			if self.mHeightUpdateCountDown <= 0:
-				self.mTerrainGroup.update();
-				self.mHeightUpdateCountDown = 0;
 
-		if self.mTerrainGroup.isDerivedDataUpdateInProgress():
-			self.mTrayMgr.moveWidgetToTray(self.mInfoLabel, TL_TOP, 0);
-			self.mInfoLabel.show();
-			if self.mTerrainsImported:
-				self.mInfoLabel.setCaption("Building terrain, please wait...");
-			else:
-				self.mInfoLabel.setCaption("Updating textures, patience...");
-		else :
-			self.mTrayMgr.removeWidgetFromTray(self.mInfoLabel);
-			self.mInfoLabel.hide();
-			if self.mTerrainsImported:
-				saveTerrains(True);
-				self.mTerrainsImported = False;
+        if self.mHeightUpdateCountDown > 0 :
+            self.mHeightUpdateCountDown -= evt.timeSinceLastFrame
+            if self.mHeightUpdateCountDown <= 0:
+                self.mTerrainGroup.update()
+                self.mHeightUpdateCountDown = 0
+
+        if self.mTerrainGroup.isDerivedDataUpdateInProgress():
+            self.mTrayMgr.moveWidgetToTray(self.mInfoLabel, sf.TL_TOP, 0)
+            self.mInfoLabel.show()
+            if self.mTerrainsImported:
+                self.mInfoLabel.setCaption("Building terrain, please wait...")
+            else:
+                self.mInfoLabel.setCaption("Updating textures, patience...")
+        else :
+            self.mTrayMgr.removeWidgetFromTray(self.mInfoLabel)
+            self.mInfoLabel.hide()
+            if self.mTerrainsImported:
+                self.saveTerrains(True)
+                self.mTerrainsImported = False
         return sf.sample.frameRenderingQueued(self, evt)
 
-	def saveTerrains(self, onlyIfModified):
-		self.mTerrainGroup.saveAllTerrains(onlyIfModified);
+    def saveTerrains(self, onlyIfModified):
+        self.mTerrainGroup.saveAllTerrains(onlyIfModified)
 
-	def keyPressed (self, e) :
-		key = e.key
-		if key == OIS.KC_S:
-			# CTRL-S to save
-			if self.mKeyboard.isKeyDown(OIS.KC_LCONTROL) or self.mKeyboard.isKeyDown(OIS.KC_RCONTROL):
-				saveTerrains(True);
-			else:
-				return sf.sample.keyPressed(e);
-		elif key == OIS.KC_F10:
-			# dump
-# 				TerrainGroup.TerrainIterator ti = self.self.mTerrainGroup.getTerrainIterator();
-# 				while (ti.hasMoreElements())
-# 				{
-# 					Ogre.uint32 tkey = ti.peekNextKey();
-# 					TerrainGroup.TerrainSlot* ts = ti.getNext();
-# 					if (ts.instance && ts.instance.isLoaded())
-# 						ts.instance._dumpTextures("terrain_" + StringConverter.toString(tkey), ".png");
-		else:
-			return sf.sample.keyPressed(e);
+    def keyPressed (self, e) :
+        key = e.key
+        if key == ois.KC_S:
+            # CTRL-S to save
+            if self.mKeyboard.isKeyDown(ois.KC_LCONTROL) or self.mKeyboard.isKeyDown(ois.KC_RCONTROL):
+                saveTerrains(True)
+            else:
+                return sf.sample.keyPressed(self, e)
+#       elif key == ois.KC_F10:
+            # dump
+#               TerrainGroup.TerrainIterator ti = self.mTerrainGroup.getTerrainIterator()
+#               while (ti.hasMoreElements())
+#               {
+#                   Ogre.uint32 tkey = ti.peekNextKey()
+#                   TerrainGroup.TerrainSlot* ts = ti.getNext()
+#                   if (ts.instance && ts.instance.isLoaded())
+#                       ts.instance._dumpTextures("terrain_" + StringConverter.toString(tkey), ".png")
+        else:
+            return sf.sample.keyPressed(self, e)
 
-	def itemSelected(self,  menu):
-	{
-		if (menu == mEditMenu)
-		{
-			self.mMode = (Mode)mEditMenu.getSelectionIndex();
-		}
-		else if (menu == mShadowsMenu)
-		{
-			mShadowMode = (ShadowMode)mShadowsMenu.getSelectionIndex();
-			changeShadows();
-		}
-	}
+    def itemSelected(self,  menu):
+        if (menu == self.mEditMenu):
+            self.mMode = self.mEditMenu.getSelectionIndex()
+#         elif (menu == self.mShadowsMenu):
+#             self.mShadowMode = self.mShadowsMenu.getSelectionIndex()
+#             changeShadows()
 
-	void checkBoxToggled(CheckBox* box)
-	{
-		if (box == self.mFlyBox)
-		{
-			mFly = self.mFlyBox.isChecked();
-		}
-	}
+    def checkBoxToggled(self, box):
+        if (box == self.mFlyBox):
+            self.mFly = self.mFlyBox.isChecked()
 
-protected:
 
-	TerrainGlobalOptions* self.mTerrainGlobals;
-	TerrainGroup* self.self.mTerrainGroup;
-	bool mPaging;
-	TerrainPaging* self.mTerrainPaging;
-	PageManager* self.mPageManager;
-#ifdef PAGING
-	#/ This class just pretends to provide prcedural page content to avoid page loading
-	class DummyPageProvider : public PageProvider
-	{
-	public:
-		bool prepareProceduralPage(Page* page, PagedWorldSection* section) { return True; }
-		bool loadProceduralPage(Page* page, PagedWorldSection* section) { return True; }
-		bool unloadProceduralPage(Page* page, PagedWorldSection* section) { return True; }
-		bool unprepareProceduralPage(Page* page, PagedWorldSection* section) { return True; }
-	};
-	DummyPageProvider mDummyPageProvider;
+#   TerrainGlobalOptions* self.mTerrainGlobals
+#   TerrainGroup* self.mTerrainGroup
+#   bool mPaging
+#   TerrainPaging* self.mTerrainPaging
+#   PageManager* self.mPageManager
+
 # endif
-# 	bool self.mFly;
-# 	Real self.mFallVelocity;
-# 	enum Mode
-# 	{
-# 	};
-# 	Mode self.mMode;
-# 	ShadowMode mShadowMode;
-# 	Ogre.uint8 self.mLayerEdit;
-# 	Real self.mBrushSizeTerrainSpace;
-# 	SceneNode* self.mEditNode;
-# 	Entity* self.mEditMarker;
-# 	Real self.mHeightUpdateCountDown;
-# 	Real self.mHeightUpdateRate;
-# 	Vector3 self.mTerrainPos;
-# 	SelectMenu* mEditMenu;
-# 	SelectMenu* mShadowsMenu;
-# 	CheckBox* self.mFlyBox;
-# 	OgreBites.Label* self.mInfoLabel;
-# 	bool self.self.mTerrainsImported;
-# 	ShadowCameraSetupPtr mPSSMSetup;
+#   bool self.mFly
+#   Real self.mFallVelocity
+#   enum Mode
+#   {
+#   }
+#   Mode self.mMode
+#   ShadowMode self.mShadowMode
+#   Ogre.uint8 self.mLayerEdit
+#   Real self.mBrushSizeTerrainSpace
+#   SceneNode* self.mEditNode
+#   Entity* self.mEditMarker
+#   Real self.mHeightUpdateCountDown
+#   Real self.mHeightUpdateRate
+#   Vector3 self.mTerrainPos
+#   SelectMenu* self.mEditMenu
+#   SelectMenu* self.mShadowsMenu
+#   CheckBox* self.self.mFlyBox
+#   OgreBites.Label* self.mInfoLabel
+#   bool self.mTerrainsImported
+#   ShadowCameraSetupPtr self.mPSSMSetup
 #
-# 	typedef std.list<Entity*> EntityList;
-# 	EntityList mHouseList;
+#   typedef list<Entity*> EntityList
+#   EntityList mHouseList
 #
 
 
-	void defineTerrain(long x, long y, bool flat = False)
-	{
-		# if a file is available, use it
-		# if not, generate file from import
-
-		# Usually in a real project you'll know whether the compact terrain data is
-		# available or not; I'm doing it this way to save distribution size
-
-		if (flat)
-		{
-			self.mTerrainGroup.defineTerrain(x, y, 0.0f);
-		}
-		else
-		{
-			String filename = self.self.mTerrainGroup.generateFilename(x, y);
-			if (ResourceGroupManager.getSingleton().resourceExists(self.mTerrainGroup.getResourceGroup(), filename))
-			{
-				self.mTerrainGroup.defineTerrain(x, y);
-			}
-			else
-			{
-				Image img;
-				getTerrainImage(x % 2 != 0, y % 2 != 0, img);
-				self.mTerrainGroup.defineTerrain(x, y, &img);
-				self.mTerrainsImported = True;
-			}
-
-		}
-	}
-
-	void getTerrainImage(bool flipX, bool flipY, Image& img)
-	{
-		img.load("terrain.png", ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME);
-		if (flipX)
-			img.flipAroundY();
-		if (flipY)
-			img.flipAroundX();
-
-	}
-
-	void initBlendMaps(Terrain* terrain)
-	{
-		TerrainLayerBlendMap* blendMap0 = terrain.getLayerBlendMap(1);
-		TerrainLayerBlendMap* blendMap1 = terrain.getLayerBlendMap(2);
-		Real minHeight0 = 70;
-		Real fadeDist0 = 40;
-		Real minHeight1 = 70;
-		Real fadeDist1 = 15;
-		float* pBlend1 = blendMap1.getBlendPointer();
-		for (Ogre.uint16 y = 0; y < terrain.getLayerBlendMapSize(); ++y)
-		{
-			for (Ogre.uint16 x = 0; x < terrain.getLayerBlendMapSize(); ++x)
-			{
-				Real tx, ty;
-
-				blendMap0.convertImageToTerrainSpace(x, y, &tx, &ty);
-				Real height = terrain.getHeightAtTerrainPosition(tx, ty);
-				Real val = (height - minHeight0) / fadeDist0;
-				val = Math.Clamp(val, (Real)0, (Real)1);
-				#*pBlend0++ = val;
-
-				val = (height - minHeight1) / fadeDist1;
-				val = Math.Clamp(val, (Real)0, (Real)1);
-				*pBlend1++ = val;
-
-
-			}
-		}
-		blendMap0.dirty();
-		blendMap1.dirty();
-		#blendMap0.loadImage("blendmap1.png", ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME);
-		blendMap0.update();
-		blendMap1.update();
-
-		# set up a colour map
-		/*
-		if (!terrain.getGlobalColourMapEnabled())
-		{
-			terrain.setGlobalColourMapEnabled(True);
-			Image colourMap;
-			colourMap.load("testcolourmap.jpg", ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME);
-			terrain.getGlobalColourMap().loadImage(colourMap);
-		}
-		*/
-
-	}
-
-	void configureTerrainDefaults(Light* l)
-	{
-		# Configure global
-		mTerrainGlobals.setMaxPixelError(8);
-		# testing composite map
-		mTerrainGlobals.setCompositeMapDistance(3000);
-		#mTerrainGlobals.setUseRayBoxDistanceCalculation(True);
-		#mTerrainGlobals.getDefaultMaterialGenerator().setDebugLevel(1);
-		#mTerrainGlobals.setLightMapSize(256);
-
-		#matProfile.setLightmapEnabled(False);
-		# Important to set these so that the terrain knows what to use for derived (non-realtime) data
-		mTerrainGlobals.setLightMapDirection(l.getDerivedDirection());
-		mTerrainGlobals.setCompositeMapAmbient(mSceneMgr.getAmbientLight());
-		#mTerrainGlobals.setCompositeMapAmbient(ColourValue.Red);
-		mTerrainGlobals.setCompositeMapDiffuse(l.getDiffuseColour());
-
-		# Configure default import settings for if we use imported image
-		Terrain.ImportData& defaultimp = self.self.mTerrainGroup.getDefaultImportSettings();
-		defaultimp.terrainSize = TERRAIN_SIZE;
-		defaultimp.worldSize = TERRAIN_WORLD_SIZE;
-		defaultimp.inputScale = 600;
-		defaultimp.minBatchSize = 33;
-		defaultimp.maxBatchSize = 65;
-		# textures
-		defaultimp.layerList.resize(3);
-		defaultimp.layerList[0].worldSize = 100;
-		defaultimp.layerList[0].textureNames.push_back("dirt_grayrocky_diffusespecular.dds");
-		defaultimp.layerList[0].textureNames.push_back("dirt_grayrocky_normalheight.dds");
-		defaultimp.layerList[1].worldSize = 30;
-		defaultimp.layerList[1].textureNames.push_back("grass_green-01_diffusespecular.dds");
-		defaultimp.layerList[1].textureNames.push_back("grass_green-01_normalheight.dds");
-		defaultimp.layerList[2].worldSize = 200;
-		defaultimp.layerList[2].textureNames.push_back("growth_weirdfungus-03_diffusespecular.dds");
-		defaultimp.layerList[2].textureNames.push_back("growth_weirdfungus-03_normalheight.dds");
-
-
-	}
-
-	void addTextureDebugOverlay(TrayLocation loc, TexturePtr tex, size_t i)
-	{
-		addTextureDebugOverlay(loc, tex.getName(), i);
-	}
-	void addTextureDebugOverlay(TrayLocation loc, const String& texname, size_t i)
-	{
-		# Create material
-		String matName = "Ogre/DebugTexture" + StringConverter.toString(i);
-		MaterialPtr debugMat = MaterialManager.getSingleton().getByName(matName);
-		if (debugMat.isNull())
-		{
-			debugMat = MaterialManager.getSingleton().create(matName,
-				ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME);
-		}
-		Pass* p = debugMat.getTechnique(0).getPass(0);
-		p.removeAllTextureUnitStates();
-		p.setLightingEnabled(False);
-		TextureUnitState *t = p.createTextureUnitState(texname);
-		t.setTextureAddressingMode(TextureUnitState.TAM_CLAMP);
-
-		# create template
-		if (!OverlayManager.getSingleton().hasOverlayElement("Ogre/DebugTexOverlay", True))
-		{
-			OverlayElement* e = OverlayManager.getSingleton().createOverlayElement("Panel", "Ogre/DebugTexOverlay", True);
-			e.setMetricsMode(GMM_PIXELS);
-			e.setWidth(128);
-			e.setHeight(128);
-		}
-
-		# add widget
-		String widgetName = "DebugTex"+ StringConverter.toString(i);
-		Widget* w = self.mTrayMgr.getWidget(widgetName);
-		if (!w)
-		{
-			w = self.mTrayMgr.createDecorWidget(loc, widgetName, "Ogre/DebugTexOverlay");
-		}
-		w.getOverlayElement().setMaterialName(matName);
-
-	}
-
-	void addTextureShadowDebugOverlay(TrayLocation loc, size_t num)
-	{
-		for (size_t i = 0; i < num; ++i)
-		{
-			TexturePtr shadowTex = mSceneMgr.getShadowTexture(i);
-			addTextureDebugOverlay(loc, shadowTex, i);
-
-		}
-
-	}
-		
-	MaterialPtr buildDepthShadowMaterial(const String& textureName)
-	{
-		String matName = "DepthShadows/" + textureName;
-
-		MaterialPtr ret = MaterialManager.getSingleton().getByName(matName);
-		if (ret.isNull())
-		{
-			MaterialPtr baseMat = MaterialManager.getSingleton().getByName("Ogre/shadow/depth/integrated/pssm");
-			ret = baseMat.clone(matName);
-			Pass* p = ret.getTechnique(0).getPass(0);
-			p.getTextureUnitState("diffuse").setTextureName(textureName);
-
-			Vector4 splitPoints;
-			const PSSMShadowCameraSetup.SplitPointList& splitPointList = 
-				static_cast<PSSMShadowCameraSetup*>(mPSSMSetup.get()).getSplitPoints();
-			for (int i = 0; i < 3; ++i)
-			{
-				splitPoints[i] = splitPointList[i];
-			}
-			p.getFragmentProgramParameters().setNamedConstant("pssmSplitPoints", splitPoints);
-
-
-		}
-
-		return ret;
-	}
-
-	void changeShadows()
-	{
-		configureShadows(mShadowMode != SHADOWS_NONE, mShadowMode == SHADOWS_DEPTH);
-	}
-
-	void configureShadows(bool enabled, bool depthShadows)
-	{
-		TerrainMaterialGeneratorA.SM2Profile* matProfile = 
-			static_cast<TerrainMaterialGeneratorA.SM2Profile*>(mTerrainGlobals.getDefaultMaterialGenerator().getActiveProfile());
-		matProfile.setReceiveDynamicShadowsEnabled(enabled);
-#ifdef SHADOWS_IN_LOW_LOD_MATERIAL
-		matProfile.setReceiveDynamicShadowsLowLod(True);
-#else
-		matProfile.setReceiveDynamicShadowsLowLod(False);
-#endif
-
-		# Default materials
-		for (EntityList.iterator i = mHouseList.begin(); i != mHouseList.end(); ++i)
-		{
-			(*i).setMaterialName("Examples/TudorHouse");
-		}
-
-		if (enabled)
-		{
-			# General scene setup
-			mSceneMgr.setShadowTechnique(SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
-			mSceneMgr.setShadowFarDistance(3000);
-
-			# 3 textures per directional light (PSSM)
-			mSceneMgr.setShadowTextureCountPerLightType(Ogre.Light.LT_DIRECTIONAL, 3);
-
-			if (mPSSMSetup.isNull())
-			{
-				# shadow camera setup
-				PSSMShadowCameraSetup* pssmSetup = new PSSMShadowCameraSetup();
-				pssmSetup.setSplitPadding(self.mCamera.getNearClipDistance());
-				pssmSetup.calculateSplitPoints(3, self.mCamera.getNearClipDistance(), mSceneMgr.getShadowFarDistance());
-				pssmSetup.setOptimalAdjustFactor(0, 2);
-				pssmSetup.setOptimalAdjustFactor(1, 1);
-				pssmSetup.setOptimalAdjustFactor(2, 0.5);
-
-				mPSSMSetup.bind(pssmSetup);
-
-			}
-			mSceneMgr.setShadowCameraSetup(mPSSMSetup);
-
-			if (depthShadows)
-			{
-				mSceneMgr.setShadowTextureCount(3);
-				mSceneMgr.setShadowTextureConfig(0, 2048, 2048, PF_FLOAT32_R);
-				mSceneMgr.setShadowTextureConfig(1, 1024, 1024, PF_FLOAT32_R);
-				mSceneMgr.setShadowTextureConfig(2, 1024, 1024, PF_FLOAT32_R);
-				mSceneMgr.setShadowTextureSelfShadow(True);
-				mSceneMgr.setShadowCasterRenderBackFaces(True);
-				mSceneMgr.setShadowTextureCasterMaterial("PSSM/shadow_caster");
-
-				MaterialPtr houseMat = buildDepthShadowMaterial("fw12b.jpg");
-				for (EntityList.iterator i = mHouseList.begin(); i != mHouseList.end(); ++i)
-				{
-					(*i).setMaterial(houseMat);
-				}
-
-			}
-			else
-			{
-				mSceneMgr.setShadowTextureCount(3);
-				mSceneMgr.setShadowTextureConfig(0, 2048, 2048, PF_X8B8G8R8);
-				mSceneMgr.setShadowTextureConfig(1, 1024, 1024, PF_X8B8G8R8);
-				mSceneMgr.setShadowTextureConfig(2, 1024, 1024, PF_X8B8G8R8);
-				mSceneMgr.setShadowTextureSelfShadow(False);
-				mSceneMgr.setShadowCasterRenderBackFaces(False);
-				mSceneMgr.setShadowTextureCasterMaterial(StringUtil.BLANK);
-			}
-
-			matProfile.setReceiveDynamicShadowsDepth(depthShadows);
-			matProfile.setReceiveDynamicShadowsPSSM(static_cast<PSSMShadowCameraSetup*>(mPSSMSetup.get()));
-
-			#addTextureShadowDebugOverlay(TL_RIGHT, 3);
-
-
-		}
-		else
-		{
-			mSceneMgr.setShadowTechnique(SHADOWTYPE_NONE);
-		}
-
-
-	}
-
-	/*-----------------------------------------------------------------------------
-	| Extends setupView to change some initial camera settings for this sample.
-	-----------------------------------------------------------------------------*/
-	void setupView()
-	{
-		SdkSample.setupView();
-
-		self.mCamera.setPosition(mTerrainPos + Vector3(1683, 50, 2116));
-		self.mCamera.lookAt(Vector3(1963, 50, 1660));
-		self.mCamera.setNearClipDistance(0.1);
-		self.mCamera.setFarClipDistance(50000);
-
-		if (mRoot.getRenderSystem().getCapabilities().hasCapability(RSC_INFINITE_FAR_PLANE))
-        {
-            self.mCamera.setFarClipDistance(0);   # enable infinite far clip distance if we can
-        }
-	}
-
-	void setupControls()
-	{
-		self.mTrayMgr.showCursor();
-
-		# make room for the controls
-		self.mTrayMgr.showLogo(TL_TOPRIGHT);
-		self.mTrayMgr.showFrameStats(TL_TOPRIGHT);
-		self.mTrayMgr.toggleAdvancedFrameStats();
-
-		self.mInfoLabel = self.mTrayMgr.createLabel(TL_TOP, "TInfo", "", 350);
-
-		mEditMenu = self.mTrayMgr.createLongSelectMenu(TL_BOTTOM, "EditMode", "Edit Mode", 370, 250, 3);
-		mEditMenu.addItem("None");
-		mEditMenu.addItem("Elevation");
-		mEditMenu.addItem("Blend");
-		mEditMenu.selectItem(0);  # no edit mode
-
-		mFlyBox = self.mTrayMgr.createCheckBox(TL_BOTTOM, "Fly", "Fly");
-		mFlyBox.setChecked(False, False);
-
-		mShadowsMenu = self.mTrayMgr.createLongSelectMenu(TL_BOTTOM, "Shadows", "Shadows", 370, 250, 3);
-		mShadowsMenu.addItem("None");
-		mShadowsMenu.addItem("Colour Shadows");
-		mShadowsMenu.addItem("Depth Shadows");
-		mShadowsMenu.selectItem(0);  # no edit mode
-
-		# a friendly reminder
-		StringVector names;
-		names.push_back("Help");
-		self.mTrayMgr.createParamsPanel(TL_TOPLEFT, "Help", 100, names).setParamValue(0, "H/F1");
-	}
-
-	void setupContent()
-	{
-		bool blankTerrain = False;
-		#blankTerrain = True;
-
-		mTerrainGlobals = OGRE_NEW TerrainGlobalOptions();
-
-		self.mEditMarker = mSceneMgr.createEntity("editMarker", "sphere.mesh");
-		self.mEditNode = mSceneMgr.getRootSceneNode().createChildSceneNode();
-		self.mEditNode.attachObject(self.mEditMarker);
-		self.mEditNode.setScale(0.05, 0.05, 0.05);
-
-		setupControls();
-
-		self.mCameraMan.setTopSpeed(50);
-
-		setDragLook(True);
-
-		MaterialManager.getSingleton().setDefaultTextureFiltering(TFO_ANISOTROPIC);
-		MaterialManager.getSingleton().setDefaultAnisotropy(7);
-
-		mSceneMgr.setFog(FOG_LINEAR, ColourValue(0.7, 0.7, 0.8), 0, 10000, 25000);
-
-		LogManager.getSingleton().setLogDetail(LL_BOREME);
-
-		Vector3 lightdir(0.55, -0.3, 0.75);
-		lightdir.normalise();
-
-
-		Light* l = mSceneMgr.createLight("tstLight");
-		l.setType(Light.LT_DIRECTIONAL);
-		l.setDirection(lightdir);
-		l.setDiffuseColour(ColourValue.White);
-		l.setSpecularColour(ColourValue(0.4, 0.4, 0.4));
-
-		mSceneMgr.setAmbientLight(ColourValue(0.2, 0.2, 0.2));
-
-
-		self.mTerrainGroup = OGRE_NEW TerrainGroup(mSceneMgr, Terrain.ALIGN_X_Z, TERRAIN_SIZE, TERRAIN_WORLD_SIZE);
-		self.mTerrainGroup.setFilenameConvention(TERRAIN_FILE_PREFIX, TERRAIN_FILE_SUFFIX);
-		self.mTerrainGroup.setOrigin(mTerrainPos);
-
-		configureTerrainDefaults(l);
-#ifdef PAGING
-		# Paging setup
-		mPageManager = OGRE_NEW PageManager();
-		# Since we're not loading any pages from .page files, we need a way just 
-		# to say we've loaded them without them actually being loaded
-		mPageManager.setPageProvider(&mDummyPageProvider);
-		mPageManager.addCamera(self.mCamera);
-		mTerrainPaging = OGRE_NEW TerrainPaging(mPageManager);
-		PagedWorld* world = self.mPageManager.createWorld();
-		mTerrainPaging.createWorldSection(world, self.self.mTerrainGroup, 2000, 3000,
-			TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MIN_Y, 
-			TERRAIN_PAGE_MAX_X, TERRAIN_PAGE_MAX_Y);
-#else
-		for (long x = TERRAIN_PAGE_MIN_X; x <= TERRAIN_PAGE_MAX_X; ++x)
-			for (long y = TERRAIN_PAGE_MIN_Y; y <= TERRAIN_PAGE_MAX_Y; ++y)
-				defineTerrain(x, y, blankTerrain);
-		# sync load since we want everything in place when we start
-		self.mTerrainGroup.loadAllTerrains(True);
-#endif
-
-		if (self.mTerrainsImported)
-		{
-			TerrainGroup.TerrainIterator ti = self.self.mTerrainGroup.getTerrainIterator();
-			while(ti.hasMoreElements())
-			{
-				Terrain* t = ti.getNext().instance;
-				initBlendMaps(t);
-			}
-		}
-
-		self.mTerrainGroup.freeTemporaryResources();
-
-
-
-		# create a few entities on the terrain
-		Entity* e = mSceneMgr.createEntity("tudorhouse.mesh");
-		Vector3 entPos(mTerrainPos.x + 2043, 0, self.mTerrainPos.z + 1715);
-		Quaternion rot;
-		entPos.y = self.self.mTerrainGroup.getHeightAtWorldPosition(entPos) + 65.5 + self.mTerrainPos.y;
-		rot.FromAngleAxis(Degree(Math.RangeRandom(-180, 180)), Vector3.UNIT_Y);
-		SceneNode* sn = mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot);
-		sn.setScale(Vector3(0.12, 0.12, 0.12));
-		sn.attachObject(e);
-		mHouseList.push_back(e);
-
-		e = mSceneMgr.createEntity("tudorhouse.mesh");
-		entPos = Vector3(mTerrainPos.x + 1850, 0, self.mTerrainPos.z + 1478);
-		entPos.y = self.self.mTerrainGroup.getHeightAtWorldPosition(entPos) + 65.5 + self.mTerrainPos.y;
-		rot.FromAngleAxis(Degree(Math.RangeRandom(-180, 180)), Vector3.UNIT_Y);
-		sn = mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot);
-		sn.setScale(Vector3(0.12, 0.12, 0.12));
-		sn.attachObject(e);
-		mHouseList.push_back(e);
-
-		e = mSceneMgr.createEntity("tudorhouse.mesh");
-		entPos = Vector3(mTerrainPos.x + 1970, 0, self.mTerrainPos.z + 2180);
-		entPos.y = self.self.mTerrainGroup.getHeightAtWorldPosition(entPos) + 65.5 + self.mTerrainPos.y;
-		rot.FromAngleAxis(Degree(Math.RangeRandom(-180, 180)), Vector3.UNIT_Y);
-		sn = mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot);
-		sn.setScale(Vector3(0.12, 0.12, 0.12));
-		sn.attachObject(e);
-		mHouseList.push_back(e);
-
-		mSceneMgr.setSkyBox(True, "Examples/CloudyNoonSkyBox");
-
-
-	}
-
-	void _shutdown()
-	{
-		if (mTerrainPaging)
-		{
-			OGRE_DELETE self.mTerrainPaging;
-			OGRE_DELETE self.mPageManager;
-		}
-		else
-			OGRE_DELETE self.self.mTerrainGroup;
-
-		OGRE_DELETE self.mTerrainGlobals;
-
-		SdkSample._shutdown();
-	}
-
-
-};
-
-#endif
-
+    def defineTerrain(self,  x, y, flat = False):
+        # if a file is available, use it
+        # if not, generate file from import
+
+        # Usually in a real project you'll know whether the compact terrain data is
+        # available or not I'm doing it this way to save distribution size
+        print "\n\ndefineTERRAIN\n"
+        if (flat):
+            self.mTerrainGroup.defineTerrain(x, y, 0.0)
+        else:
+            filename = self.mTerrainGroup.generateFilename(x, y)
+            
+            if (ogre.ResourceGroupManager.getSingleton().resourceExists(self.mTerrainGroup.getResourceGroup(), filename)):
+                self.mTerrainGroup.defineTerrain(x, y)
+            else:
+                img = ogre.Image()
+                b1 = True
+                if x % 2 != 0:
+                    b1 = False
+                b2 = True
+                if x % 2 != 0:
+                    b2 = False
+                self.getTerrainImage(b1, b2, img)
+                self.mTerrainGroup.defineTerrain(x, y, img)
+                self.mTerrainsImported = True
+
+    def getTerrainImage(self, flipX, flipY, img):
+        img.load("terrain.png", ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
+        if (flipX):
+            img.flipAroundY()
+        if (flipY):
+            img.flipAroundX()
+
+    def initBlendMaps(self, terrain):
+        blendMap0 = terrain.getLayerBlendMap(1)
+        blendMap1 = terrain.getLayerBlendMap(2)
+        minHeight0 = 70
+        fadeDist0 = 40.0
+        minHeight1 = 70
+        fadeDist1 = 15.0
+
+        pBlend1 = blendMap1.getBlendPointer()    # returns the address of the buffer
+        size = terrain.getLayerBlendMapSize() * terrain.getLayerBlendMapSize()
+        blend_data=(ctypes.c_float * size).from_address(pBlend1)
+        index = 0
+        for y in range(terrain.getLayerBlendMapSize()):
+            for x in range( terrain.getLayerBlendMapSize() ):
+                # using ctypes
+                tx=ctypes.c_float(0.0)
+                ty=ctypes.c_float(0.0)
+                blendMap0.convertImageToTerrainSpace(x, y, ctypes.addressof(tx), ctypes.addressof(ty))
+                height = terrain.getHeightAtTerrainPosition(tx.value, ty.value)
+                val = (height - minHeight0) / fadeDist0
+                val = Clamp(val, 0, 1)
+                #*pBlend0++ = val
+
+                val = (height - minHeight1) / fadeDist1
+                val = Clamp(val, 0, 1)
+#                 print index
+                blend_data [index] = val
+                index += 1
+        blendMap0.dirty()
+        blendMap1.dirty()
+        #blendMap0.loadImage("blendmap1.png", ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
+        blendMap0.update()
+        blendMap1.update()
+
+        # set up a colour map
+#       /*
+#       if (!terrain.getGlobalColourMapEnabled())
+#       {
+#           terrain.setGlobalColourMapEnabled(True)
+#           Image colourMap
+#           colourMap.load("testcolourmap.jpg", ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
+#           terrain.getGlobalColourMap().loadImage(colourMap)
+#       }
+#       */
+
+
+    def configureTerrainDefaults(self, l):
+        # Configure global
+        self.mTerrainGlobals.setMaxPixelError(8)
+        # testing composite map
+        self.mTerrainGlobals.setCompositeMapDistance(3000)
+        #self.mTerrainGlobals.setUseRayBoxDistanceCalculation(True)
+        #self.mTerrainGlobals.getDefaultMaterialGenerator().setDebugLevel(1)
+        #self.mTerrainGlobals.setLightMapSize(256)
+
+        #matProfile.setLightmapEnabled(False)
+        # Important to set these so that the terrain knows what to use for derived (non-realtime) data
+        self.mTerrainGlobals.setLightMapDirection(l.getDerivedDirection())
+        self.mTerrainGlobals.setCompositeMapAmbient(self.mSceneMgr.getAmbientLight())
+        #self.mTerrainGlobals.setCompositeMapAmbient(ColourValue.Red)
+        self.mTerrainGlobals.setCompositeMapDiffuse(l.getDiffuseColour())
+
+        # Configure default import settings for if we use imported image
+        defaultimp = self.mTerrainGroup.getDefaultImportSettings()
+        defaultimp.terrainSize = TERRAIN_SIZE
+        defaultimp.worldSize = TERRAIN_WORLD_SIZE
+        defaultimp.inputScale = 600
+        defaultimp.minBatchSize = 33
+        defaultimp.maxBatchSize = 65
+        # textures
+        print   defaultimp.layerList
+        print dir(defaultimp.layerList)
+#         print dir (ogreterrain.Terrain.LayerInstance())
+        defaultimp.layerList.append(ogreterrain.Terrain.LayerInstance() )
+        defaultimp.layerList.append(ogreterrain.Terrain.LayerInstance() )
+        defaultimp.layerList.append(ogreterrain.Terrain.LayerInstance() )
+        defaultimp.layerList[0].worldSize = 100
+        defaultimp.layerList[0].textureNames.append("dirt_grayrocky_diffusespecular.dds")
+        defaultimp.layerList[0].textureNames.append("dirt_grayrocky_normalheight.dds")
+        defaultimp.layerList[1].worldSize = 30
+        defaultimp.layerList[1].textureNames.append("grass_green-01_diffusespecular.dds")
+        defaultimp.layerList[1].textureNames.append("grass_green-01_normalheight.dds")
+        defaultimp.layerList[2].worldSize = 200
+        defaultimp.layerList[2].textureNames.append("growth_weirdfungus-03_diffusespecular.dds")
+        defaultimp.layerList[2].textureNames.append("growth_weirdfungus-03_normalheight.dds")
+
+
+#   def addTextureDebugOverlay(self, loc, tex, i):
+#       addTextureDebugOverlay(loc, tex.getName(), i)
+
+    def addTextureDebugOverlay(self, loc, texname, size_t ):
+        # Create material
+        matName = "Ogre/DebugTexture" + str(i)
+        debugMat = MaterialManager.getSingleton().getByName(matName)
+        if (debugMat.isNull()):
+            debugMat = ogre.MaterialManager.getSingleton().create(matName,
+                ogre.ResourceGroupManager.DEFAULT_RESOURCE_GROUP_NAME)
+        p = debugMat.getTechnique(0).getPass(0)
+        p.removeAllTextureUnitStates()
+        p.setLightingEnabled(False)
+        t = p.createTextureUnitState(texname)
+        t.setTextureAddressingMode(ogre.TextureUnitState.TAM_CLAMP)
+
+        # create template
+        if ( not ogre.OverlayManager.getSingleton().hasOverlayElement("Ogre/DebugTexOverlay", True)):
+            e = OverlayManager.getSingleton().createOverlayElement("Panel", "Ogre/DebugTexOverlay", True)
+            e.setMetricsMode(GMM_PIXELS)
+            e.setWidth(128)
+            e.setHeight(128)
+
+        # add widget
+        widgetName = "DebugTex"+ str(i)
+        w = self.mTrayMgr.getWidget(widgetName)
+        if (not w):
+            w = self.mTrayMgr.createDecorWidget(loc, widgetName, "Ogre/DebugTexOverlay")
+        w.getOverlayElement().setMaterialName(matName)
+
+
+    def addTextureShadowDebugOverlay(self, loc, num):
+        for i in range (num):
+            shadowTex = self.mSceneMgr.getShadowTexture(i)
+            addTextureDebugOverlay(loc, shadowTex, i)
+
+    def buildDepthShadowMaterial(self, textureName):
+        matName = "DepthShadows/" + textureName
+
+        ret = MaterialManager.getSingleton().getByName(matName)
+        if (ret.isNull()):
+            baseMat = ogre.MaterialManager.getSingleton().getByName("Ogre/shadow/depth/integrated/pssm")
+            ret = baseMat.clone(matName)
+            p = ret.getTechnique(0).getPass(0)
+            p.getTextureUnitState("diffuse").setTextureName(textureName)
+
+            splitPoints = ogre.Vector4()
+            splitPointList =(self.mPSSMSetup.get()).getSplitPoints()
+            for i in range (3):
+                splitPoints[i] = splitPointList[i]
+            p.getFragmentProgramParameters().setNamedConstant("pssmSplitPoints", splitPoints)
+        return ret
+
+    def changeShadows(self):
+        bool = True
+        if  self.mShadowMode != SHADOWS_NONE:
+            bool =  False
+        configureShadows(bool, self.mShadowMode == SHADOWS_DEPTH)
+
+    def configureShadows(self, enabled, depthShadows):
+        matProfile = self.mTerrainGlobals.getDefaultMaterialGenerator().getActiveProfile()
+        matProfile.setReceiveDynamicShadowsEnabled(enabled)
+        if SHADOWS_IN_LOW_LOD_MATERIAL:
+            matProfile.setReceiveDynamicShadowsLowLod(True)
+        else:
+            matProfile.setReceiveDynamicShadowsLowLod(False)
+
+# TODO
+#       # Default materials
+#       for (EntityList.iterator i = mHouseList.begin() i != mHouseList.end() ++i)
+#       {
+#           (*i).setMaterialName("Examples/TudorHouse")
+#       }
+
+        if (enabled):
+            # General scene setup
+            self.mSceneMgr.setShadowTechnique(SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED)
+            self.mSceneMgr.setShadowFarDistance(3000)
+
+            # 3 textures per directional light (PSSM)
+            self.mSceneMgr.setShadowTextureCountPerLightType(ogre.Light.LT_DIRECTIONAL, 3)
+
+            if (self.mPSSMSetup.isNull()):
+                # shadow camera setup
+                pssmSetup = PSSMShadowCameraSetup() # TODO check if we need to keep this around
+                pssmSetup.setSplitPadding(self.mCamera.getNearClipDistance())
+                pssmSetup.calculateSplitPoints(3, self.mCamera.getNearClipDistance(), self.mSceneMgr.getShadowFarDistance())
+                pssmSetup.setOptimalAdjustFactor(0, 2)
+                pssmSetup.setOptimalAdjustFactor(1, 1)
+                pssmSetup.setOptimalAdjustFactor(2, 0.5)
+
+                self.mPSSMSetup.bind(pssmSetup)
+
+            self.mSceneMgr.setShadowCameraSetup(self.mPSSMSetup)
+
+            if (depthShadows):
+                self.mSceneMgr.setShadowTextureCount(3)
+                self.mSceneMgr.setShadowTextureConfig(0, 2048, 2048, PF_FLOAT32_R)
+                self.mSceneMgr.setShadowTextureConfig(1, 1024, 1024, PF_FLOAT32_R)
+                self.mSceneMgr.setShadowTextureConfig(2, 1024, 1024, PF_FLOAT32_R)
+                self.mSceneMgr.setShadowTextureSelfShadow(True)
+                self.mSceneMgr.setShadowCasterRenderBackFaces(True)
+                self.mSceneMgr.setShadowTextureCasterMaterial("PSSM/shadow_caster")
+
+                houseMat = buildDepthShadowMaterial("fw12b.jpg")
+#               for (EntityList.iterator i = mHouseList.begin() i != mHouseList.end() ++i)
+#               {
+#                   (*i).setMaterial(houseMat)
+#               }
+            else:
+                self.mSceneMgr.setShadowTextureCount(3)
+                self.mSceneMgr.setShadowTextureConfig(0, 2048, 2048, PF_X8B8G8R8)
+                self.mSceneMgr.setShadowTextureConfig(1, 1024, 1024, PF_X8B8G8R8)
+                self.mSceneMgr.setShadowTextureConfig(2, 1024, 1024, PF_X8B8G8R8)
+                self.mSceneMgr.setShadowTextureSelfShadow(False)
+                self.mSceneMgr.setShadowCasterRenderBackFaces(False)
+                self.mSceneMgr.setShadowTextureCasterMaterial(ogre.StringUtil.BLANK)
+
+            matProfile.setReceiveDynamicShadowsDepth(depthShadows)
+            matProfile.setReceiveDynamicShadowsPSSM((self.mPSSMSetup.get()))
+
+            #addTextureShadowDebugOverlay(sf.TL_RIGHT, 3)
+        else:
+            self.mSceneMgr.setShadowTechnique(SHADOWTYPE_NONE)
+
+#   /*-----------------------------------------------------------------------------
+#   | Extends setupView to change some initial camera settings for this sample.
+#   -----------------------------------------------------------------------------*/
+    def setupView(self):
+        sf.sample.setupView(self)
+
+        self.mCamera.setPosition(self.mTerrainPos + ogre.Vector3(1683, 50, 2116))
+        self.mCamera.lookAt(ogre.Vector3(1963, 50, 1660))
+        self.mCamera.setNearClipDistance(0.1)
+        self.mCamera.setFarClipDistance(50000)
+
+        if (self.mRoot.getRenderSystem().getCapabilities().hasCapability(ogre.RSC_INFINITE_FAR_PLANE)):
+            self.mCamera.setFarClipDistance(0)   # enable infinite far clip distance if we can
+
+    def setupControls(self):
+        self.mTrayMgr.showCursor()
+
+        # make room for the controls
+        self.mTrayMgr.showLogo(sf.TL_TOPRIGHT)
+        self.mTrayMgr.showFrameStats(sf.TL_TOPRIGHT)
+        self.mTrayMgr.toggleAdvancedFrameStats()
+
+        self.mInfoLabel = self.mTrayMgr.createLabel(sf.TL_TOP, "TInfo", "", 350)
+
+        self.mEditMenu = self.mTrayMgr.createLongSelectMenu(sf.TL_BOTTOM, "EditMode", "Edit Mode", 370, 250, 3)
+        self.mEditMenu.addItem("None")
+        self.mEditMenu.addItem("Elevation")
+        self.mEditMenu.addItem("Blend")
+        self.mEditMenu.selectItem(0)  # no edit mode
+
+        self.mFlyBox = self.mTrayMgr.createCheckBox(sf.TL_BOTTOM, "Fly", "Fly")
+        self.mFlyBox.setChecked(False, False)
+
+        self.mShadowsMenu = self.mTrayMgr.createLongSelectMenu(sf.TL_BOTTOM, "Shadows", "Shadows", 370, 250, 3)
+        self.mShadowsMenu.addItem("None")
+        self.mShadowsMenu.addItem("Colour Shadows")
+        self.mShadowsMenu.addItem("Depth Shadows")
+        self.mShadowsMenu.selectItem(0)  # no edit mode
+
+        # a friendly reminder
+        names = ogre.StringVector()
+        names.append("Help")
+        self.mTrayMgr.createParamsPanel(sf.TL_TOPLEFT, "Help", 100, names).setParamValue(0, "H/F1")
+
+    def setupContent(self):
+        blankTerrain = False
+        #blankTerrain = True
+
+        self.mTerrainGlobals = ogreterrain.TerrainGlobalOptions()
+
+        self.mEditMarker = self.mSceneMgr.createEntity("editMarker", "sphere.mesh")
+        self.mEditNode = self.mSceneMgr.getRootSceneNode().createChildSceneNode()
+        self.mEditNode.attachObject(self.mEditMarker)
+        self.mEditNode.setScale(0.05, 0.05, 0.05)
+
+        self.setupControls()
+
+        self.mCameraMan.setTopSpeed(50)
+
+        self.setDragLook(True)
+
+        ogre.MaterialManager.getSingleton().setDefaultTextureFiltering(ogre.TFO_ANISOTROPIC)
+        ogre.MaterialManager.getSingleton().setDefaultAnisotropy(7)
+
+        self.mSceneMgr.setFog(ogre.FOG_LINEAR, ogre.ColourValue(0.7, 0.7, 0.8), 0, 10000, 25000)
+
+#         ogre.LogManager.getSingleton().setLogDetail(LL_BOREME)
+
+        lightdir= ogre.Vector3 (0.55, -0.3, 0.75)
+        lightdir.normalise()
+
+
+        l = self.mSceneMgr.createLight("tstLight")
+        l.setType(ogre.Light.LT_DIRECTIONAL)
+        l.setDirection(lightdir)
+        l.setDiffuseColour(ogre.ColourValue().White)
+        l.setSpecularColour(ogre.ColourValue(0.4, 0.4, 0.4))
+
+        self.mSceneMgr.setAmbientLight(ogre.ColourValue(0.2, 0.2, 0.2))
+
+
+        self.mTerrainGroup = ogreterrain.TerrainGroup(self.mSceneMgr, ogreterrain.Terrain.ALIGN_X_Z, TERRAIN_SIZE, TERRAIN_WORLD_SIZE)
+        self.mTerrainGroup.setFilenameConvention(TERRAIN_FILE_PREFIX, TERRAIN_FILE_SUFFIX)
+        self.mTerrainGroup.setOrigin(self.mTerrainPos)
+
+        self.configureTerrainDefaults(l)
+        if PAGING:
+            # Paging setup
+            self.mPageManager = ogrepaging.PageManager()
+            # Since we're not loading any pages from .page files, we need a way just
+            # to say we've loaded them without them actually being loaded
+            self.mPageManager.setPageProvider(mDummyPageProvider)
+            self.mPageManager.addCamera(self.mCamera)
+            self.mTerrainPaging = ogreterrain.TerrainPaging(self.mPageManager)
+            world = self.mPageManager.createWorld()
+            self.mTerrainPaging.createWorldSection(world, self.mTerrainGroup, 2000, 3000,
+                TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MIN_Y,
+                TERRAIN_PAGE_MAX_X, TERRAIN_PAGE_MAX_Y)
+        else:
+            print TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MAX_X, TERRAIN_PAGE_MIN_Y, TERRAIN_PAGE_MAX_Y
+            for x in range(TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MAX_X +1 ):
+                for y in range(TERRAIN_PAGE_MIN_Y, TERRAIN_PAGE_MAX_Y +1):
+                    self.defineTerrain(x, y, blankTerrain)
+            # sync load since we want everything in place when we start
+            self.mTerrainGroup.loadAllTerrains(True)
+
+        if (self.mTerrainsImported):
+            it = self.mTerrainGroup.getTerrainIterator()
+            for t in self.mTerrainGroup.getTerrainIterator():
+                #t = ti.getNext().instance
+                self.initBlendMaps(t.instance)
+
+        self.mTerrainGroup.freeTemporaryResources()
+
+
+
+        # create a few entities on the terrain
+        e = self.mSceneMgr.createEntity("tudorhouse.mesh")
+        entPos = ogre.Vector3 (self.mTerrainPos.x + 2043, 0, self.mTerrainPos.z + 1715)
+        rot = ogre.Quaternion()
+        entPos.y = self.mTerrainGroup.getHeightAtWorldPosition(entPos) + 65.5 + self.mTerrainPos.y
+        rot.FromAngleAxis(ogre.Degree(random.randrange(-180, 180)), ogre.Vector3().UNIT_Y)
+        sn = self.mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot)
+        sn.setScale(ogre.Vector3(0.12, 0.12, 0.12))
+        sn.attachObject(e)
+#         mHouseList.append(e)
+#
+#         e = self.mSceneMgr.createEntity("tudorhouse.mesh")
+#         entPos = ogre.Vector3(self.mTerrainPos.x + 1850, 0, self.mTerrainPos.z + 1478)
+#         entPos.y = self.mTerrainGroup.getHeightAtWorldPosition(entPos) + 65.5 + self.mTerrainPos.y
+#         rot.FromAngleAxis(ogre.Degree(math.RangeRandom(-180, 180)), ogre.Vector3().UNIT_Y)
+#         sn = self.mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot)
+#         sn.setScale(Vector3(0.12, 0.12, 0.12))
+#         sn.attachObject(e)
+#         mHouseList.append(e)
+#
+#         e = self.mSceneMgr.createEntity("tudorhouse.mesh")
+#         entPos = ogre.Vector3(self.mTerrainPos.x + 1970, 0, self.mTerrainPos.z + 2180)
+#         entPos.y = self.mTerrainGroup.getHeightAtWorldPosition(entPos) + 65.5 + self.mTerrainPos.y
+#         rot.FromAngleAxis(ogre.Degree(math.RangeRandom(-180, 180)), ogre.Vector3().UNIT_Y)
+#         sn = self.mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot)
+#         sn.setScale(Vector3(0.12, 0.12, 0.12))
+#         sn.attachObject(e)
+#         mHouseList.append(e)
+
+        self.mSceneMgr.setSkyBox(True, "Examples/CloudyNoonSkyBox")
+
+    def __del__(self):
+        print "IN DELETE"
+        if (self.mTerrainPaging):
+            print "IN DELETE1"
+            del self.mTerrainPaging
+            del self.mPageManager
+            print "IN DELETE2"
+        else:
+            print "IN DELETE3"
+            print self.mTerrainGroup
+            del self.mTerrainGroup
+        print "IN DELETE4"
+        del self.mTerrainGlobals
+        print "Leaving delete"
+
+if __name__ == '__main__':
+    con = sf.context()
+    s = sample ()
+    con.go(s)

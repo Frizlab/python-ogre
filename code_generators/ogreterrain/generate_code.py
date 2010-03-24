@@ -54,6 +54,10 @@ from common_utils import docit
 from pyplusplus.decl_wrappers import algorithm
 algorithm.create_valid_name = common_utils.PO_create_valid_name 
 
+# setup a shortcut to the logger functions
+from common_utils import log_exclude as log_exclude
+from common_utils import log_include as log_include
+
 
 MAIN_NAMESPACE = 'Ogre'
 
@@ -91,7 +95,30 @@ def ManualExclude ( mb ):
             if c.decl_string.startswith ("::std::list<Ogre::HardwareVertexBufferSharedPtr"):
                 c.include(already_exposed=True)
                 print "excluded:", c
-           
+                
+    # iterator fixes from the ogre generate code scripts
+    #Exclude non default constructors of iterator classes.
+    for cls in main_ns.classes():
+        if not declarations.templates.is_instantiation( cls.name ):
+           continue
+        name = declarations.templates.name( cls.name )
+        if not name.endswith( 'Iterator' ):
+           continue
+        #default constructor does not have arguments
+        constructors = cls.constructors( lambda decl: bool( decl.arguments )
+                                                      , allow_empty=True
+                                                      , recursive=False )
+        constructors.exclude()
+        # and while we are here we have problems with '=' on these classes
+        try:
+            cls.operator('=').exclude()
+            log_exclude(cls)
+        except:
+            log_exclude(cls, False)
+    main_ns.calldefs ('peekNextPtr').exclude ()
+    main_ns.calldefs ('peekNextValuePtr').exclude ()    #in many of the Iterator classes
+
+            
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -105,9 +132,47 @@ def ManualInclude ( mb ):
     else:
         main_ns = global_ns    
     for c in main_ns.classes():
-        if c.name.startswith ('Terrain'):
-            print "Including :", c
+        if ('Terrain' in c.name and
+            not (c.name.startswith('rebind') or c.name.startswith('STLAllocator'))
+            ):
+#         if c.name.startswith ('Terrain') or c.name.startswith('vector<Ogre::Terrain'):
+            print "Including :", c.name
             c.include()
+        elif 'Terrain' in c.name : #and 'STLAllocator' not in c.name:
+            print "Possible to include :", c.name, c
+#             c.include()
+            
+    include = [
+        '::Ogre::MapIterator<std::map<unsigned int, Ogre::TerrainGroup::TerrainSlot*, std::less<unsigned int>, Ogre::STLAllocator<std::pair<unsigned int const, Ogre::TerrainGroup::TerrainSlot*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > >',
+        '::Ogre::ConstMapIterator<std::map<unsigned int, Ogre::TerrainGroup::TerrainSlot*, std::less<unsigned int>, Ogre::STLAllocator<std::pair<unsigned int const, Ogre::TerrainGroup::TerrainSlot*>, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > >',
+        ]
+    for c in include:
+        try:
+            main_ns.class_(c).include()
+            print "Including :", c
+        except:
+            print "Failed to include:", c
+            
+    include = ['::Ogre::TerrainLayerSamplerSemantic']
+    for c in include:
+        try:
+            main_ns.enum(c).include()
+            print "Including :", c
+        except:
+            print "Failed to include:", c
+            
+    include = ['Ogre::Grid2DPageStrategy',
+            '::Ogre::PagedWorld','::Ogre::SharedPtr<Ogre::DataStream>',
+            '::Ogre::Grid2DPageStrategyData','::Ogre::HardwareIndexBufferSharedPtr',
+            '::Ogre::MaterialPtr'
+            ]
+    for c in include:
+        try:
+            main_ns.class_(c).include(already_exposed=True)
+            print "Including (already Exposed):", c
+        except:
+            print "Failed to include:", c
+            
 ############################################################
 ##
 ##  And things that need manual fixes, but not necessarly hand wrapped
@@ -253,7 +318,7 @@ def generate_code():
                                            
     # if this module depends on another set it here                                           
     mb.register_module_dependency ( environment.ogre.generated_dir )
-    
+
     # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
     mb.constructors().allow_implicit_conversion = False                                           
     
@@ -277,7 +342,8 @@ def generate_code():
     AutoFixes ( mb, MAIN_NAMESPACE )
     ManualFixes ( mb )
     
-    common_utils.Auto_Functional_Transformation ( main_ns ) #, special_vars=[]  )
+    common_utils.Auto_Functional_Transformation ( main_ns,
+                    special_vars=['::Ogre::Real &','::Ogre::ushort &','size_t &'] )
    
     #
     # We need to tell boost how to handle calling (and returning from) certain functions
@@ -319,7 +385,18 @@ def generate_code():
 
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generated directory..
-    
+    additional_files=[
+            os.path.join( environment.ogre.generated_dir, 'generators.h' ),
+            os.path.join( environment.include_dir, 'tuples.hpp' )
+            ]
+    for sourcefile in additional_files:
+        p,filename = os.path.split(sourcefile)
+        destfile = os.path.join(environment.ogreterrain.generated_dir, filename )
+
+        if not common_utils.samefile( sourcefile ,destfile ):
+            shutil.copy( sourcefile, environment.ogreterrain.generated_dir )
+            print "Updated ", filename, "as it was missing or out of date"
+
 #     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_ogreterrain, 
 #                             destPath = environment.ogreterrain.generated_dir, 
 #                             recursive=False )
@@ -344,5 +421,6 @@ def generate_code():
         
 if __name__ == '__main__':
     start_time = time.clock()
+    common_utils.setup_logging ("log.out")
     generate_code()
     print 'Source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )
