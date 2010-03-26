@@ -1,7 +1,47 @@
 import os
 import environment
+WRAPPER_DEFINITION_TerrainGroup =\
+"""
+boost::python::list
+TerrainGroup_boxIntersects(::Ogre::TerrainGroup & me, Ogre::AxisAlignedBox& box)
+{
+    Ogre::TerrainGroup::TerrainList resultList;
+    boost::python::list outlist;
 
+    me.boxIntersects(box, &resultList);
+    for (Ogre::TerrainGroup::TerrainList::iterator ti = resultList.begin();
+	   ti != resultList.end(); ++ti)
+       outlist.append ( *ti );
+       
+    return outlist;
+}
 
+boost::python::list
+TerrainGroup_sphereIntersects(::Ogre::TerrainGroup & me, Ogre::Sphere& sphere)
+{
+    Ogre::TerrainGroup::TerrainList resultList;
+    boost::python::list outlist;
+
+    me.sphereIntersects(sphere, &resultList);
+    for (Ogre::TerrainGroup::TerrainList::iterator ti = resultList.begin();
+	   ti != resultList.end(); ++ti)
+       outlist.append ( *ti );
+
+    return outlist;
+}
+//		void convertWorldPositionToTerrainSlot(const Vector3& pos, long *x, long *y) const;
+
+"""
+WRAPPER_REGISTRATION_TerrainGroup = [
+    """def( "boxIntersects", &::TerrainGroup_boxIntersects,\\
+                "Python-Ogre Helper Function: Returns the list of intersects.\\n\\
+                Input: box\\n\\
+                Output: list of any intersects");""",
+    """def( "sphereIntersects", &::TerrainGroup_sphereIntersects,\\
+                "Python-Ogre Helper Function: Returns the list of intersects.\\n\\
+                Input: sphere\\n\\
+                Output: list of any intersects");""",
+    ]
 
 #################################################################################################
 #################################################################################################
@@ -68,4 +108,7 @@ def apply( mb ):
     except:
         pass
         
+    rt = mb.class_( 'TerrainGroup' )
+    rt.add_declaration_code( WRAPPER_DEFINITION_TerrainGroup )
+    apply_reg (rt,  WRAPPER_REGISTRATION_TerrainGroup )
 

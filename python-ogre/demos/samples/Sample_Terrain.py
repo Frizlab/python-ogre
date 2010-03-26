@@ -23,7 +23,7 @@ import random as random
 
 PAGING = False
 #PAGING = True
-
+SHADOWS_IN_LOW_LOD_MATERIAL = False
 TERRAIN_PAGE_MIN_X= 0
 TERRAIN_PAGE_MIN_Y= 0
 TERRAIN_PAGE_MAX_X= 0
@@ -106,25 +106,22 @@ class sample (sf.sample):
             if self.mMode == MODE_EDIT_HEIGHT:
                 # we need point coords
                 terrainSize = (terrain.getSize() - 1)
-                startx = (tsPos.x - self.mBrushSizeTerrainSpace) * terrainSize
-                starty = (tsPos.y - self.mBrushSizeTerrainSpace) * terrainSize
-                endx = (tsPos.x + self.mBrushSizeTerrainSpace) * terrainSize
-                endy= (tsPos.y + self.mBrushSizeTerrainSpace) * terrainSize
-                startx = max(startx, 0L)
-                starty = max(starty, 0L)
-                endx = min(endx, terrainSize)
-                endy = min(endy, terrainSize)
+                startx = long((tsPos.x - self.mBrushSizeTerrainSpace) * terrainSize)
+                starty = long((tsPos.y - self.mBrushSizeTerrainSpace) * terrainSize)
+                endx = long((tsPos.x + self.mBrushSizeTerrainSpace) * terrainSize)
+                endy= long((tsPos.y + self.mBrushSizeTerrainSpace) * terrainSize)
+                startx = max(startx, 0)
+                starty = max(starty, 0)
+                endx = min(endx, long(terrainSize))
+                endy = min(endy, long(terrainSize))
                 for y in range (starty, endy+1):
                     for   x in range (startx, endx + 1):
-                        tsXdist = (x / terrainSize) - tsPos.x
-                        tsYdist = (y / terrainSize)  - tsPos.y
-
-                        weight = min(1.0,
-                            math.Sqrt(tsYdist * tsYdist + tsXdist * tsXdist) / (0.5 * self.mBrushSizeTerrainSpace))
+                        tsXdist = (float(x) / float(terrainSize)) - tsPos.x
+                        tsYdist = (float(y) / float(terrainSize))  - tsPos.y
+                        weight = float(Math.sqrt(tsYdist * tsYdist + tsXdist * tsXdist)) / float((0.5 * self.mBrushSizeTerrainSpace))
+                        weight = min (1.0, weight)
                         weight = 1.0 - (weight * weight)
-
                         addedHeight = weight * 250.0 * timeElapsed
-                        newheight
                         if self.mKeyboard.isKeyDown(ois.KC_EQUALS):
                             newheight = terrain.getHeightAtPoint(x, y) + addedHeight
                         else :
@@ -132,27 +129,26 @@ class sample (sf.sample):
                         terrain.setHeightAtPoint(x, y, newheight)
                 if self.mHeightUpdateCountDown == 0:
                     self.mHeightUpdateCountDown = self.mHeightUpdateRate
-            elif self.mMode == MODE_EDIT_HEIGHT:
+            elif self.mMode == MODE_EDIT_BLEND:
                     layer = terrain.getLayerBlendMap(self.mLayerEdit)
                     # we need image coords
                     imgSize = terrain.getLayerBlendMapSize()
-                    startx = (tsPos.x - self.mBrushSizeTerrainSpace) * imgSize
-                    starty = (tsPos.y - self.mBrushSizeTerrainSpace) * imgSize
-                    endx = (tsPos.x + self.mBrushSizeTerrainSpace) * imgSize
-                    endy= (tsPos.y + self.mBrushSizeTerrainSpace) * imgSize
-                    startx = max(startx, 0L)
-                    starty = max(starty, 0L)
+                    startx = long((tsPos.x - self.mBrushSizeTerrainSpace) * imgSize)
+                    starty = long((tsPos.y - self.mBrushSizeTerrainSpace) * imgSize)
+                    endx = long((tsPos.x + self.mBrushSizeTerrainSpace) * imgSize)
+                    endy= long((tsPos.y + self.mBrushSizeTerrainSpace) * imgSize)
+                    startx = max(startx, 0)
+                    starty = max(starty, 0)
                     endx = min(endx, imgSize)
                     endy = min(endy, imgSize)
-                    for y in range(starty,endy):
-                        for x in range(startx,endx) :
-                            tsXdist = (x / imgSize) - tsPos.x
-                            tsYdist = (y / imgSize)  - tsPos.y
+                    for y in range(starty,endy+1):
+                        for x in range(startx,endx+1) :
+                            tsXdist = (float(x) / float(imgSize)) - tsPos.x
+                            tsYdist = (float(y) / float(imgSize))  - tsPos.y
 
                             weight = min(1.0,
-                                Math.Sqrt(tsYdist * tsYdist + tsXdist * tsXdist) / (0.5 * self.mBrushSizeTerrainSpace))
+                                float(Math.sqrt(tsYdist * tsYdist + tsXdist * tsXdist)) / float(0.5 * self.mBrushSizeTerrainSpace))
                             weight = 1.0 - (weight * weight)
-
                             paint = weight * timeElapsed
                             imgY = imgSize - y
                             if self.mKeyboard.isKeyDown(ois.KC_EQUALS):
@@ -174,19 +170,11 @@ class sample (sf.sample):
                 self.mEditNode.setPosition(rayResult.position)
 
                 # figure out which terrains this affects
-                terrainList =ogreterrain.TerrainGroup.TerrainList()
                 brushSizeWorldSpace = TERRAIN_WORLD_SIZE * self.mBrushSizeTerrainSpace
                 sphere = ogre.Sphere(rayResult.position, brushSizeWorldSpace)
-                self.mTerrainGroup.sphereIntersects(sphere, terrainList)
-                print "\n", terrainList
-                ti = terrainList.begin()
-                print ti
-                while ti != terrainList.end():
-                    print "\n IN LOOP:", ti
-#                 for (TerrainGroup.TerrainList.iterator ti = terrainList.begin()
-#                   ti != terrainList.end() ++ti)
-                    doTerrainModify(ti, rayResult.position, evt.timeSinceLastFrame)
-                    ti = ti.next()
+                terrainList = self.mTerrainGroup.sphereIntersects(sphere)
+                for ti in terrainList:
+                    self.doTerrainModify(ti, rayResult.position, evt.timeSinceLastFrame)
             else :
                 self.mEditMarker.setVisible(False)
 
@@ -239,7 +227,7 @@ class sample (sf.sample):
         if key == ois.KC_S:
             # CTRL-S to save
             if self.mKeyboard.isKeyDown(ois.KC_LCONTROL) or self.mKeyboard.isKeyDown(ois.KC_RCONTROL):
-                saveTerrains(True)
+                self.saveTerrains(True)
             else:
                 return sf.sample.keyPressed(self, e)
 #       elif key == ois.KC_F10:
@@ -255,14 +243,14 @@ class sample (sf.sample):
             return sf.sample.keyPressed(self, e)
 
     def itemSelected(self,  menu):
-        if (menu == self.mEditMenu):
+        if (menu.getName() == 'EditMode'):
             self.mMode = self.mEditMenu.getSelectionIndex()
-#         elif (menu == self.mShadowsMenu):
-#             self.mShadowMode = self.mShadowsMenu.getSelectionIndex()
-#             changeShadows()
+        elif (menu.getName() == 'Shadows'):
+            self.mShadowMode = self.mShadowsMenu.getSelectionIndex()
+            self.changeShadows()
 
     def checkBoxToggled(self, box):
-        if (box == self.mFlyBox):
+        if (box.getName() == 'Fly'):
             self.mFly = self.mFlyBox.isChecked()
 
 
@@ -305,7 +293,6 @@ class sample (sf.sample):
 
         # Usually in a real project you'll know whether the compact terrain data is
         # available or not I'm doing it this way to save distribution size
-        print "\n\ndefineTERRAIN\n"
         if (flat):
             self.mTerrainGroup.defineTerrain(x, y, 0.0)
         else:
@@ -315,12 +302,12 @@ class sample (sf.sample):
                 self.mTerrainGroup.defineTerrain(x, y)
             else:
                 img = ogre.Image()
-                b1 = True
+                b1 = False
                 if x % 2 != 0:
-                    b1 = False
-                b2 = True
+                    b1 = True
+                b2 = False
                 if x % 2 != 0:
-                    b2 = False
+                    b2 = True
                 self.getTerrainImage(b1, b2, img)
                 self.mTerrainGroup.defineTerrain(x, y, img)
                 self.mTerrainsImported = True
@@ -357,7 +344,6 @@ class sample (sf.sample):
 
                 val = (height - minHeight1) / fadeDist1
                 val = Clamp(val, 0, 1)
-#                 print index
                 blend_data [index] = val
                 index += 1
         blendMap0.dirty()
@@ -402,9 +388,6 @@ class sample (sf.sample):
         defaultimp.minBatchSize = 33
         defaultimp.maxBatchSize = 65
         # textures
-        print   defaultimp.layerList
-        print dir(defaultimp.layerList)
-#         print dir (ogreterrain.Terrain.LayerInstance())
         defaultimp.layerList.append(ogreterrain.Terrain.LayerInstance() )
         defaultimp.layerList.append(ogreterrain.Terrain.LayerInstance() )
         defaultimp.layerList.append(ogreterrain.Terrain.LayerInstance() )
@@ -458,91 +441,92 @@ class sample (sf.sample):
     def buildDepthShadowMaterial(self, textureName):
         matName = "DepthShadows/" + textureName
 
-        ret = MaterialManager.getSingleton().getByName(matName)
-        if (ret.isNull()):
+        ret = ogre.MaterialManager.getSingleton().getByName(matName)
+        if not ret:
             baseMat = ogre.MaterialManager.getSingleton().getByName("Ogre/shadow/depth/integrated/pssm")
             ret = baseMat.clone(matName)
             p = ret.getTechnique(0).getPass(0)
             p.getTextureUnitState("diffuse").setTextureName(textureName)
 
             splitPoints = ogre.Vector4()
-            splitPointList =(self.mPSSMSetup.get()).getSplitPoints()
-            for i in range (3):
-                splitPoints[i] = splitPointList[i]
+            splitPointList =self.mPSSMSetup.getSplitPoints()
+            splitPoints.x = splitPointList[0]
+            splitPoints.y = splitPointList[1]
+            splitPoints.z = splitPointList[2]
+#             TODO Andy -- Vector 4 doesn't support index assignment
+#             for i in range (3):
+#                 splitPoints[i] = splitPointList[i]
             p.getFragmentProgramParameters().setNamedConstant("pssmSplitPoints", splitPoints)
         return ret
 
     def changeShadows(self):
-        bool = True
+        bool = False
         if  self.mShadowMode != SHADOWS_NONE:
-            bool =  False
-        configureShadows(bool, self.mShadowMode == SHADOWS_DEPTH)
+            bool = True
+        self.configureShadows(bool, self.mShadowMode == SHADOWS_DEPTH)
 
     def configureShadows(self, enabled, depthShadows):
-        matProfile = self.mTerrainGlobals.getDefaultMaterialGenerator().getActiveProfile()
+        #AJM Note the use of 'Pointer' here to get to the actual object. In the C++
+        # code it was -> accessed
+        matProfile = self.mTerrainGlobals.getDefaultMaterialGenerator().Pointer.getActiveProfile()
         matProfile.setReceiveDynamicShadowsEnabled(enabled)
         if SHADOWS_IN_LOW_LOD_MATERIAL:
             matProfile.setReceiveDynamicShadowsLowLod(True)
         else:
             matProfile.setReceiveDynamicShadowsLowLod(False)
 
-# TODO
-#       # Default materials
-#       for (EntityList.iterator i = mHouseList.begin() i != mHouseList.end() ++i)
-#       {
-#           (*i).setMaterialName("Examples/TudorHouse")
-#       }
+        # Default materials
+        for i in self.mHouseList:
+            i.setMaterialName("Examples/TudorHouse")
 
         if (enabled):
             # General scene setup
-            self.mSceneMgr.setShadowTechnique(SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED)
+            self.mSceneMgr.setShadowTechnique(ogre.SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED)
             self.mSceneMgr.setShadowFarDistance(3000)
 
             # 3 textures per directional light (PSSM)
             self.mSceneMgr.setShadowTextureCountPerLightType(ogre.Light.LT_DIRECTIONAL, 3)
 
-            if (self.mPSSMSetup.isNull()):
+            if (not self.mPSSMSetup):
                 # shadow camera setup
-                pssmSetup = PSSMShadowCameraSetup() # TODO check if we need to keep this around
+                pssmSetup = ogre.PSSMShadowCameraSetup() # TODO check if we need to keep this around
                 pssmSetup.setSplitPadding(self.mCamera.getNearClipDistance())
                 pssmSetup.calculateSplitPoints(3, self.mCamera.getNearClipDistance(), self.mSceneMgr.getShadowFarDistance())
                 pssmSetup.setOptimalAdjustFactor(0, 2)
                 pssmSetup.setOptimalAdjustFactor(1, 1)
                 pssmSetup.setOptimalAdjustFactor(2, 0.5)
 
-                self.mPSSMSetup.bind(pssmSetup)
+                self.mPSSMSetup=pssmSetup
 
             self.mSceneMgr.setShadowCameraSetup(self.mPSSMSetup)
 
             if (depthShadows):
                 self.mSceneMgr.setShadowTextureCount(3)
-                self.mSceneMgr.setShadowTextureConfig(0, 2048, 2048, PF_FLOAT32_R)
-                self.mSceneMgr.setShadowTextureConfig(1, 1024, 1024, PF_FLOAT32_R)
-                self.mSceneMgr.setShadowTextureConfig(2, 1024, 1024, PF_FLOAT32_R)
+                self.mSceneMgr.setShadowTextureConfig(0, 2048, 2048, ogre.PF_FLOAT32_R)
+                self.mSceneMgr.setShadowTextureConfig(1, 1024, 1024, ogre.PF_FLOAT32_R)
+                self.mSceneMgr.setShadowTextureConfig(2, 1024, 1024, ogre.PF_FLOAT32_R)
                 self.mSceneMgr.setShadowTextureSelfShadow(True)
                 self.mSceneMgr.setShadowCasterRenderBackFaces(True)
                 self.mSceneMgr.setShadowTextureCasterMaterial("PSSM/shadow_caster")
 
-                houseMat = buildDepthShadowMaterial("fw12b.jpg")
-#               for (EntityList.iterator i = mHouseList.begin() i != mHouseList.end() ++i)
-#               {
-#                   (*i).setMaterial(houseMat)
-#               }
+                houseMat = self.buildDepthShadowMaterial("fw12b.jpg")
+                for i in self.mHouseList:
+                    i.setMaterial(houseMat)
             else:
                 self.mSceneMgr.setShadowTextureCount(3)
-                self.mSceneMgr.setShadowTextureConfig(0, 2048, 2048, PF_X8B8G8R8)
-                self.mSceneMgr.setShadowTextureConfig(1, 1024, 1024, PF_X8B8G8R8)
-                self.mSceneMgr.setShadowTextureConfig(2, 1024, 1024, PF_X8B8G8R8)
+                self.mSceneMgr.setShadowTextureConfig(0, 2048, 2048, ogre.PF_X8B8G8R8)
+                self.mSceneMgr.setShadowTextureConfig(1, 1024, 1024, ogre.PF_X8B8G8R8)
+                self.mSceneMgr.setShadowTextureConfig(2, 1024, 1024, ogre.PF_X8B8G8R8)
                 self.mSceneMgr.setShadowTextureSelfShadow(False)
                 self.mSceneMgr.setShadowCasterRenderBackFaces(False)
                 self.mSceneMgr.setShadowTextureCasterMaterial(ogre.StringUtil.BLANK)
 
             matProfile.setReceiveDynamicShadowsDepth(depthShadows)
-            matProfile.setReceiveDynamicShadowsPSSM((self.mPSSMSetup.get()))
+            matProfile.setReceiveDynamicShadowsPSSM((self.mPSSMSetup))
 
             #addTextureShadowDebugOverlay(sf.TL_RIGHT, 3)
         else:
-            self.mSceneMgr.setShadowTechnique(SHADOWTYPE_NONE)
+            self.mSceneMgr.setShadowTechnique(ogre.SHADOWTYPE_NONE)
 
 #   /*-----------------------------------------------------------------------------
 #   | Extends setupView to change some initial camera settings for this sample.
@@ -550,8 +534,10 @@ class sample (sf.sample):
     def setupView(self):
         sf.sample.setupView(self)
 
-        self.mCamera.setPosition(self.mTerrainPos + ogre.Vector3(1683, 50, 2116))
-        self.mCamera.lookAt(ogre.Vector3(1963, 50, 1660))
+#         self.mCamera.setPosition(self.mTerrainPos + ogre.Vector3(1683, 50, 2116))
+        self.mCamera.setPosition(ogre.Vector3(1575,310,5890))
+#         self.mCamera.lookAt(ogre.Vector3(1963, 50, 1660))
+        self.mCamera.lookAt(ogre.Vector3(2330,206,6346))
         self.mCamera.setNearClipDistance(0.1)
         self.mCamera.setFarClipDistance(50000)
 
@@ -589,6 +575,9 @@ class sample (sf.sample):
         self.mTrayMgr.createParamsPanel(sf.TL_TOPLEFT, "Help", 100, names).setParamValue(0, "H/F1")
 
     def setupContent(self):
+        self.mHouseList=[]
+        self.mPSSMSetup = None
+
         blankTerrain = False
         #blankTerrain = True
 
@@ -643,7 +632,6 @@ class sample (sf.sample):
                 TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MIN_Y,
                 TERRAIN_PAGE_MAX_X, TERRAIN_PAGE_MAX_Y)
         else:
-            print TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MAX_X, TERRAIN_PAGE_MIN_Y, TERRAIN_PAGE_MAX_Y
             for x in range(TERRAIN_PAGE_MIN_X, TERRAIN_PAGE_MAX_X +1 ):
                 for y in range(TERRAIN_PAGE_MIN_Y, TERRAIN_PAGE_MAX_Y +1):
                     self.defineTerrain(x, y, blankTerrain)
@@ -669,25 +657,25 @@ class sample (sf.sample):
         sn = self.mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot)
         sn.setScale(ogre.Vector3(0.12, 0.12, 0.12))
         sn.attachObject(e)
-#         mHouseList.append(e)
-#
-#         e = self.mSceneMgr.createEntity("tudorhouse.mesh")
-#         entPos = ogre.Vector3(self.mTerrainPos.x + 1850, 0, self.mTerrainPos.z + 1478)
-#         entPos.y = self.mTerrainGroup.getHeightAtWorldPosition(entPos) + 65.5 + self.mTerrainPos.y
-#         rot.FromAngleAxis(ogre.Degree(math.RangeRandom(-180, 180)), ogre.Vector3().UNIT_Y)
-#         sn = self.mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot)
-#         sn.setScale(Vector3(0.12, 0.12, 0.12))
-#         sn.attachObject(e)
-#         mHouseList.append(e)
-#
-#         e = self.mSceneMgr.createEntity("tudorhouse.mesh")
-#         entPos = ogre.Vector3(self.mTerrainPos.x + 1970, 0, self.mTerrainPos.z + 2180)
-#         entPos.y = self.mTerrainGroup.getHeightAtWorldPosition(entPos) + 65.5 + self.mTerrainPos.y
-#         rot.FromAngleAxis(ogre.Degree(math.RangeRandom(-180, 180)), ogre.Vector3().UNIT_Y)
-#         sn = self.mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot)
-#         sn.setScale(Vector3(0.12, 0.12, 0.12))
-#         sn.attachObject(e)
-#         mHouseList.append(e)
+        self.mHouseList.append(e)
+
+        e = self.mSceneMgr.createEntity("tudorhouse.mesh")
+        entPos = ogre.Vector3(self.mTerrainPos.x + 1850, 0, self.mTerrainPos.z + 1478)
+        entPos.y = self.mTerrainGroup.getHeightAtWorldPosition(entPos) + 65.5 + self.mTerrainPos.y
+        rot.FromAngleAxis(ogre.Degree(random.randrange(-180, 180)), ogre.Vector3().UNIT_Y)
+        sn = self.mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot)
+        sn.setScale(ogre.Vector3(0.12, 0.12, 0.12))
+        sn.attachObject(e)
+        self.mHouseList.append(e)
+
+        e = self.mSceneMgr.createEntity("tudorhouse.mesh")
+        entPos = ogre.Vector3(self.mTerrainPos.x + 1970, 0, self.mTerrainPos.z + 2180)
+        entPos.y = self.mTerrainGroup.getHeightAtWorldPosition(entPos) + 65.5 + self.mTerrainPos.y
+        rot.FromAngleAxis(ogre.Degree(random.randrange(-180, 180)), ogre.Vector3().UNIT_Y)
+        sn = self.mSceneMgr.getRootSceneNode().createChildSceneNode(entPos, rot)
+        sn.setScale(ogre.Vector3(0.12, 0.12, 0.12))
+        sn.attachObject(e)
+        self.mHouseList.append(e)
 
         self.mSceneMgr.setSkyBox(True, "Examples/CloudyNoonSkyBox")
 
