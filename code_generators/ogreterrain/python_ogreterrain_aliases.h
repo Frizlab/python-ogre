@@ -8,8 +8,11 @@ typedef std::list<Ogre::HardwareVertexBufferSharedPtr, Ogre::STLAllocator<Ogre::
 typedef std::vector<Ogre::Terrain*,Ogre::STLAllocator<Ogre::Terrain*, Ogre::CategorisedAllocPolicy<Ogre::MEMCATEGORY_GENERAL> > >\
     stdVectorOgreTerrain;
     
+// typedef Ogre::vector<Ogre::Terrain*, Ogre::STLAllocator<Ogre::Terrain*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > \
+//     OgreVectorTerrainPtr;
 typedef Ogre::vector<Ogre::Terrain*, Ogre::STLAllocator<Ogre::Terrain*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > \
-    OgreVectorTerrainPtr;
+    TerrainList;
+    
 typedef Ogre::vector<Ogre::TerrainQuadTreeNode::LodLevel*, Ogre::STLAllocator<Ogre::TerrainQuadTreeNode::LodLevel*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >\
     OgreVectorTerrainQuadTreeNode;
 typedef Ogre::vector<Ogre::Terrain::LayerInstance, Ogre::STLAllocator<Ogre::Terrain::LayerInstance, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > > \

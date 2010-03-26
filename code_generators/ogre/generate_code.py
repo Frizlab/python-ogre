@@ -338,13 +338,32 @@ def ManualExclude ( mb ):
     # which isn't exposed... May be related only to threading ??
     # could limit it to known classes however safe to handle everything
     for c in main_ns.classes():
-        for v in c.variables( allow_empty=True):
-            if v.name.endswith('Mutex'):
-                try:
-                    v.exclude()
-                    log_exclude(v)
+        if c.name not in ['Pool<Ogre::SharedPtr<Ogre::Resource> >']:
+            for v in c.variables( allow_empty=True):
+                if v.name.endswith('Mutex'):
+                    try:
+                        v.exclude()
+                        log_exclude(v)
+                    except:
+                        log_exclude(v,False)
+
+    # exclude the readwrite properties for "mutex"
+    for c in ['::Ogre::AnimationStateSet',
+              '::Ogre::GpuLogicalBufferStruct',
+              '::Ogre::Log',
+              '::Ogre::LogManager',
+              '::Ogre::ResourceGroupManager',
+              '::Ogre::ResourceManager',
+              '::Ogre::Resource']:
+        for v in global_ns.class_(c).variables( allow_empty=True):
+            if v.name in ['mutex']:
+                 try:
+                     v.exclude()
+                     log_exclude(v)
                 except:
                     log_exclude(v,False)
+
+
 
     # most of these are issues with protected members so fail at compile time
     # and they have ugly long names so we do the crazy searching as below
@@ -505,7 +524,10 @@ def ManualFixes ( mb ):
         noncopy = noncopy + ['Compositor', 'DefaultHardwareBufferManager', 'DefaultSceneManager', 'Font', 'FontManager',
                              'HighLevelGpuProgramManager','Material', 'Mesh', 'MeshManager',
                              'ParticleSystemManager', 'Pass', 'PatchMesh', 'ResourceGroupManager',
-                             'Skeleton', 'SkeletonInstance', 'SkeletonManager', 'UnifiedHighLevelGpuProgram']
+                             'Skeleton', 'SkeletonInstance', 'SkeletonManager', 'UnifiedHighLevelGpuProgram',
+                             'DefaultHardwareBufferManagerBase','ResourcePool','ResourceGroupManager',
+                             'ResourceManager','Pool<Ogre::SharedPtr<Ogre::Resource> >',
+                             ]
     for c in noncopy:
         main_ns.class_(c).noncopyable = True
 
@@ -1005,6 +1027,7 @@ def Set_Smart_Pointers( mb ):
         'PatchMeshPtr',
         'SkeletonPtr',
         'TexturePtr',
+        'PoolSharedPtr',
         ]
     for v in mb.variables():
         if not declarations.is_class( v.type ):

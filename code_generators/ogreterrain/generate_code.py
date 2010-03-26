@@ -82,7 +82,10 @@ def ManualExclude ( mb ):
             print "Excluded:", c
         except:
             print "Failed to exclude:", c
-    ex = ['::Ogre::TerrainLayerBlendMap::upload']
+    ex = ['::Ogre::TerrainLayerBlendMap::upload',
+        '::Ogre::TerrainGroup::boxIntersects',     #hand wrapped
+        '::Ogre::TerrainGroup::sphereIntersects',
+        ]
     for c in ex:
         try:
             main_ns.member_functions(c).exclude()
@@ -184,7 +187,22 @@ def ManualFixes ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns
-              
+    main_ns.class_(
+        '::Ogre::vector<Ogre::Terrain*, Ogre::STLAllocator<Ogre::Terrain*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >'
+        ).wrapper_alias='OgreVectorTerrainList'
+    main_ns.class_(
+        '::Ogre::vector<Ogre::Terrain::LayerInstance, Ogre::STLAllocator<Ogre::Terrain::LayerInstance, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >'
+        ).wrapper_alias='OgreVectorTerrainLayerInstance'
+    main_ns.class_(
+        '::Ogre::vector<Ogre::TerrainLayerSampler, Ogre::STLAllocator<Ogre::TerrainLayerSampler, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >'
+        ).wrapper_alias='OgreVectorTerrainLayerSampler'
+
+    main_ns.class_(
+        '::Ogre::vector<Ogre::TerrainLayerSamplerElement, Ogre::STLAllocator<Ogre::TerrainLayerSamplerElement, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >'
+        ).wrapper_alias='OgreVectorTerrainLayerSamplerElement'
+    main_ns.class_(
+        '::Ogre::vector<Ogre::TerrainMaterialGenerator::Profile*, Ogre::STLAllocator<Ogre::TerrainMaterialGenerator::Profile*, Ogre::CategorisedAllocPolicy<(Ogre::MemoryCategory)0> > >'
+        ).wrapper_alias='OgreVectorTerrainMaterialGeneratorProfileList'
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
