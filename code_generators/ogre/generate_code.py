@@ -360,7 +360,7 @@ def ManualExclude ( mb ):
                  try:
                      v.exclude()
                      log_exclude(v)
-                except:
+                 except:
                     log_exclude(v,False)
 
 
