@@ -756,7 +756,7 @@ class ogre(pymodule):
             [0, "make", baseDir],
             [0, _sudo + " make install", baseDir]
             ]
-        libs = [boost.lib, 'OgreMain']
+        libs = [boost.lib, 'OgreMain', 'OgreProperty']
         lib_dirs = [Config.LOCAL_LIB]
         include_dirs = [boost.PATH,
                         Config.PATH_INCLUDE_Ogre,
