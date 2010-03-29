@@ -244,6 +244,11 @@ PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ##,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-1.8.3','include')
                         ,os.path.join(PATH_THIRDPARTY,'ptypes','include')
                         ]
+PATH_INCLUDE_ogrevideo = LOCAL_INCLUDE
+PATH_DEMO_ogrevideo = LOCAL_INCLUDE
+PATH_INCLUDE_libtheoraplayer = LOCAL_INCLUDE
+PATH_LIB_ogrevideo = LOCAL_LIB
+
 physxbase = os.path.join('/usr/include/', 'PhysX','v2.8.1', 'SDKs')
 PATH_INCLUDE_PhysX= [ physxbase
                     ,os.path.join(physxbase, 'Cooking','include')

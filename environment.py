@@ -680,7 +680,7 @@ class ogre(pymodule):
         ]
 
         buildCmds = [
-            [0, unzip + os.path.join(downloadPath, "ogre-v1-7=0.zip"), os.getcwd()  ],
+            [0, unzip + os.path.join(downloadPath, "ogre-v1-7-0.zip"), os.getcwd()  ],
             [0, unzip + os.path.join(downloadPath, "OgreDependencies_VC9_Eihort_20080203.zip"), Config.PATH_Ogre  ],
             [0, 'echo Please use MSVC Express Edition to build Ogre Release.', '']
         ]
@@ -732,7 +732,7 @@ class ogre(pymodule):
 
     elif isLinux():
         version = "1.7.0"
-        base = "ogre-v1-7-0"
+        base = "ogre-v1-7-0p1"
         baseDir = 'ogre'
         ##https://sourceforge.net/projects/ogre/files/ogre/1.7/ogre-v1-7-0RC1.tar.bz2/download
 
@@ -863,8 +863,10 @@ class ois(pymodule):
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_OIS,
-        Config.PATH_LIB_OIS_debug,
     ]
+    if _DEBUG:
+        lib_dirs.append(Config.PATH_LIB_OIS_debug,
+        )
     ModuleName = 'OIS'
     if os.sys.platform == 'darwin':
         LINKFLAGS = '-framework IOKit '
@@ -962,11 +964,11 @@ class cegui(pymodule):
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
-        Config.PATH_LIB_Ogre_OgreMain_debug,
         Config.PATH_LIB_CEGUI,
         Config.PATH_LIB_Ogre_Dependencies,
     ]
-
+    if _DEBUG:
+        lib_dirs.append(Config.PATH_LIB_Ogre_OgreMain_debug)
     ModuleName = 'CEGUI'
     if isMac():
         LINKFLAGS = ' -framework CEGUI -framework OgreCEGUIRenderer '

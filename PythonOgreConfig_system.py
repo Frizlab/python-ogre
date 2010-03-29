@@ -141,6 +141,7 @@ PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'inc
 PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include')
+PATH_INCLUDE_sdksample=   os.path.join(PATH_Ogre,'Samples')
 
 PATH_INCLUDE_ogrepaging =   os.path.join(PATH_INCLUDE_Ogre,'Paging')
 PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_INCLUDE_Ogre,'RTShaderSystem')
@@ -189,6 +190,11 @@ PATH_INCLUDE_noise = PATH_noise
 PATH_INCLUDE_ogredshow =    PATH_ogredshow
 PATH_INCLUDE_ogreforests =         PATH_ogreforests
 PATH_INCLUDE_particleuniverse = os.path.join(PATH_particleuniverse, 'include' )
+
+PATH_INCLUDE_ogrevideo = LOCAL_INCLUDE
+PATH_DEMO_ogrevideo = LOCAL_INCLUDE
+PATH_INCLUDE_libtheoraplayer = LOCAL_INCLUDE
+PATH_LIB_ogrevideo = LOCAL_LIB
 
 PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ,os.path.join(BASE_DIR, 'vorbis', 'include')
