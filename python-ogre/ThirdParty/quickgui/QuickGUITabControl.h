@@ -208,7 +208,7 @@ namespace QuickGUI
 		using Widget::setVisible;	
 		using Widget::setWidth;
 
-	protected:
+	public:
 		TabControl(const Ogre::String& name);
 		virtual ~TabControl();
 
@@ -237,7 +237,7 @@ namespace QuickGUI
 		* Outlines how the widget is drawn to the current render target
 		*/
 		virtual void onDraw();
-	private:
+	public:
 	};
 }
 

@@ -57,7 +57,7 @@ namespace QuickGUI
 
 		void registerSkinDefinition(const Ogre::String& className, SkinDefinition* d);
 
-	protected:
+	public:
 		SkinDefinitionManager();
 		virtual ~SkinDefinitionManager();
 

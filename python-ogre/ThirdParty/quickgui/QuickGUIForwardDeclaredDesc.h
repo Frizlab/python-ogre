@@ -45,7 +45,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		PanelDesc();
 		virtual ~PanelDesc() {}
 	public:
@@ -72,7 +72,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		TabPageDesc();
 		virtual ~TabPageDesc() {}
 	public:
@@ -111,7 +111,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		TabControlDesc();
 		virtual ~TabControlDesc() {}
 	public:

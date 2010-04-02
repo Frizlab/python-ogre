@@ -42,7 +42,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	//protected:
+	public:
 		TreeViewRadioButtonNodeDesc();
 		virtual ~TreeViewRadioButtonNodeDesc() {}
 	public:
@@ -153,7 +153,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	//protected:
+	public:
 		TreeViewRadioButtonNode(const Ogre::String& name);
 		virtual ~TreeViewRadioButtonNode();
 

@@ -46,7 +46,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ComponentWidgetDesc();
 		virtual ~ComponentWidgetDesc() {}
 	public:
@@ -125,7 +125,7 @@ namespace QuickGUI
 		*/
 		virtual void updateTexturePosition();
 
-	protected:
+	public:
 		// The following functions are protected because all inheritted classes should not allow
 		// public access to them.  For example, a MenuItem is a Widget, but should not allow users
 		// to manipulate its size or position.
@@ -140,7 +140,7 @@ namespace QuickGUI
 		*/
 		virtual void setMoveBaseWidgetOnDrag(bool moveBaseWidget);
 
-	protected:
+	public:
 		ComponentWidget(const Ogre::String& name);
 		virtual ~ComponentWidget();
 
@@ -165,7 +165,7 @@ namespace QuickGUI
 		* Internal function to set a widget's parent, updating its window reference and position.
 		*/
 		virtual void setParent(Widget* parent);
-	private:
+	public:
 	};
 }
 

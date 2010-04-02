@@ -617,7 +617,6 @@ class sample (sf.sample):
         self.mTerrainGroup = ogreterrain.TerrainGroup(self.mSceneMgr, ogreterrain.Terrain.ALIGN_X_Z, TERRAIN_SIZE, TERRAIN_WORLD_SIZE)
         self.mTerrainGroup.setFilenameConvention(TERRAIN_FILE_PREFIX, TERRAIN_FILE_SUFFIX)
         self.mTerrainGroup.setOrigin(self.mTerrainPos)
-
         self.configureTerrainDefaults(l)
         if PAGING:
             # Paging setup
@@ -681,6 +680,34 @@ class sample (sf.sample):
 
     def __del__(self):
         print "IN DELETE"
+        del self.mTerrainPaging
+        print "IN DELETE"
+        print self.mTerrainGroup
+        print dir(self.mTerrainGroup)
+        self.mTerrainGroup.freeTemporaryResources()
+        print "Freed resources"
+        i=self.mTerrainGroup.getTerrainIterator()
+        print i
+        print dir(i)
+        while i.hasMoreElements():
+            v=i.getNext()
+            print v
+            #del v
+        slots= self.mTerrainGroup.getTerrainSlot(0,0)
+        print "Got slot"
+        del self.mTerrainGlobals
+        print slots
+
+        slots.freeInstance()
+        print "Freeinstance"
+        self.mTerrainGroup.removeAllTerrains()
+        print "Unloaded"
+
+        print "deleting"
+        del self.mTerrainGroup
+        print "OK"
+        sys.exit()
+
         if (self.mTerrainPaging):
             print "IN DELETE1"
             del self.mTerrainPaging

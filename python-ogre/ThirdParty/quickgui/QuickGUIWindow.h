@@ -51,7 +51,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		WindowDesc();
 		virtual ~WindowDesc() {}
 	public:
@@ -326,7 +326,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 		Window(const Ogre::String& name);
 		virtual ~Window();
 
@@ -362,7 +362,7 @@ namespace QuickGUI
 		*/
 		void resizeRenderTarget();
 
-	private:
+	public:
 	};
 }
 

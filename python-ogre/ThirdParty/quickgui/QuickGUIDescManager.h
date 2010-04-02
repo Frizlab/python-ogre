@@ -162,7 +162,7 @@ namespace QuickGUI
 		VScrollBarDesc* getDefaultVScrollBarDesc();
 		WindowDesc* getDefaultWindowDesc();
 
-	protected:
+	public:
 		DescManager();
 		virtual ~DescManager();
 
@@ -209,7 +209,7 @@ namespace QuickGUI
 		VScrollBarDesc* mDefaultVScrollBarDesc;
 		WindowDesc* mDefaultWindowDesc;
 
-	private:
+	public:
 	};
 }
 

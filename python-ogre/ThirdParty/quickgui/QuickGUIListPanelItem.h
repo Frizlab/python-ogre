@@ -81,7 +81,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ListPanelItemDesc();
 		virtual ~ListPanelItemDesc() {}
 	public:
@@ -281,7 +281,7 @@ namespace QuickGUI
 		
 		using ContainerWidget::destroyChild;	
 
-	protected:
+	public:
 		ListPanelItem(const Ogre::String& name);
 		virtual ~ListPanelItem();
 
@@ -292,7 +292,7 @@ namespace QuickGUI
 		*/
 		virtual void onDraw();
 
-	private:
+	public:
 	};
 }
 

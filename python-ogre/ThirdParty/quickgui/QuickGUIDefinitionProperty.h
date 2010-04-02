@@ -51,13 +51,13 @@ namespace QuickGUI
 		Ogre::String getPropertyName();
 		Ogre::StringVector getValues();
 
-	protected:
+	public:
 		DefinitionProperty(const Ogre::String& propertyName);
 
 		Ogre::String mPropertyName;
 		Ogre::StringVector mValues;
 
-	private:
+	public:
 	};
 }
 

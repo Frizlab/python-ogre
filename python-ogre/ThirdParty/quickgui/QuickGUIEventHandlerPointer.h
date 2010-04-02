@@ -84,7 +84,7 @@ namespace QuickGUI
 			return dynamic_cast<void*>(d_object);
 		}
 
-	protected:
+	public:
 		EventHandler	d_function;
 		T*				d_object;
 		bool			d_undefined;

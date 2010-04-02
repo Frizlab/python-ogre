@@ -108,7 +108,7 @@ namespace QuickGUI
 		*/
 		void setDefaultHoverTime(float seconds);
 
-	protected:
+	public:
 		ColourValue mDefaultColor;
 		Ogre::Font* mDefaultFont;
 

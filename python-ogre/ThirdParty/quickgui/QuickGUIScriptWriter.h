@@ -78,7 +78,7 @@ namespace QuickGUI
 		*/
 		bool writingToFile();
 
-	//protected:
+	public:
 		ScriptWriter();
 		virtual ~ScriptWriter();
 
@@ -103,7 +103,7 @@ namespace QuickGUI
 		*/
 		Ogre::String getSpaces(unsigned int numberOfSpaces);
 
-	private:
+	public:
 	};
 }
 

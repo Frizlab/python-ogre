@@ -42,7 +42,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		Desc() {}
 		virtual ~Desc() {}
 	public:

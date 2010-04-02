@@ -231,7 +231,7 @@ namespace QuickGUI
 		*/
 		void updateViewport(Ogre::Viewport* viewport);
 
-	protected:
+	public:
 		Ogre::RenderSystem* mRenderSystem;
 		Ogre::SceneManager* mSceneManager;
 		Ogre::Viewport* mDefaultViewport;
@@ -269,7 +269,7 @@ namespace QuickGUI
 		bool mQueuedItems;
 		Vertex* mBufferPtr;
 
-	private:
+	public:
 		Brush();
 		~Brush();
 

@@ -66,7 +66,7 @@ namespace QuickGUI
 		friend class GUIManager;
 		// Editor creates and manages its own Widgets
 		friend class QuickGUIEditor::MainForm;
-	protected:
+	public:
 		typedef Widget* (WidgetFactory::*createWidgetFunction)(const std::string&);
 
 	public:
@@ -105,7 +105,7 @@ namespace QuickGUI
 			return (mFunctorMap.erase(className) == 1);
 		}
 
-	protected:
+	public:
 		template<typename ClassType>
 		ClassType* createInstance(const std::string& className, const std::string& name)
 		{
@@ -124,7 +124,7 @@ namespace QuickGUI
 			OGRE_DELETE_T(instance,Widget,Ogre::MEMCATEGORY_GENERAL);
 		}
 
-	protected:
+	public:
 		WidgetFactory() : mNamingPrefix("") {}
 		virtual ~WidgetFactory() {}
 

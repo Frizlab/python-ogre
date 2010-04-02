@@ -39,7 +39,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		CheckBoxDesc();
 		virtual ~CheckBoxDesc() {}
 	public:
@@ -183,7 +183,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 		CheckBox(const Ogre::String& name);
 		virtual ~CheckBox();
 
@@ -217,7 +217,7 @@ namespace QuickGUI
 		// Updates the SkinElement used for border detection and client area calculations.
 		virtual void updateSkinElement();
 
-	private:
+	public:
 	};
 }
 

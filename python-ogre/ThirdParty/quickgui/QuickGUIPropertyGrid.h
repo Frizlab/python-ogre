@@ -48,7 +48,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		PropertyGridDesc();
 		virtual ~PropertyGridDesc() {}
 	public:
@@ -254,7 +254,7 @@ namespace QuickGUI
 		*/
 		virtual void updateVirtualDimensions();
 
-	protected:
+	public:
 		PropertyGrid(const Ogre::String& name);
 		virtual ~PropertyGrid();
 
@@ -294,7 +294,7 @@ namespace QuickGUI
 		*/
 		void onMouseDown(const EventArgs& args);
 
-	private:
+	public:
 	};
 }
 

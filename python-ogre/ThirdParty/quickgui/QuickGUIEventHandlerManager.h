@@ -91,13 +91,13 @@ namespace QuickGUI
 		*/
 		void unregisterEventHandler(const Ogre::String& handlerName);
 
-	protected:
+	public:
 		EventHandlerManager();
 		virtual ~EventHandlerManager();
 
 		std::map<Ogre::String,EventHandlerSlot*> mUserDefinedEventHandlers;
 
-	private:
+	public:
 	};
 }
 

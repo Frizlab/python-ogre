@@ -121,7 +121,7 @@ namespace QuickGUI
 		*/
 		void setTileBorders(bool tile);
 
-	protected:
+	public:
 		Ogre::String mName;
 
 		Ogre::String mTextureName;

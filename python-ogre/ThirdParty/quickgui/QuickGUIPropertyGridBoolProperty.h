@@ -42,7 +42,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		PropertyGridBoolPropertyDesc();
 		virtual ~PropertyGridBoolPropertyDesc() {}
 	public:
@@ -101,7 +101,7 @@ namespace QuickGUI
 		*/
 		void setProperty(bool b);
 
-	protected:
+	public:
 		PropertyGridBoolProperty(const Ogre::String& name);
 		virtual ~PropertyGridBoolProperty();
 
@@ -111,7 +111,7 @@ namespace QuickGUI
 
 		void updateFieldSkin();
 
-	private:
+	public:
 	};
 }
 

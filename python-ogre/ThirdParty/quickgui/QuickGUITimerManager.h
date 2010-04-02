@@ -59,10 +59,10 @@ namespace QuickGUI
 
 		void destroyTimer(Timer* t);
 
-	protected:
+	public:
 		std::vector<Timer*> mTimers;
 
-	private:
+	public:
 	};
 }
 

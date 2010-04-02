@@ -69,13 +69,13 @@ namespace QuickGUI
 
 		void saveTypesToFile(const Ogre::String& fileName);
 
-	protected:
+	public:
 		SkinTypeManager();
 		virtual ~SkinTypeManager();
 
 		std::map<Ogre::String, std::map<Ogre::String,SkinType*> > mSkinTypes;
 
-	private:
+	public:
 	};
 }
 

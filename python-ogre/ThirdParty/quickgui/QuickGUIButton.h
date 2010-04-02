@@ -45,7 +45,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ButtonDesc();
 		virtual ~ButtonDesc() {}
 	public:
@@ -151,7 +151,7 @@ namespace QuickGUI
 
 		using Widget::setMoveWindowOnDrag;
 
-	protected:
+	public:
 		Button(const Ogre::String& name);
 		virtual ~Button();
 
@@ -182,7 +182,7 @@ namespace QuickGUI
 		// Updates the SkinElement used for border detection and client area calculations.
 		virtual void updateSkinElement();
 
-	private:
+	public:
 	};
 }
 

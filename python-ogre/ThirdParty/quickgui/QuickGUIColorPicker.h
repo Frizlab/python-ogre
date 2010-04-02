@@ -41,7 +41,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ColorPickerDesc();
 		virtual ~ColorPickerDesc() {}
 	public:
@@ -91,7 +91,7 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getClass();
 
-	protected:
+	public:
 		ColorPicker(const Ogre::String& name);
 		virtual ~ColorPicker();
 
@@ -108,7 +108,7 @@ namespace QuickGUI
 		void onMouseDownOnImage(const EventArgs& args);
 		void onMouseMovedOverImage(const EventArgs& args);
 
-	private:
+	public:
 	};
 }
 

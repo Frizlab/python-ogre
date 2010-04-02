@@ -51,7 +51,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ListDesc();
 		virtual ~ListDesc() {}
 	public:
@@ -268,7 +268,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 		List(const Ogre::String& name);
 		virtual ~List();
 
@@ -309,7 +309,7 @@ namespace QuickGUI
 		*/
 		unsigned int _getItemIndex(ListItem* li);
 
-	private:
+	public:
 	};
 }
 

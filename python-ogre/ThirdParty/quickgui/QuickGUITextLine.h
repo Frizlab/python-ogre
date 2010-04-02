@@ -101,7 +101,7 @@ namespace QuickGUI
 		*/
 		void setMaskText(bool mask, Ogre::UTFString::code_point maskSymbol);
 
-	protected:
+	public:
 		Point mPosition;
 
 		bool mMaskText;
@@ -118,7 +118,7 @@ namespace QuickGUI
 		*/
 		void _verticallyAlignCharacters();
 
-	private:
+	public:
 	};
 }
 

@@ -42,7 +42,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	//protected:
+	public:
 		MenuPanelDesc();
 		virtual ~MenuPanelDesc() {}
 	public:
@@ -61,7 +61,7 @@ namespace QuickGUI
 		*/
 		virtual void resetToDefault();
 
-	//protected:
+	public:
 		bool window_titleBar;
 	};
 
@@ -149,7 +149,7 @@ namespace QuickGUI
 		*/
 		virtual void updateVirtualDimensions();
 
-	//protected:
+	public:
 		MenuPanel(const Ogre::String& name);
 		virtual ~MenuPanel();
 
@@ -165,7 +165,7 @@ namespace QuickGUI
 		void onLoseFocus(const EventArgs& args);
 		void onVisibleChanged(const EventArgs& args);
 
-	private:
+	public:
 	};
 }
 

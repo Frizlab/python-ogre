@@ -49,7 +49,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	//protected:
+	public:
 		TreeViewNodeDesc();
 		virtual ~TreeViewNodeDesc() {}
 	public:
@@ -223,7 +223,7 @@ namespace QuickGUI
 		*/
 		void updateNodes();
 
-	//protected:
+	public:
 		TreeViewNode(const Ogre::String& name);
 		virtual ~TreeViewNode();
 
@@ -292,7 +292,7 @@ namespace QuickGUI
 		*/
 		void onStateButtonClicked(const EventArgs& args);
 
-	private:
+	public:
 	};
 }
 

@@ -145,7 +145,7 @@ namespace QuickGUI
 		*/
 		void setVisible(bool visible);
 
-	protected:
+	public:
 		MouseCursor(const MouseCursorDesc& d);
 		~MouseCursor();
 
@@ -185,7 +185,7 @@ namespace QuickGUI
 		*/
 		void setPosition(const Point& p);
 
-	private:
+	public:
 	};
 }
 

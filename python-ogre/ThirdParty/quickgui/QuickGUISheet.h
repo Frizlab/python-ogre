@@ -58,7 +58,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		SheetDesc();
 		virtual ~SheetDesc() {}
 	public:
@@ -89,7 +89,7 @@ namespace QuickGUI
 		std::string sheet_mouseCursorSkinTypeName;
 		bool sheet_mouseCursorVisible;
 
-	protected:
+	public:
 		HorizontalAnchor widget_horizontalAnchor;
 		VerticalAnchor widget_verticalAnchor;
 		bool widget_dragable;
@@ -415,7 +415,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 
 		/**
 		* Standard Constructor.
@@ -471,7 +471,7 @@ namespace QuickGUI
 		*/
 		void notifyViewport(float* width, float* height);
 
-	private:
+	public:
 		
 	};
 }

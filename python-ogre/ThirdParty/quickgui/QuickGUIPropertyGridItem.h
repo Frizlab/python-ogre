@@ -44,7 +44,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	//protected:
+	public:
 		PropertyGridItemDesc();
 		virtual ~PropertyGridItemDesc() {}
 	public:
@@ -158,7 +158,7 @@ namespace QuickGUI
 		*/
 		void select();
 
-	//protected:
+	public:
 		PropertyGridItem(const Ogre::String& name);
 		virtual ~PropertyGridItem();
 
@@ -216,7 +216,7 @@ namespace QuickGUI
 
 		virtual void updateFieldSkin();
 
-	private:
+	public:
 	};
 }
 

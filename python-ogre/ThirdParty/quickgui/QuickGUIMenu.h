@@ -46,7 +46,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		MenuDesc();
 		virtual ~MenuDesc() {}
 	public:
@@ -234,7 +234,7 @@ namespace QuickGUI
 		*/
 		virtual void setSkinType(const Ogre::String type);
 
-	protected:
+	public:
 		Menu(const Ogre::String& name);
 		virtual ~Menu();
 
@@ -277,7 +277,7 @@ namespace QuickGUI
 		*/
 		virtual void onMouseEnter(const EventArgs& args);
 
-	private:
+	public:
 	};
 }
 

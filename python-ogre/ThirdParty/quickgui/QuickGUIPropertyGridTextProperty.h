@@ -42,7 +42,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		PropertyGridTextPropertyDesc();
 		virtual ~PropertyGridTextPropertyDesc() {}
 	public:
@@ -92,7 +92,7 @@ namespace QuickGUI
 		*/
 		virtual Ogre::String getClass();
 
-	protected:
+	public:
 		PropertyGridTextProperty(const Ogre::String& name);
 		virtual ~PropertyGridTextProperty();
 
@@ -102,7 +102,7 @@ namespace QuickGUI
 
 		virtual void updateFieldSkin();
 
-	private:
+	public:
 	};
 }
 
