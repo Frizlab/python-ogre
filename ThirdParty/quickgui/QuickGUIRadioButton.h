@@ -39,7 +39,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		RadioButtonDesc();
 		virtual ~RadioButtonDesc() {}
 	public:
@@ -181,7 +181,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 		RadioButton(const Ogre::String& name);
 		virtual ~RadioButton();
 
@@ -215,7 +215,7 @@ namespace QuickGUI
 		// Updates the SkinElement used for border detection and client area calculations.
 		virtual void updateSkinElement();
 
-	private:
+	public:
 	};
 }
 

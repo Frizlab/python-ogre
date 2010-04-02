@@ -116,8 +116,8 @@ namespace QuickGUI
 		static WidgetEvent parseWidgetEvent(const std::string& s);
 		static WindowEvent parseWindowEvent(const std::string& s);
 
-	protected:
-	private:
+	public:
+	public:
 	};
 }
 

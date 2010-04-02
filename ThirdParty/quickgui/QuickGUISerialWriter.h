@@ -88,13 +88,13 @@ namespace QuickGUI
 		bool isSerialWriter();
 		bool isSerialReader();
 
-	protected:
+	public:
 		SerialWriter();
 		virtual ~SerialWriter() {}
 
 		void _helperFunction(const Ogre::String& propertyName, const Ogre::String& value, const Ogre::String& defaultValue);
 
-	private:
+	public:
 	};
 }
 

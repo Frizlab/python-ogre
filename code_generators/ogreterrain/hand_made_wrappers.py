@@ -11,8 +11,11 @@ TerrainGroup_boxIntersects(::Ogre::TerrainGroup & me, Ogre::AxisAlignedBox& box)
     me.boxIntersects(box, &resultList);
     for (Ogre::TerrainGroup::TerrainList::iterator ti = resultList.begin();
 	   ti != resultList.end(); ++ti)
-       outlist.append ( *ti );
-       
+       outlist.append ( boost::ref(*ti) );
+// do I really need to increment the reference here or by having it in the list it's OK??
+//       Py_INCREF( );
+
+
     return outlist;
 }
 
@@ -25,10 +28,13 @@ TerrainGroup_sphereIntersects(::Ogre::TerrainGroup & me, Ogre::Sphere& sphere)
     me.sphereIntersects(sphere, &resultList);
     for (Ogre::TerrainGroup::TerrainList::iterator ti = resultList.begin();
 	   ti != resultList.end(); ++ti)
-       outlist.append ( *ti );
+       outlist.append (  boost::ref(*ti) );
+// do I really need to increment the reference here or by having it in the list it's OK??
+//       Py_INCREF( );
 
     return outlist;
 }
+
 //		void convertWorldPositionToTerrainSlot(const Vector3& pos, long *x, long *y) const;
 
 """

@@ -44,7 +44,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		TextUserDesc();
 		virtual ~TextUserDesc() {}
 	public:
@@ -275,7 +275,7 @@ namespace QuickGUI
 		*/
 		virtual void setVerticalTextAlignment(VerticalTextAlignment a);
 
-	protected:
+	public:
 		TextUser();
 		virtual ~TextUser();
 
@@ -295,7 +295,7 @@ namespace QuickGUI
 		*/
 		void Redraw();
 
-	private:
+	public:
 	};
 }
 

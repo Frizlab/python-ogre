@@ -44,7 +44,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		TitleBarDesc();
 		virtual ~TitleBarDesc() {}
 	public:
@@ -99,7 +99,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	public:
 		TitleBar(const Ogre::String& name);
 		virtual ~TitleBar();
 
@@ -118,7 +118,7 @@ namespace QuickGUI
 		*/
 		virtual void onDraw();
 
-	private:
+	public:
 	};
 }
 

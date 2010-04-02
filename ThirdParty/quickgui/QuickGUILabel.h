@@ -41,7 +41,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		LabelDesc();
 		virtual ~LabelDesc() {}
 	public:
@@ -122,7 +122,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 		Label(const Ogre::String& name);
 		virtual ~Label();
 
@@ -134,7 +134,7 @@ namespace QuickGUI
 		*/
 		virtual void onDraw();
 
-	private:
+	public:
 	};
 }
 

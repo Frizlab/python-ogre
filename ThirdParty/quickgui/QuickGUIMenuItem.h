@@ -43,7 +43,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	//protected:
+	public:
 		MenuItemDesc();
 		virtual ~MenuItemDesc() {}
 	public:
@@ -111,7 +111,7 @@ namespace QuickGUI
 		*/
 		virtual void setVisible(bool visible);
 
-	//protected:
+	public:
 		MenuItem(const Ogre::String& name);
 		virtual ~MenuItem();
 
@@ -130,7 +130,7 @@ namespace QuickGUI
 		*/
 		virtual void notifyToolBarParent(ToolBar* b);
 
-	private:
+	public:
 	};
 }
 

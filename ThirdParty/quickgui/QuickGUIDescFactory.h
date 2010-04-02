@@ -50,7 +50,7 @@ namespace QuickGUI
 		// These Widgets need to create/destroy Descs
 		friend class Sheet;
 		friend class Widget;
-	protected:
+	public:
 		typedef Desc* (DescFactory::*createDescFunction)();
 
 	public:
@@ -70,7 +70,7 @@ namespace QuickGUI
 			return (mFunctorMap.erase(className) == 1);
 		}
 
-	protected:
+	public:
 
 		template<typename ClassType>
 		ClassType* createInstance(const Ogre::String& className)
@@ -90,7 +90,7 @@ namespace QuickGUI
 			OGRE_DELETE_T(instance,Desc,Ogre::MEMCATEGORY_GENERAL);
 		}
 
-	protected:
+	public:
 		DescFactory() {}
 		virtual ~DescFactory() {}
 

@@ -91,10 +91,10 @@ namespace QuickGUI
 		virtual void IO(const Ogre::String& propertyName, VerticalAnchor* member, VerticalAnchor defaultValue) = 0;
 		virtual void IO(const Ogre::String& propertyName, VerticalTextAlignment* member, VerticalTextAlignment defaultValue) = 0;
 
-	protected:
+	public:
 		ScriptDefinition* mCurrentDefinition;
 
-	private:
+	public:
 	};
 }
 

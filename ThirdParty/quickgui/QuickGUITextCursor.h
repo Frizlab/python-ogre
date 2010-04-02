@@ -94,7 +94,7 @@ namespace QuickGUI
 		*/
 		void setVisible(bool visible);
 
-	protected:
+	public:
 		Rect mDimensions;
 		bool mVisible;
 
@@ -104,7 +104,7 @@ namespace QuickGUI
 		// storing pointer to save lookup time for drawing operation.
 		SkinElement* mSkinElement;
 
-	private:
+	public:
 	};
 }
 

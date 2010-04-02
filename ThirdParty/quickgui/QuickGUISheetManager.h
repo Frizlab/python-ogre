@@ -101,7 +101,7 @@ namespace QuickGUI
 		*/
 		bool sheetExists(const std::string& sheetName);
 
-	protected:
+	public:
 		SheetManager();
 		virtual ~SheetManager();
 
@@ -113,7 +113,7 @@ namespace QuickGUI
 		std::list<Sheet*> mSheets;
 		std::list<Sheet*> mFreeList;
 
-	private:
+	public:
 	};
 }
 

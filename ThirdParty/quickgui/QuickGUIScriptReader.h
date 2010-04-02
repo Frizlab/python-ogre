@@ -95,11 +95,11 @@ namespace QuickGUI
 
 		std::list<ScriptDefinition*> parseString(const Ogre::String& s);
 
-	//protected:
+	public:
 		ScriptReader();
 		virtual ~ScriptReader();
-//		ScriptReader(ScriptReader const&);	// copy ctor is hidden
-//		ScriptReader& operator=(ScriptReader const&);	// assign op is hidden
+		ScriptReader(ScriptReader const&);	// copy ctor is hidden
+		ScriptReader& operator=(ScriptReader const&);	// assign op is hidden
 
 		bool mSkinTypesNeedUpdate;
 

@@ -49,7 +49,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		PropertyGridSectionDesc();
 		virtual ~PropertyGridSectionDesc() {}
 	public:
@@ -167,7 +167,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	public:
 		PropertyGridSection(const Ogre::String& name);
 		virtual ~PropertyGridSection();
 
@@ -235,7 +235,7 @@ namespace QuickGUI
 		// If width given is larger than label width, width is updated
 		void updateLabelWidth(float width);
 
-	private:
+	public:
 	};
 }
 

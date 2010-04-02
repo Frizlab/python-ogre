@@ -277,7 +277,7 @@ namespace QuickGUI
 
 		using ContainerWidget::destroyChild;		
 
-	protected:
+	public:
 		Panel(const Ogre::String& name);
 		virtual ~Panel();
 
@@ -289,7 +289,7 @@ namespace QuickGUI
 		*/
 		virtual void onDraw();
 
-	private:
+	public:
 	};
 }
 

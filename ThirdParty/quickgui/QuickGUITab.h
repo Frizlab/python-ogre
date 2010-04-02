@@ -45,7 +45,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		TabDesc();
 		virtual ~TabDesc() {}
 	public:
@@ -152,7 +152,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	public:
 		Tab(const Ogre::String& name);
 		virtual ~Tab();
 
@@ -179,7 +179,7 @@ namespace QuickGUI
 		// Updates the SkinElement used for border detection and client area calculations.
 		virtual void updateSkinElement();
 
-	private:
+	public:
 	};
 }
 

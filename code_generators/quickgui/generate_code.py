@@ -54,6 +54,10 @@ from common_utils import docit
 from pyplusplus.decl_wrappers import algorithm
 algorithm.create_valid_name = common_utils.PO_create_valid_name 
 
+# setup a shortcut to the logger functions
+from common_utils import log_exclude as log_exclude
+from common_utils import log_include as log_include
+
 
 MAIN_NAMESPACE = 'QuickGUI'
 
@@ -110,7 +114,15 @@ def ManualExclude ( mb ):
         if '::Ogre::String const' in v.type.decl_string:
             v.exclude()
             print "Excluding Const String var:",v, v.decl_string   
-        
+            
+    try:
+        main_ns.class_('::QuickGUI::ScriptReader').operator('=').exclude()
+        log_exclude("ScriptReader operator =")
+    except:
+        log_exclude("ScriptReader operator =", False)
+
+    main_ns.constructor('::QuickGUI::Character::Character', arg_types=[None]).exclude()
+    main_ns.class_('::QuickGUI::ScriptReader').noncopyable = True
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -270,7 +282,7 @@ def generate_code():
         defined_symbols.append ( x)
 
     defined_symbols.append( 'VERSION_' + environment.quickgui.version )  
-    
+
     #
     # build the core Py++ system from the GCCXML created source
     #    
@@ -357,6 +369,7 @@ def generate_code():
                             recursive=False )
         
 if __name__ == '__main__':
+    common_utils.setup_logging ("log.out")
     start_time = time.clock()
     generate_code()
     print 'Source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )

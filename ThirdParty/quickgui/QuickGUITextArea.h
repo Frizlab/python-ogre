@@ -48,7 +48,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		TextAreaDesc();
 		virtual ~TextAreaDesc() {}
 	public:
@@ -400,7 +400,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 		TextArea(const Ogre::String& name);
 		virtual ~TextArea();
 
@@ -446,7 +446,7 @@ namespace QuickGUI
 
 		virtual void _setScrollY(float percentage);
 
-	private:
+	public:
 	};
 }
 

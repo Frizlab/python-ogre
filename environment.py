@@ -6,6 +6,7 @@ import subprocess
 _LOGGING_ON = False
 _PRECOMPILED = True
 _DEBUG = False
+_DEBUG = True
 
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "7"
@@ -359,11 +360,11 @@ class pyplusplus(module):
     if isLinux() or isMac():
         if UseSystem:
             buildCmds = [
-                [0, _sudo + " python setup.py install " , os.path.join(os.getcwd(), "pygccxml") ],
+                [0, _sudo + " python setup.py install " , os.path.join(os.getcwd(), "pyplusplus") ],
             ]
         else:
             buildCmds = [
-                [0, _sudo + " python setup.py install  --prefix=" + PREFIX, os.path.join(os.getcwd(), "pygccxml") ],
+                [0, _sudo + " python setup.py install  --prefix=" + PREFIX, os.path.join(os.getcwd(), "pyplusplus") ],
             ]
 
     if isWindows():
@@ -1108,14 +1109,14 @@ class ogreode(pymodule):
                     ]
 
 class quickgui(pymodule):
-    version = "r1174"
+    version = "10.1"
     name = 'quickgui'
     parent = "ogre/gui"
 
     ## note the defined for _QuickGUIExport forces non dll usage
     if os.name == 'nt':
         ## note the defined for _QuickGUIExport forces non dll usage
-        CCFLAGS = ' -DWIN32 -DNDEBUG -DWINDOWS -D_QuickGUIExport=""  -D_PRECOMP'
+        CCFLAGS = ' -DWIN32 -DNDEBUG -DWINDOWS -D_QuickGUIExport=""  -D_PRECOMP '
     else:
         CCFLAGS = ' -D_QuickGUIExport="" '
     cflags = ""
@@ -1803,7 +1804,7 @@ class hydrax(pymodule):
             include_dirs.insert(0, p)
 
 class hikari(pymodule):
-    active=False
+    active=True
     version = "r23"
     name = 'hikari'
     parent = "ogre/gui"

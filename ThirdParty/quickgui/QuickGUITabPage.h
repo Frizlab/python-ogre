@@ -184,7 +184,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	public:
 		TabPage(const Ogre::String& name);
 		virtual ~TabPage();
 
@@ -238,7 +238,7 @@ namespace QuickGUI
 		// Updates the SkinElement used for border detection and client area calculations.
 		virtual void updateSkinElement();
 
-	private:
+	public:
 	};
 }
 

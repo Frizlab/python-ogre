@@ -42,7 +42,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ModalWindowDesc();
 		virtual ~ModalWindowDesc() {}
 	public:
@@ -114,11 +114,11 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 		ModalWindow(const Ogre::String& name);
 		virtual ~ModalWindow();
 
-	private:
+	public:
 	};
 }
 

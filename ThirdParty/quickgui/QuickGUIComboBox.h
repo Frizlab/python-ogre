@@ -52,7 +52,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ComboBoxDesc();
 		virtual ~ComboBoxDesc() {}
 	public:
@@ -309,7 +309,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 		ComboBox(const Ogre::String& name);
 		virtual ~ComboBox();
 

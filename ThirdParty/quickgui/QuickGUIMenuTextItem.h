@@ -41,7 +41,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		MenuTextItemDesc();
 		virtual ~MenuTextItemDesc() {}
 	public:
@@ -96,7 +96,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	public:
 		MenuTextItem(const Ogre::String& name);
 		virtual ~MenuTextItem();
 
@@ -122,7 +122,7 @@ namespace QuickGUI
 		// Updates the SkinElement used for border detection and client area calculations.
 		virtual void updateSkinElement();
 
-	private:
+	public:
 	};
 }
 

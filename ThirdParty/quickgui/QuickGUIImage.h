@@ -43,7 +43,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ImageDesc();
 		virtual ~ImageDesc() {}
 	public:
@@ -183,7 +183,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 		Image(const Ogre::String& name);
 		virtual ~Image();
 
@@ -211,7 +211,7 @@ namespace QuickGUI
 		void _drawImageBackground(Brush* brush);
 		void _drawImage(Brush* brush);
 
-	private:
+	public:
 	};
 }
 

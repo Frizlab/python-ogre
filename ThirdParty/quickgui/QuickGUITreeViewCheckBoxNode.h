@@ -42,7 +42,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	//protected:
+	public:
 		TreeViewCheckBoxNodeDesc();
 		virtual ~TreeViewCheckBoxNodeDesc() {}
 	public:
@@ -153,7 +153,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	//protected:
+	public:
 		TreeViewCheckBoxNode(const Ogre::String& name);
 		virtual ~TreeViewCheckBoxNode();
 

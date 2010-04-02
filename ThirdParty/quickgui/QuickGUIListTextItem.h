@@ -41,7 +41,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ListTextItemDesc();
 		virtual ~ListTextItemDesc() {}
 	public:
@@ -95,7 +95,7 @@ namespace QuickGUI
 		*/
 		virtual void updateClientDimensions();
 
-	protected:
+	public:
 		ListTextItem(const Ogre::String& name);
 		virtual ~ListTextItem();
 
@@ -106,7 +106,7 @@ namespace QuickGUI
 		*/
 		virtual void onDraw();
 
-	private:
+	public:
 	};
 }
 

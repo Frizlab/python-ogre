@@ -44,7 +44,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		VScrollBarDesc();
 		virtual ~VScrollBarDesc() {}
 	public:
@@ -249,7 +249,7 @@ namespace QuickGUI
 		using ComponentWidget::setSize;
 		using ComponentWidget::setWidth;
 
-	protected:
+	public:
 		VScrollBar(const Ogre::String& name);
 		virtual ~VScrollBar();
 
@@ -288,7 +288,7 @@ namespace QuickGUI
 		void onDownClicked(const EventArgs& args);
 		void onBarClicked(const EventArgs& args);
 
-	private:
+	public:
 	};
 }
 

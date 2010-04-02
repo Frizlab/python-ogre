@@ -69,8 +69,8 @@ namespace QuickGUI
 
 		Exception( int number, const Ogre::String& description, const Ogre::String& source );
 
-	protected:
-	private:
+	public:
+	public:
 	};
 }
 

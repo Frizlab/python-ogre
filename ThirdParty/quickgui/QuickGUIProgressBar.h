@@ -52,7 +52,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ProgressBarDesc();
 		virtual ~ProgressBarDesc() {}
 	public:
@@ -231,7 +231,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	protected:
+	public:
 		ProgressBar(const Ogre::String& name);
 		virtual ~ProgressBar();
 
@@ -255,7 +255,7 @@ namespace QuickGUI
 		*/
 		virtual void onDraw();
 
-	private:
+	public:
 	};
 }
 

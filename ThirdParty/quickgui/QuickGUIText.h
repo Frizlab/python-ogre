@@ -559,7 +559,7 @@ namespace QuickGUI
 		*/
 		void update();
 
-	protected:
+	public:
 		TextDesc* mTextDesc;
 
 		bool mMaskText;
@@ -592,7 +592,7 @@ namespace QuickGUI
 		*/
 		void _drawTextLines(Point& position);
 
-	private:
+	public:
 	};
 }
 

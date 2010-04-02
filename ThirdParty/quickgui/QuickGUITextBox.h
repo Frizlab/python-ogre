@@ -51,7 +51,7 @@ namespace QuickGUI
 		// Console has a TextBox Desc as a member
 		friend class ConsoleDesc;
 		friend class DescFactory;
-	//protected:
+	public:
 		TextBoxDesc();
 		virtual ~TextBoxDesc() {}
 	public:
@@ -371,7 +371,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	//protected:
+	public:
 		TextBox(const Ogre::String& name);
 		virtual ~TextBox();
 
@@ -412,7 +412,7 @@ namespace QuickGUI
 		void onTripleClick(const EventArgs& args);
 		void onVisibleChanged(const EventArgs& args);
 
-	private:
+	public:
 	};
 }
 

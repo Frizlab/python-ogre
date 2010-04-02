@@ -50,7 +50,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ContextMenuDesc();
 		virtual ~ContextMenuDesc() {}
 	public:
@@ -183,7 +183,7 @@ namespace QuickGUI
 		*/
 		void show(const Point& position);
 
-	protected:
+	public:
 		ContextMenu(const Ogre::String& name);
 		virtual ~ContextMenu();
 
@@ -210,7 +210,7 @@ namespace QuickGUI
 		void onPositionChanged(const EventArgs& args);
 		void onVisibleChanged(const EventArgs& args);
 
-	private:
+	public:
 	};
 }
 

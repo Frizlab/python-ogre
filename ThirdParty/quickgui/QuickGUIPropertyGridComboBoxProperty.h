@@ -45,7 +45,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		PropertyGridComboBoxPropertyDesc();
 		virtual ~PropertyGridComboBoxPropertyDesc() {}
 	public:
@@ -160,7 +160,7 @@ namespace QuickGUI
 		*/
 		void showDropDownList();
 
-	protected:
+	public:
 		PropertyGridComboBoxProperty(const Ogre::String& name);
 		virtual ~PropertyGridComboBoxProperty();
 
@@ -170,7 +170,7 @@ namespace QuickGUI
 
 		void updateFieldSkin();
 
-	private:
+	public:
 	};
 }
 

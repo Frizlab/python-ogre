@@ -49,7 +49,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	//protected:
+	public:
 		TreeViewDesc();
 		virtual ~TreeViewDesc() {}
 	public:
@@ -262,7 +262,7 @@ namespace QuickGUI
 
 		using ContainerWidget::setClipChildrenToDimensions;		
 
-	//protected:
+	public:
 		TreeView(const Ogre::String& name);
 		virtual ~TreeView();
 
@@ -304,7 +304,7 @@ namespace QuickGUI
 		*/
 		void onMouseDown(const EventArgs& args);
 
-	private:
+	public:
 	};
 }
 

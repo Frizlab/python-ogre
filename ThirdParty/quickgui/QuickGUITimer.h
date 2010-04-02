@@ -67,7 +67,7 @@ namespace QuickGUI
 			if(!d_undefined) 
 				(d_object->*d_function)();
 		}
-	protected:
+	public:
 		TimerCallback	d_function;
 		T*				d_object;
 		bool			d_undefined;
@@ -146,7 +146,7 @@ namespace QuickGUI
 		*/
 		void stop();
 
-	protected:
+	public:
 		Timer(TimerDesc& d);
 		~Timer();
 
@@ -161,7 +161,7 @@ namespace QuickGUI
 		/// Callback to fire
 		TimerCallbackSlot* mCallback;
 
-	private:
+	public:
 	};
 }
 

@@ -39,7 +39,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ListImageItemDesc();
 		virtual ~ListImageItemDesc() {}
 	public:
@@ -110,7 +110,7 @@ namespace QuickGUI
 		*/
 		void setTileImage(bool tile);
 
-	protected:
+	public:
 		ListImageItem(const Ogre::String& name);
 		virtual ~ListImageItem();
 
@@ -121,7 +121,7 @@ namespace QuickGUI
 		*/
 		virtual void onDraw();
 
-	private:
+	public:
 	};
 }
 

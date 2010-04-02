@@ -65,14 +65,14 @@ namespace QuickGUI
 		*/
 		DescFactory* getDescFactory();
 
-	protected:
+	public:
 		FactoryManager();
 		virtual ~FactoryManager();
 
 		WidgetFactory* mWidgetFactory;
 		DescFactory* mDescFactory;
 
-	private:
+	public:
 	};
 }
 

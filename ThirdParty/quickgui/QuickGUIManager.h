@@ -254,7 +254,7 @@ namespace QuickGUI
 		*/
 		void setViewport(Ogre::Viewport* vp);
 
-	protected:
+	public:
 		/** Constructor */
 		GUIManager(GUIManagerDesc& d);
 		/** Standard Destructor. */
@@ -342,7 +342,7 @@ namespace QuickGUI
 		void checkIfCursorOverResizableBorder(Point position);
 
 		bool injectMouseMove(const int& xPixelOffset, const int& yPixelOffset);
-	private:
+	public:
 	};
 }
 

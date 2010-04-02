@@ -43,7 +43,7 @@ namespace QuickGUI
 	public:
 		friend class ToolBar;
 		friend class DescFactory;
-	//protected:
+	public:
 		ToolBarItemDesc();
 		virtual ~ToolBarItemDesc() {}
 	public:
@@ -112,7 +112,7 @@ namespace QuickGUI
 		*/
 		virtual void setEnabled(bool enabled);
 
-	//protected:
+	public:
 		ToolBarItem(const Ogre::String& name);
 		virtual ~ToolBarItem();
 
@@ -132,7 +132,7 @@ namespace QuickGUI
 		*/
 		void setIndex(unsigned int index);
 
-	private:
+	public:
 	};
 }
 

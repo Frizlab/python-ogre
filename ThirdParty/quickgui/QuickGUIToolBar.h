@@ -47,7 +47,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	//protected:
+	public:
 		ToolBarDesc();
 		virtual ~ToolBarDesc() {}
 	public:
@@ -172,7 +172,7 @@ namespace QuickGUI
 		using Widget::setVisible;
 		using Widget::setWidth;
 
-	//protected:
+	public:
 		ToolBar(const Ogre::String& name);
 		virtual ~ToolBar();
 
@@ -196,7 +196,7 @@ namespace QuickGUI
 		*/
 		virtual void onDraw();
 
-	private:
+	public:
 	};
 }
 

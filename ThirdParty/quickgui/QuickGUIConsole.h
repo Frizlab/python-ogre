@@ -52,7 +52,7 @@ namespace QuickGUI
 	{
 	public:
 		friend class DescFactory;
-	protected:
+	public:
 		ConsoleDesc();
 		virtual ~ConsoleDesc() {}
 	public:
@@ -300,7 +300,7 @@ namespace QuickGUI
 		using ComponentWidget::setSize;
 		using ComponentWidget::setWidth;
 
-	protected:
+	public:
 		Console(const Ogre::String& name);
 		virtual ~Console();
 

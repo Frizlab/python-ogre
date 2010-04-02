@@ -99,7 +99,7 @@ namespace QuickGUI
 		*/
 		virtual void serialize(SerialBase* b);
 
-	protected:
+	public:
 		Ogre::String mName;
 		Ogre::String mClassName;
 
