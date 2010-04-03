@@ -582,7 +582,6 @@ class sample (sf.sample):
         #blankTerrain = True
 
         self.mTerrainGlobals = ogreterrain.TerrainGlobalOptions()
-
         self.mEditMarker = self.mSceneMgr.createEntity("editMarker", "sphere.mesh")
         self.mEditNode = self.mSceneMgr.getRootSceneNode().createChildSceneNode()
         self.mEditNode.attachObject(self.mEditMarker)
@@ -604,7 +603,6 @@ class sample (sf.sample):
         lightdir= ogre.Vector3 (0.55, -0.3, 0.75)
         lightdir.normalise()
 
-
         l = self.mSceneMgr.createLight("tstLight")
         l.setType(ogre.Light.LT_DIRECTIONAL)
         l.setDirection(lightdir)
@@ -612,7 +610,6 @@ class sample (sf.sample):
         l.setSpecularColour(ogre.ColourValue(0.4, 0.4, 0.4))
 
         self.mSceneMgr.setAmbientLight(ogre.ColourValue(0.2, 0.2, 0.2))
-
 
         self.mTerrainGroup = ogreterrain.TerrainGroup(self.mSceneMgr, ogreterrain.Terrain.ALIGN_X_Z, TERRAIN_SIZE, TERRAIN_WORLD_SIZE)
         self.mTerrainGroup.setFilenameConvention(TERRAIN_FILE_PREFIX, TERRAIN_FILE_SUFFIX)
@@ -646,7 +643,6 @@ class sample (sf.sample):
         self.mTerrainGroup.freeTemporaryResources()
 
 
-
         # create a few entities on the terrain
         e = self.mSceneMgr.createEntity("tudorhouse.mesh")
         entPos = ogre.Vector3 (self.mTerrainPos.x + 2043, 0, self.mTerrainPos.z + 1715)
@@ -678,48 +674,14 @@ class sample (sf.sample):
 
         self.mSceneMgr.setSkyBox(True, "Examples/CloudyNoonSkyBox")
 
-    def __del__(self):
-        print "IN DELETE"
-        del self.mTerrainPaging
-        print "IN DELETE"
-        print self.mTerrainGroup
-        print dir(self.mTerrainGroup)
-        self.mTerrainGroup.freeTemporaryResources()
-        print "Freed resources"
-        i=self.mTerrainGroup.getTerrainIterator()
-        print i
-        print dir(i)
-        while i.hasMoreElements():
-            v=i.getNext()
-            print v
-            #del v
-        slots= self.mTerrainGroup.getTerrainSlot(0,0)
-        print "Got slot"
-        del self.mTerrainGlobals
-        print slots
-
-        slots.freeInstance()
-        print "Freeinstance"
-        self.mTerrainGroup.removeAllTerrains()
-        print "Unloaded"
-
-        print "deleting"
-        del self.mTerrainGroup
-        print "OK"
-        sys.exit()
-
-        if (self.mTerrainPaging):
-            print "IN DELETE1"
+    def _shutdown(self):
+        if self.mTerrainPaging:
             del self.mTerrainPaging
             del self.mPageManager
-            print "IN DELETE2"
         else:
-            print "IN DELETE3"
-            print self.mTerrainGroup
             del self.mTerrainGroup
-        print "IN DELETE4"
         del self.mTerrainGlobals
-        print "Leaving delete"
+        sf.sample._shutdown(self)
 
 if __name__ == '__main__':
     con = sf.context()
