@@ -6,7 +6,7 @@ import subprocess
 _LOGGING_ON = False
 _PRECOMPILED = True
 _DEBUG = False
-_DEBUG = True
+#_DEBUG = True
 
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "7"
@@ -2016,8 +2016,13 @@ if ogre.version.startswith ("1.7"):
         lib_dirs = [
             boost.PATH_LIB,
             Config.PATH_LIB_Ogre_OgreMain,
+            Config.PATH_LIB_Ogre_OgreMain_debug,
         ]
-        libs = [boost.lib, 'OgreTerrain', 'OgrePaging', 'OgreMain' ]
+        if _DEBUG:
+            libs = [boost.lib, 'OgreTerrain_d','OgrePaging_d','OgreMain_d']
+        else:
+            libs = [boost.lib, 'OgreTerrain', 'OgrePaging', 'OgreMain' ]
+
         moduleLibs = [os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgreTerrain'),
              ]
 
@@ -2036,8 +2041,12 @@ if ogre.version.startswith ("1.7"):
         lib_dirs = [
             boost.PATH_LIB,
             Config.PATH_LIB_Ogre_OgreMain,
+            Config.PATH_LIB_Ogre_OgreMain_debug,
         ]
-        libs = [boost.lib, 'OgrePaging', 'OgreMain' ]
+        if _DEBUG:
+            libs = [boost.lib,'OgrePaging_d','OgreMain_d']
+        else:
+            libs = [boost.lib, 'OgrePaging', 'OgreMain' ]
         ModuleName = "ogrepaging"
         descText = "OgrePaging: New Paging Manager in Ogre"
         moduleLibs = [os.path.join(Config.PATH_Ogre, 'bin', 'Release', 'OgrePaging'),
@@ -2076,9 +2085,13 @@ if ogre.version.startswith ("1.7"):
         lib_dirs = [
             boost.PATH_LIB,
             Config.PATH_LIB_Ogre_OgreMain,
+            Config.PATH_LIB_Ogre_OgreMain_debug,
             Config.PATH_LIB_OIS
         ]
-        libs = [boost.lib, 'OgreMain', 'OIS', 'User32']
+        if _DEBUG:
+            libs = [boost.lib, 'OgreMain_d', 'OIS_d', 'User32']
+        else:
+            libs = [boost.lib, 'OgreMain', 'OIS', 'User32']
         ModuleName = "ogresdksample"
         descText = "OgreSDKSample: New SDK Sample Framework in Ogre"
 
