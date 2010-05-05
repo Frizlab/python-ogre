@@ -32,9 +32,9 @@ Py++, hence making maintainence etc very simple."""
 
 METADATA = {
     "name":             "Python-Ogre",
-    "version":          "1.7RC1",
+    "version":          "1.7.1",
     "license":          "LGPL",
-    "url":              "http://python-ogre.python-hosting.com/",
+    "url":              "http://www.python-ogre.org/",
     "author":           "Lakin Wecker, Roman Yakovenko, Andy Miller",
     "author_email":     "python-ogre-developers@googlegroups.com",
     "description":      "Py++ Ogre Python Binding",
