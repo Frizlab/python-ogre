@@ -10,7 +10,7 @@ _DEBUG = False
 
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "7"
-PythonOgrePatchVersion = "0"
+PythonOgrePatchVersion = "1"
 
 _UserName = getpass.getuser()
 
@@ -674,7 +674,7 @@ class ogre(pymodule):
     myLibraries = ['OgreMain']
     libraries = myLibraries
     if isWindows():
-        version = "1.7.0"
+        version = "1.7.1"
         source = [
             [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-7-0.zip", downloadPath],
             [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],

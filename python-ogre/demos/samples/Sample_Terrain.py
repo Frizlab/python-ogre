@@ -139,15 +139,15 @@ class sample (sf.sample):
                     endy= long((tsPos.y + self.mBrushSizeTerrainSpace) * imgSize)
                     startx = max(startx, 0)
                     starty = max(starty, 0)
-                    endx = min(endx, imgSize)
-                    endy = min(endy, imgSize)
+                    endx = min(endx, long(imgSize))
+                    endy = min(endy, long(imgSize))
                     for y in range(starty,endy+1):
                         for x in range(startx,endx+1) :
                             tsXdist = (float(x) / float(imgSize)) - tsPos.x
                             tsYdist = (float(y) / float(imgSize))  - tsPos.y
 
-                            weight = min(1.0,
-                                float(Math.sqrt(tsYdist * tsYdist + tsXdist * tsXdist)) / float(0.5 * self.mBrushSizeTerrainSpace))
+                            weight = float(Math.sqrt(tsYdist * tsYdist + tsXdist * tsXdist)) / float(0.5 * self.mBrushSizeTerrainSpace)
+                            weight = min ( 1.0, weight)
                             weight = 1.0 - (weight * weight)
                             paint = weight * timeElapsed
                             imgY = imgSize - y
@@ -155,6 +155,7 @@ class sample (sf.sample):
                                 val = layer.getBlendValue(x, imgY) + paint
                             else:
                                 val = layer.getBlendValue(x, imgY) - paint
+                            v1 = val
                             val = Clamp(val, 0.0, 1.0)
                             layer.setBlendValue(x, imgY, val)
                     layer.update()

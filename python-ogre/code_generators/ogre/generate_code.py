@@ -179,8 +179,16 @@ def ManualExclude ( mb ):
         # this one expects a pointer to matrix4 and will return mBoneList.size() of them
         '::Ogre::Skeleton::_getBoneMatrices',
         '::Ogre::DefaultWorkQueueBase::RequestHandlerHolder',
-
-
+        
+        # new in 1.7.1 SDK
+        '::Ogre::ScriptTranslator::getConstantType',
+        '::Ogre::ScriptTranslator::getFloats',
+        '::Ogre::ScriptTranslator::getInts',
+        '::Ogre::ScriptTranslator::getColour',
+        '::Ogre::ScriptTranslator::getMatrix4',
+        '::Ogre::ScriptTranslator::getNodeAt',
+#         '::Ogre::SceneNode::getAttachedObjectIterator',
+#         '::Ogre::Node::getChildIterator'
         ]
     for e in ex:
         try:
@@ -402,6 +410,10 @@ def ManualExclude ( mb ):
           '::Ogre::vector<Ogre::SceneManager::LightInfo',
           '::Ogre::map<unsigned short, std::list<Ogre::SharedPtr<Ogre::DefaultWorkQueueBase::RequestHandlerHolder',
           '::Ogre::list<Ogre::SharedPtr<Ogre::DefaultWorkQueueBase::RequestHandlerHolder>',
+          '::Ogre::MapIterator<stdext::hash_map',
+          '::Ogre::ConstMapIterator<class stdext::hash_map',
+          '::Ogre::MapIteratorWrapper<stdext::hash_map',
+          '::Ogre::ConstMapIteratorWrapper<class stdext::hash_map',
           ]
     for c in main_ns.classes():
         for e in ex:
@@ -411,7 +423,9 @@ def ManualExclude ( mb ):
                     log_exclude(c, extra="Has Protected Member(s)")
                 except:
                     log_exclude(c, False)
-
+#     for c in main_ns.classes():
+#         if 'Iterator' in c.decl_string:
+#             print "ITER:", c
 ####################b########################################
 ##
 ##  And there are things that manually need to be INCLUDED
