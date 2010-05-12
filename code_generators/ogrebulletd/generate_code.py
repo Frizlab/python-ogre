@@ -16,7 +16,7 @@ try:
    import psyco
    psyco.full()
 except ImportError:
-   pass
+   print "Psyco not enabled"
 
 #add environment to the path
 sys.path.append( os.path.join( '..', '..' ) )
@@ -252,8 +252,10 @@ def generate_code():
                                            )
                                            
     # if this module depends on another set it here                                           
-    mb.register_module_dependency ( environment.ogre.generated_dir ) # ,environment.ogrebulletd.generated_dir] )
-    
+    mb.register_module_dependency ( environment.ogre.generated_dir )
+    mb.register_module_dependency ( environment.ogrebulletc.generated_dir )
+    mb.register_module_dependency ( environment.bullet.generated_dir )
+
     # normally implicit conversions work OK, however they can cause strange things to happen so safer to leave off
     mb.constructors().allow_implicit_conversion = False                                           
     
