@@ -35,6 +35,8 @@ THE SOFTWARE.
 
 namespace QuickGUI
 {
+    Character::Character( void ) {};
+    
 	Character::Character(Ogre::UTFString::code_point cp, Ogre::Font* fp, ColourValue cv) :
 		codePoint(cp), 
 		fontPtr(fp),

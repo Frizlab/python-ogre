@@ -39,6 +39,8 @@ namespace QuickGUI
 		OGRE_NEW ScriptReader();
 	}
 
+    ScriptReader::ScriptReader(ScriptReader const&) {};
+    
 	ScriptReader::ScriptReader() :
 		mBegin(false),
 		mSkinTypesNeedUpdate(false)
