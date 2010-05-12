@@ -6,26 +6,7 @@ import shutil
 import hashlib
 sys.path.insert(0,'..') # need this to get enrivonment.py into path
 import environment
-
-def samefile ( sourcefile, destfile):
-    if not os.path.exists( destfile ):
-        return False
-    if not os.path.exists( sourcefile ):
-        return False
-        
-    inhash = hashlib.md5() #needs python 2.5 or greater
-    inhash.update ( open ( sourcefile ).read() )
-    outhash = hashlib.md5()
-    outhash.update ( open ( destfile ).read() )
-    if inhash.digest() != outhash.digest():
-        return False    
-        
-    ## probably don't need these as hash should handle it fine..    
-    if os.stat(sourcefile).st_mtime > os.stat(destfile).st_mtime:
-        return False
-    if os.stat(sourcefile).st_size != os.stat(destfile).st_size:
-        return False
-    return True
+from utility import * # get samefile helper function
 
 # Handle majority of cases where needed dlls are configured in environment.py
 for name,cls in environment.projects.items():
