@@ -1,0 +1,21 @@
+##
+## Python-Ogre Version 1.7.1
+##
+## This package contains python binding for the Ogre3D graphics library
+## and was built using Py++ and Boost.
+##
+## http://python-ogre.org/
+##
+
+Installing the prebuilt Windows Binary:
+=======================================
+From this directory run:
+    python setup.py install
+This will install the necessary module to your lib/site-packages directory
+
+Run the demos:
+==============
+Change directory to demos/ogre
+Run demos with:
+    python demofilename.py
+

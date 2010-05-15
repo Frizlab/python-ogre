@@ -1,3 +1,10 @@
+May 15 2010: Release 1.7.1
+==========================
+Based on Ogre 1.7.1 SDK
+Changed to Mit license
+Added automation for packaging
+A number of minor fixes
+
 March 21 2010: Release 1.7RC1
 =============================
 Based on Ogre 1.7 SDK
