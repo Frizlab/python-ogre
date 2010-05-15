@@ -288,7 +288,13 @@ class pymodule(module):
     LINKFLAGS = ''
     CCFLAGS = ''
 
-
+    # new attributes to enable a simplistic form of auto packaging
+    # the 'package' that this module belongs to, ie ogre, bullet
+    # assume lowercase class name if not defined
+    # package_name = ''
+    
+    # the demo subdirectory to include - assume lowercase case class name
+    # package_data_dirs = {'':['']}
 
 ####################################################
 ##
@@ -663,11 +669,15 @@ class boost(module):
 ## Now for the actual Python-Ogre Modules
 ##
 ####################################################
-
 class ogre(pymodule):
     ModuleName = 'OGRE'
-
-    moduleParentLocation = "renderer"
+    package_name = 'ogre'
+    package_data_dirs={'demos/ogre' : ['.log', '.pyc','ogre.cfg'],
+                        'plugins' :[],
+                        #'demos/media' :[],
+                        'docs':[],
+                        '.', ['+', 'setup.py', 'ReportVersion.py', 'INSTALL.TXT']
+                        }
     parent = "ogre/renderer"
     dependsOn = ['boost']
     myLibraryPaths = []
@@ -803,6 +813,7 @@ class ogre(pymodule):
 
 class ois(pymodule):
     version = "1.0"
+    package_name = ogre.package_name  # this is part of the base package
 
     parent = "ogre/io"
     if isMac():
@@ -876,7 +887,7 @@ class ois(pymodule):
 class cegui(pymodule):
     parent = "ogre/gui"
     version = "0.7.1"
-
+    package_name = [ogre.package_name, "cegui"]
     if isWindows():
         version = "0.7.1"
         if _PRECOMPILED:
@@ -980,6 +991,8 @@ class ode(pymodule):
     version = "0.11.1"
     parent = "ogre/physics"
     odeLibraryName = 'ode'
+    package_name = 'ode'
+
     libs = [boost.lib, odeLibraryName]
 
     if isWindows():
@@ -1063,6 +1076,8 @@ class ogreode(pymodule):
     cflags = ""
     parent = "ogre/physics"
     base = 'ogreaddons/ogreode'
+    package_name = ode.package_name
+
     baseDir = os.path.join(os.getcwd(), base)
 
     lib_dirs = [
@@ -1558,6 +1573,7 @@ class bullet(pymodule):
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
+    package_name = 'bullet'
     libs = [boost.lib, 'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody', 'libBulletMultiThreaded', 'libGIMPACTUtils']
     if isWindows():
         libs.append('libbulletMath')
@@ -1601,6 +1617,7 @@ class bullet(pymodule):
 class ogrebulletc(pymodule):
     version = "r2684"
     parent = "ogre/physics"
+    package_name = bullet.package_name
     libs = [boost.lib, 'OgreMain',
         'libBulletCollision', 'libBulletDynamics', 'libBulletMultiThreaded',
         'libBulletSoftBody',
@@ -1638,6 +1655,7 @@ class ogrebulletd(pymodule):
     version = "r2684"
     name = 'ogrebulletd'
     parent = "ogre/physics"
+    package_name = bullet.package_name
 
     libs = [boost.lib, 'OgreMain',
         'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody',
@@ -1742,6 +1760,7 @@ class cadunetree(pymodule):
 
 class ogrepcz(pymodule):
     version = ogre.version
+    package_name = ogre.package_name
     name = 'ogrepcz'
     parent = "ogre/renderer"
     include_dirs = [
@@ -1942,6 +1961,7 @@ class plsm2(pymodule):
 
 class ogreoctreesm(pymodule):
     version = ogre.version
+    package_name = ogre.package_name
     if not Config._SVN:
         active = False
     name = 'ogreoctreesm'
@@ -1961,6 +1981,7 @@ class ogreoctreesm(pymodule):
 
 class ogreoctreezone(pymodule):
     version = ogre.version
+    package_name = ogre.package_name
     if not Config._SVN:
         active = False
     active = False # need to write it !!
@@ -1984,6 +2005,7 @@ class ogreoggsound(pymodule):
     active = True
     name = 'ogreoggsound'
     parent = "ogre/sound"
+    package_name=[ogre.package_name, 'ogreoggsound']
     include_dirs = [
         boost.PATH,
         Config.PATH_INCLUDE_Ogre,
@@ -2005,6 +2027,7 @@ class ogreoggsound(pymodule):
 if ogre.version.startswith ("1.7"):
     class ogreterrain(pymodule):
         version = ogre.version
+        package_name = ogre.package_name
         name = 'ogreterrain'
         parent = "ogre/renderer"
         include_dirs = [
@@ -2031,6 +2054,7 @@ if ogre.version.startswith ("1.7"):
 
     class ogrepaging(pymodule):
         version = ogre.version
+        package_name = ogre.package_name
         name = 'ogrepaging'
         parent = "ogre/renderer"
         include_dirs = [
@@ -2054,6 +2078,7 @@ if ogre.version.startswith ("1.7"):
 
     class ogrertshadersystem(pymodule):
         version = ogre.version
+        package_name = ogre.package_name
         name = 'ogrertshadersystem'
         parent = "ogre/renderer"
         include_dirs = [
@@ -2073,6 +2098,7 @@ if ogre.version.startswith ("1.7"):
 
     class ogresdksample(pymodule):
         version = ogre.version
+        package_name = ogre.package_name
         name = 'ogresdksample'
         parent = "ogre/renderer"
         include_dirs = [
@@ -2091,7 +2117,7 @@ if ogre.version.startswith ("1.7"):
         if _DEBUG:
             libs = [boost.lib, 'OgreMain_d', 'OIS_d', 'User32']
         else:
-            libs = [boost.lib, 'OgreMain', 'OIS', 'User32']
+            libs = [boost.lib, 'OgreMain', 'OIS', 'User32', 'Shell32']
         ModuleName = "ogresdksample"
         descText = "OgreSDKSample: New SDK Sample Framework in Ogre"
 
@@ -2362,7 +2388,15 @@ class ogrenewt2(pymodule):
         LINKFLAGS = ' -framework OIS '
 
     ModuleName = 'ogrenewt2'
-        
+
+
+class media(pymodule):
+   """ dummy package so we can build it as a package """
+   package_name = 'media'
+   package_data_dirs={'demos/media':[], 'demos/media_extra':[] }
+   version = ogre.version
+   active = False
+
 ############################################################################################
 
 ## Here is the master list....
@@ -2413,7 +2447,7 @@ projects = {
     'ogreoctreezone' : ogreoctreezone,
     'ogreoctreesm' : ogreoctreesm,
     'ogreoggsound' : ogreoggsound,
-
+    'media':media,
 }
 if ogre.version.startswith ("1.7"):
     projects['ogrepaging'] = ogrepaging
