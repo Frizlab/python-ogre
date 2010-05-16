@@ -21,6 +21,8 @@ default_demo_data=['.log', '.pyc', '.log','ogre.cfg'] # first symbol indicates i
 parent_dir= os.path.abspath(os.path.join(os.getcwd(), '..'))
 temp_area = os.path.join(parent_dir, "temp")
 packager = '"\\Program Files\\7-Zip\\7z.exe"'
+uploader = '"\\Program Files\\PuTTY\\pscp"'
+upload_dest = 'frs.sourceforge.net:/home/pfs/project/p/py/python-ogre/Latest/1.7.1'
 
 if not os.path.isdir(temp_area):
    os.mkdir(temp_area)
@@ -57,6 +59,30 @@ def get_packages():
                else:
                    packages[package_name] = [cls,]
 
+def spawn_task ( task, directory, verbose=False ):
+   if verbose:
+      print "Spawning:", task
+      out = err = ""
+      process = subprocess.Popen (task, shell=True, cwd = directory)
+      returncode = process.wait()
+   else:
+      process = subprocess.Popen (task, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = directory)
+      try:
+         out,err = process.communicate()
+         returncode = process.returncode
+      except:
+         returncode = -1
+
+   if returncode != 0:
+      logger.warning ( "Task Failed" )
+      logger.debug ( out )
+      logger.debug ( err )
+      return False
+   else:
+      logger.debug ( "OK:" + out )
+      logger.debug ( "OK:" + err )
+   return True
+   
 def create_package ( name, filelist ):
    global logger
    listfile = "__"+filename+".lst"
@@ -71,23 +97,18 @@ def create_package ( name, filelist ):
       f.write ("\n")
    f.close()
    task = packager + " a " + os.path.join(temp_area,packagefile )  + " @" +os.path.join(temp_area, listfile)
-   print task
-   process = subprocess.Popen (task, shell=True,stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd = parent_dir)
-   try:
-      out,err = process.communicate()
-      returncode = process.returncode
-   except:
-      returncode = -1
+   return spawn_task ( task, parent_dir )
 
-   if returncode != 0:
-      logger.warning ( "Task Failed" )
-      logger.debug ( out )
-      logger.debug ( err )
-   else:
-      logger.debug ( "OK:" + out )
-      logger.debug ( "OK:" + err )
-   #>"\Program Files\7-Zip\7z.exe" a temp\test.7zip @temp\__ogre-1.7.1-r1113
-   
+def upload_file ( filename, username, password='' ):
+   """
+   uploader media-1.7.1-r1113.7z username@upload_dest
+   """
+   if password:
+      options = ' -pw ' + password + ' '
+   else: options = ' '
+   task = uploader + options + filename + ' ' + username + '@' + upload_dest
+   return spawn_task (task, '.', True)
+
 def build_file_list( name ):
    master=set()
    get_packages()
@@ -95,7 +116,7 @@ def build_file_list( name ):
       exit("invalid module name:"+name)
    for cls in packages[name]:
       if hasattr(cls,"package_data_dirs"): package_data_dirs = cls.package_data_dirs
-      else: package_data_dirs = {os.path.join('demos', name.lower()): default_demo_data }
+      else: package_data_dirs = {os.path.join('demos', cls.ModuleName.lower()): default_demo_data }
 
       # check if it's a 'module/package' with module files-- ie the dummy 'media' package doesn't
       if hasattr(cls, 'parent'):
@@ -114,16 +135,18 @@ def build_file_list( name ):
       # now we do the same thing for the data directories
       for path in package_data_dirs.keys():
          npath = os.path.normpath(path)
-         for root, dirs, files in os.walk(os.path.join(parent_dir,npath)):
-            if not ".svn" in root:
-               for f in files:
-                  r,ext = os.path.splitext(f)
-                  # use a '+' as first file name to indicate an 'include' list
-                  if len(package_data_dirs[path])>0 and package_data_dirs[path][0] == '+':
-                     # special case where only listed files are included
-                     if f in package_data_dirs[path]:
-                        master.add(os.path.join(root, f)[len(parent_dir)+1:])
-                  else: # assume we include all files except those listed
+         if len(package_data_dirs[path])>0 and package_data_dirs[path][0] == '+':
+            # we want specific files from a single directory
+            for f in os.listdir(os.path.join(parent_dir,npath)):
+               r,ext = os.path.splitext(f)
+               if f in package_data_dirs[path] or ext in package_data_dirs[path]:
+                  master.add(os.path.join(npath, f))
+         else:
+            # we want everything in a tree with certain exceptions
+            for root, dirs, files in os.walk(os.path.join(parent_dir,npath)):
+               if not ".svn" in root:
+                  for f in files:
+                     r,ext = os.path.splitext(f)
                      # the remove list can include specific files or extensions
                      if not f in package_data_dirs[path] and not ext in package_data_dirs[path]:
                         # add it and remove the leading parent dir from the path..
@@ -156,6 +179,7 @@ def list_possible_modules():
          for c in classes:
             print c.name,
       print
+      
 def parseInput():
     """Handle command line input """
     usage = "Usage: %prog [options] [module to test] \n\
@@ -165,6 +189,8 @@ def parseInput():
     parser.add_option("-v", "--verbose", action="store_true", default=False,dest="verbose", help="Output all output to stdout rather then saving to the log file")
     parser.add_option("-l", "--listmodules", action="store_true", default=False, dest="list_modules", help="List all available modules that can be built")
     parser.add_option("-f", "--logfilename",  default="log.out" ,dest="logfilename", help="Override the default log file name")
+    parser.add_option("-u", "--username",  default="" ,dest="username", help="Soruceforge username for file upload")
+    parser.add_option("-p", "--password",  default="" ,dest="password", help="Sourceforge password for file upload")
     (options, args) = parser.parse_args()
     return (options,args)
 
@@ -182,9 +208,12 @@ if __name__ == '__main__':
    logger = logging.getLogger('PythonOgre.BuildRelease')
    svn_ver =  get_svn_rev()
    for mod in args:
+      print "Processing:", mod
       # filename to use
       filename = mod +'-'+environment.ogre.version+'-r'+ svn_ver
       # get the list of files that need packaging
       filelist = build_file_list ( mod )
       status = create_package ( filename, filelist )
+      if status and options.username:
+         status = upload_file (os.path.join(temp_area,filename+'.7z'), options.username, options.password )
       print status

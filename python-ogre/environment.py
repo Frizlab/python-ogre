@@ -676,7 +676,10 @@ class ogre(pymodule):
                         'plugins' :[],
                         #'demos/media' :[],
                         'docs':[],
-                        '.', ['+', 'setup.py', 'ReportVersion.py', 'INSTALL.TXT']
+                        '.':['+', 'setup.py', 'ReportVersion.py', 'INSTALL.TXT'],
+                        'demos':['+', 'Enums.py', 'PythonOgreConfig.py', 'SampleFramework.py', 'plugins.cfg.nt','resources.cfg'],
+                        package_dir_name:['.pyd', '.dll'],
+                        'tools':[],
                         }
     parent = "ogre/renderer"
     dependsOn = ['boost']
@@ -2099,6 +2102,7 @@ if ogre.version.startswith ("1.7"):
     class ogresdksample(pymodule):
         version = ogre.version
         package_name = ogre.package_name
+        package_data_dirs={'demos/samples':['.log', '.pyc','ogre.cfg']}
         name = 'ogresdksample'
         parent = "ogre/renderer"
         include_dirs = [
