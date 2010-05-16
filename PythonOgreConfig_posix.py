@@ -130,8 +130,10 @@ PATH_LIB_OgreNewt =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'og
 PATH_LIB_OgreNewt2 =             os.path.join( LOCAL_LIB ) #PATH_OgreAddons, r'ogrenewt/OgreNewt_Main/lib/Release')
 PATH_LIB_Newton =               os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
 PATH_LIB_Newton2 =               os.path.join( LOCAL_LIB ) # PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
+PATH_LIB_Ogre_OgreMain_debug =   os.path.join( LOCAL_LIB )
 
 PATH_LIB_OIS =                  os.path.join( LOCAL_LIB ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
+PATH_LIB_OIS_debug  =                  os.path.join( LOCAL_LIB )
 PATH_LIB_CEGUI =                os.path.join( LOCAL_LIB ) #PATH_Ogre, r'Dependencies/lib/Release' )
 if SDK:
     PATH_LIB_OIS =                  os.path.join( PATH_OIS,'lib', 'Release' ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
