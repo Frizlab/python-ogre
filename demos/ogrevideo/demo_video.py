@@ -143,11 +143,14 @@ class VideoApplication(sf.Application):
 
          self.createQuad("video_quad","video_material",-0.5,1,1,-0.94)
 
+         self.mAudioFactory=theora.OpenAL_AudioInterfaceFactory()
          mgr=theora.OgreVideoManager.getSingleton()
+         mgr.setAudioInterfaceFactory(self.mAudioFactory)
          mgr.setInputName(VIDEO_FILE)
          mgr.createDefinedTexture("video_material")
          self.clip = getClip(VIDEO_FILE)
          self.clip.setAutoRestart(1)
+
 
     def _createFrameListener(self):
         self.frameListener = VideoListener(self.renderWindow, self.camera, self.Clip)
