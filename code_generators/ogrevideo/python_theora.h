@@ -10,6 +10,9 @@
 #include "OgreVideoExport.h"
 #include "OgreTheoraDataStream.h"
 #include "OpenAL_AudioInterface.h"
+#include "TheoraVideoFrame.h"
+
+#include "TheoraVideoManager.h"
 
 #include "OgreExternalTextureSource.h"
 #include "OgreExternalTextureSourceManager.h"

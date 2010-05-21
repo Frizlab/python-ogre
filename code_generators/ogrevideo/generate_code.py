@@ -55,17 +55,16 @@ def docit ( general, i, o ):
 
 def ManualExclude ( mb ):
     global_ns = mb.global_ns
-    main_ns = global_ns.namespace( MAIN_NAMESPACE )
+    main_ns = global_ns #.namespace( MAIN_NAMESPACE )
 
     # things not yet implemented in the C source..
     excludes=[]
-    for c in main_ns.classes():
-        for m in c.member_functions(allow_empty=True):
-            for e in excludes:
-                if e in m.decl_string:
-                    m.exclude()
+#     for c in main_ns.classes():
+#         for m in c.member_functions(allow_empty=True):
+#             for e in excludes:
+#                 if e in m.decl_string:
+#                     m.exclude()
      
-        
     ### Member Functions
     excludes=['::Ogre::TheoraVideoClip::setPriority'
             ,'::Ogre::TheoraVideoClip::setNumPrecachedFrames'
@@ -76,6 +75,9 @@ def ManualExclude ( mb ):
             ,'::Ogre::TheoraVideoManager::getNumWorkerThreads'
             ,'::Ogre::TheoraVideoManager::getDefaultNumPrecachedFrames'
             ,'::TheoraVideoClip::getNextFrame'
+            ,'::TheoraVideoFrame::getBuffer'
+            ,'::TheoraVideoClip::setPriority'  #not implemented
+            ,'::Ogre::OgreVideoManager::getTheoraVideoManager'
             ]
     for e in excludes:
         try:
@@ -181,6 +183,7 @@ def ManualFixes ( mb ):
             '::TheoraVideoClip::getAudioInterface',
             '::TheoraVideoClip::getNextFrame',
             '::TheoraVideoClip::getTimer',
+            '::TheoraVideoFrame::getBuffer'
             
             ]
     for m in fix:
@@ -240,7 +243,9 @@ def AutoInclude( mb ):
     main_ns = mb.global_ns  ##   doesn't have it's own namespace..
     
     for c in main_ns.classes():
-        if c.name.startswith ('Theora'):
+        if ( c.name.startswith ('Theora')
+            or c.name.startswith ('OgreVideo')
+            ):
             c.include()
             print "Including:", c
             

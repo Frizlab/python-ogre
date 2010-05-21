@@ -250,6 +250,8 @@ PATH_INCLUDE_ogrevideo = LOCAL_INCLUDE
 PATH_DEMO_ogrevideo = LOCAL_INCLUDE
 PATH_INCLUDE_libtheoraplayer = LOCAL_INCLUDE
 PATH_LIB_ogrevideo = LOCAL_LIB
+PATH_libtheoraplayer =  LOCAL_LIB
+
 
 physxbase = os.path.join('/usr/include/', 'PhysX','v2.8.1', 'SDKs')
 PATH_INCLUDE_PhysX= [ physxbase
