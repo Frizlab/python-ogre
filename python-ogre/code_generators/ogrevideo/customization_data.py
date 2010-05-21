@@ -7,6 +7,7 @@ def header_files( version ):
             ,"OpenAL_AudioInterface.h"
             ,'OgreExternalTextureSource.h'
             ,'OgreExternalTextureSourceManager.h'
+            ,'TheoraVideoFrame.h'
              ]
   
 def huge_classes( version ):

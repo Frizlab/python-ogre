@@ -122,13 +122,12 @@ PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'lib')
  
 PATH_ogrevideo =  os.path.join(BASE_DIR,'ogrevideo','trunk')
 PATH_INCLUDE_ogrevideo  =  os.path.join(PATH_ogrevideo,'include')
-PATH_LIB_ogrevideo      =  os.path.join(PATH_ogrevideo,'lib')
+
+PATH_LIB_ogrevideo      =  os.path.join(PATH_ogrevideo,'lib') # 'bin','Release_static')
 PATH_DEMO_ogrevideo   =  os.path.join(PATH_ogrevideo, 'demos', 'audio_openal')
 
 PATH_libtheoraplayer = os.path.join(BASE_DIR, "libtheoraplayer")
-PATH_INCLUDE_libtheoraplayer = os.path.join(PATH_libtheoraplayer, "include")
 
-        
 ###
 ### these paths assume you've left all the directory structure as standard
 ### Override anything that is different

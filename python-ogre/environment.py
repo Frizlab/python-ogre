@@ -1288,9 +1288,13 @@ class nxogre(pymodule):
 
 
 class ogrevideo(pymodule):
-    version = "r109"
+    version = "r111"
     parent = "ogre/addons"
     base = 'ogrevideo'
+    package_data_dirs={'demos/ogrevideo' : ['.log', '.pyc','ogre.cfg'],
+                        'plugins' :['+', 'Plugin_OgreVideo.dll', 'libtheoraplayer.dll'],
+                        }
+
     ##
     ## you will need to retreive and build ptypes for this modules
     ##http://www.melikyan.com/ptypes/ptypes-2.1.1.tar.gz
@@ -1304,7 +1308,7 @@ class ogrevideo(pymodule):
         Config.PATH_INCLUDE_Ogre,
         Config.PATH_INCLUDE_ogrevideo,
         Config.PATH_DEMO_ogrevideo,
-        Config.PATH_INCLUDE_libtheoraplayer,
+        os.path.join(Config.PATH_libtheoraplayer, "include"),
     ]
 
     for d in Config.PATH_INCLUDE_OggVorbisTheora:
@@ -1319,17 +1323,30 @@ class ogrevideo(pymodule):
     ]
 
     if os.name == 'nt':
-        CCFLAGS = ' -D"WIN32" '
+        CCFLAGS = ' -DWIN32 -DNDEBUG '
 
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
         Config.PATH_LIB_ogrevideo,
-        Config.PATH_LIB_OPENAL
+        Config.PATH_LIB_OPENAL,
+        os.path.join(Config.PATH_libtheoraplayer, "lib"),
+        os.path.join(Config.PATH_OGG, 'win32', 'VS2008', 'Win32', 'Release'),
+        os.path.join(Config.BASE_DIR, 'Theora', 'win32', 'VS2008', 'Win32', 'Release'),
+        os.path.join(Config.PATH_VORBIS, 'win32', 'VS2008', 'Win32', 'Release') #'Vorbis_Static_Release')
     ]
-    libs = [boost.lib, 'Plugin_OgreVideo', 'OgreMain', 'openal32' ]
+    libs = [boost.lib, 'OgreMain',
+            'Plugin_OgreVideo', 'libtheoraplayer',
+            'openal32',
+#             'libogg_static',
+#             'libvorbis_static',
+#             'libvorbisfile_static',
+#             'libtheora_static',
+             ]
+
     moduleLibs = [ os.path.join(Config.PATH_OPENAL, 'redist', 'OpenAL32'),
-                os.path.join(Config.PATH_OPENAL, 'redist', 'wrap_oal')
+                os.path.join(Config.PATH_OPENAL, 'redist', 'wrap_oal'),
+                os.path.join(Config.PATH_ogrevideo, 'bin', 'release', 'Plugin_OgreVideo')
                 ]
     ModuleName = "ogrevideo"
 
