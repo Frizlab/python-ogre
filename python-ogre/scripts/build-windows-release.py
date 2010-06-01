@@ -109,12 +109,20 @@ def upload_file ( filename, username, password='' ):
    task = uploader + options + filename + ' ' + username + '@' + upload_dest
    return spawn_task (task, '.', True)
 
-def build_file_list( name ):
+def build_file_list( name, single=False ):
    master=set()
    get_packages()
    if not packages.has_key(name):
       exit("invalid module name:"+name)
-   for cls in packages[name]:
+      
+   toprocess=[]
+   if not single: # normal - we want all 'modules' in a package
+      for cls in packages[name]:
+         toprocess.append (cls)
+   else: # only want to build files for a single class
+      toprocess.append (environment.projects[name])
+      
+   for cls in toprocess:
       if hasattr(cls,"package_data_dirs"): package_data_dirs = cls.package_data_dirs
       else: package_data_dirs = {os.path.join('demos', cls.ModuleName.lower()): default_demo_data }
 
@@ -191,6 +199,7 @@ def parseInput():
     parser.add_option("-f", "--logfilename",  default="log.out" ,dest="logfilename", help="Override the default log file name")
     parser.add_option("-u", "--username",  default="" ,dest="username", help="Soruceforge username for file upload")
     parser.add_option("-p", "--password",  default="" ,dest="password", help="Sourceforge password for file upload")
+    parser.add_option("-s", "--single",  action="store_true", default=False ,dest="single", help="Only build the 'single' class")
     (options, args) = parser.parse_args()
     return (options,args)
 
@@ -212,7 +221,7 @@ if __name__ == '__main__':
       # filename to use
       filename = mod +'-'+environment.ogre.version+'-r'+ svn_ver
       # get the list of files that need packaging
-      filelist = build_file_list ( mod )
+      filelist = build_file_list ( mod, options.single )
       status = create_package ( filename, filelist )
       if status and options.username:
          status = upload_file (os.path.join(temp_area,filename+'.7z'), options.username, options.password )
