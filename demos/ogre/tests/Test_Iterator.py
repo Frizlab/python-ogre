@@ -39,7 +39,7 @@ class TestApplication(sf.Application):
             orientation = ogre.Quaternion()
             orientation.FromAngleAxis(
                 ogre.Degree(15),
-                ogre.Vector3.UNIT_Y) 
+                ogre.Vector3().UNIT_Y)
             scale = ogre.Vector3( 1, 1, 1)
             s.addEntity(e, pos, orientation, scale) 
         s.build() 
@@ -63,6 +63,7 @@ class TestApplication(sf.Application):
             
         # create head entity
         headNode = sceneManager.getRootSceneNode().createChildSceneNode()
+        print "*******", headNode
         entity = sceneManager.createEntity('head', 'ogrehead.mesh')
         headNode.attachObject(entity)
         childnode = headNode.createChildSceneNode("Child_Base")    
@@ -71,7 +72,7 @@ class TestApplication(sf.Application):
             orientation = ogre.Quaternion()
             orientation.FromAngleAxis(
                 ogre.Degree(15),
-                ogre.Vector3.UNIT_Y) 
+                ogre.Vector3().UNIT_Y)
             scale = ogre.Vector3( 1, 1, 1)
             
 #             sn = childnode.createChild()
@@ -85,7 +86,10 @@ class TestApplication(sf.Application):
             childnode.attachObject(ce)
             childnode.position = pos
             childnode.orientation = orientation
-        childItor = headnode.getChildIterator() 
+        childItor = headNode.getChildIterator()
+        print "****", childItor, dir(childItor)
+        for c in childItor:
+         print "##", c
         while(childItor.hasMoreElements()): 
             child = childItor.getNext().castAsSceneNode() 
             print child.name

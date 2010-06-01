@@ -410,10 +410,10 @@ def ManualExclude ( mb ):
           '::Ogre::vector<Ogre::SceneManager::LightInfo',
           '::Ogre::map<unsigned short, std::list<Ogre::SharedPtr<Ogre::DefaultWorkQueueBase::RequestHandlerHolder',
           '::Ogre::list<Ogre::SharedPtr<Ogre::DefaultWorkQueueBase::RequestHandlerHolder>',
-          '::Ogre::MapIterator<stdext::hash_map',
-          '::Ogre::ConstMapIterator<class stdext::hash_map',
-          '::Ogre::MapIteratorWrapper<stdext::hash_map',
-          '::Ogre::ConstMapIteratorWrapper<class stdext::hash_map',
+#           '::Ogre::MapIterator<stdext::hash_map',
+#           '::Ogre::ConstMapIterator<class stdext::hash_map',
+#           '::Ogre::MapIteratorWrapper<stdext::hash_map',
+#           '::Ogre::ConstMapIteratorWrapper<class stdext::hash_map',
           ]
     for c in main_ns.classes():
         for e in ex:
