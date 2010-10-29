@@ -158,7 +158,7 @@ def ManualExclude ( mb ):
         '::Ogre::Mesh::unnameSubMesh',
         '::Ogre::OverlayManager::hasOverlayElementImpl',
         '::Ogre::OverlayManager::hasOverlayElement',
-        '::Ogre::Rectangle2D::setCorners',
+#        '::Ogre::Rectangle2D::setCorners',
         '::Ogre::TextureUnitState::setCompositorReference',
         '::Ogre::TextureUnitState::getReferencedMRTIndex',
         '::Ogre::TextureUnitState::getReferencedTextureName',

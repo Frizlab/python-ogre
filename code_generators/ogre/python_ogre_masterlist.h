@@ -133,5 +133,6 @@ include file that everyone can use.
 #include "OgreMath.h"
 // New for 1.7
 #if (OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR >= 7) || (OGRE_VERSION_MAJOR >1 )
-     #include "Property/OgreProperty.h"
+// SDK    #include "Property/OgreProperty.h"
+     #include "OgreProperty.h"  // SOURCE
 #endif
