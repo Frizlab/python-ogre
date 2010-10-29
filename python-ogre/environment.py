@@ -85,6 +85,7 @@ if isWindows():
     ppath = os.path.dirname(sys.executable)
     python_include_dirs = os.path.join(ppath, 'include')
     python_lib_dirs = os.path.join(ppath, 'libs')
+    
 elif isLinux():
     ## It's linux of some sort
     python_include_dirs = os.path.join('/usr/include/python' + PythonVersionString, '')
@@ -169,6 +170,16 @@ if hasattr(Config, "NUMBER_OF_CORES") and Config.NUMBER_OF_CORES:
     NUMBER_OF_CORES = Config.NUMBER_OF_CORES
 else:
     NUMBER_OF_CORES = numCores()
+
+
+# for key, a in {"python_include_dirs":python_include_dirs, "python_lib_dirs":python_lib_dirs}:
+#    if hasattr(Config, key):
+#       a=Config.key
+
+if hasattr(Config, "python_include_dirs"):
+   python_include_dirs=Config.python_include_dirs
+if hasattr(Config, "python_lib_dirs"):
+   python_lib_dirs=Config.python_lib_dirs
 
 
 ######################
@@ -535,17 +546,17 @@ class boost(module):
     #if Config._SVN:
     #    version = "1.41r57399"
     #else:
-    version = "1.42.0"
+    version = "1.44.0"
     ModuleName = ""
 
     if isWindows():
         PATH_LIB_THREAD = Config.PATH_LIB_Thread_STATIC
         PATH_LIB_DATETIME = Config.PATH_LIB_date_time_STATIC
-        base = 'boost_1_42_0'
+        base = 'boost_1_44_0'
         if _DEBUG:
-            lib = 'boost_python-vc90-mt-gd-1_42'
+            lib = 'boost_python-vc90-mt-gd-1_44'
         else:
-            lib = 'boost_python-vc90-mt-1_42'
+            lib = 'boost_python-vc90-mt-1_44'
         versionBase = '1_42' ## the version used on the library name
     else:
         base = 'boost_1_41_0'
@@ -621,7 +632,7 @@ class boost(module):
         ]
 
     if isWindows():
-        bjambase = 'boost-jam-3.1.17-1-ntx86'
+        bjambase = 'boost-jam-3.1.18-1-ntx86'
         source = [
             [wget, 'http://downloads.sourceforge.net/boost/' + bjambase + '.zip', downloadPath],
             [wget, 'http://downloads.sourceforge.net/boost/' + base + '.zip', downloadPath]
@@ -740,6 +751,7 @@ class ogre(pymodule):
         include_dirs = [
             boost.PATH,
             Config.PATH_INCLUDE_Ogre,
+            Config.PATH_INCLUDE_ogreproperty,
             python_include_dirs,
         ]
         LINKFLAGS = ''
@@ -889,10 +901,10 @@ class ois(pymodule):
 
 class cegui(pymodule):
     parent = "ogre/gui"
-    version = "0.7.1"
+    version = "0.7.2"
     package_name = [ogre.package_name, "cegui"]
     if isWindows():
-        version = "0.7.1"
+        version = "0.7.2"
         if _PRECOMPILED:
             pchstop = 'cegui.h'
             pchbuild = 'buildpch.cpp'
@@ -950,15 +962,15 @@ class cegui(pymodule):
         ]
 
     if isWindows():
-        version = "0.7.1"
-        base = "CEGUI-0.7.1"
+        version = "0.7.2"
+        base = "CEGUI-0.7.2"
         source = [
-            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.1.zip?download", downloadPath],
-            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-DEPS-0.7.x-r1-vc9.zip?download", downloadPath]
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.2.zip?download", downloadPath],
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-DEPS-0.7.x-r2-vc9.zip?download", downloadPath]
         ]
         buildCmds = [
-            [0, unzip + " " + os.path.join(downloadPath, "CEGUI-0.7.1.zip"), os.getcwd()],
-            [0, unzip + " " + os.path.join(downloadPath, "CEGUI-DEPS-0.7.x-r1-vc9.zip"), os.path.join(os.getcwd(), base) ],
+            [0, unzip + " " + os.path.join(downloadPath, "CEGUI-0.7.2.zip"), os.getcwd()],
+            [0, unzip + " " + os.path.join(downloadPath, "CEGUI-DEPS-0.7.x-r2-vc9.zip"), os.path.join(os.getcwd(), base) ],
             #[0, 'move CEGUI-0.6.0\dependencies .', os.path.join(os.getcwd(), base) ],
             [0, sed_ + ' -s "s/OGRE_RENDERER = false/OGRE_RENDERER = true/" config.lua ', os.path.join(os.getcwd(), base, 'projects', 'premake')],
             [0, sed_ + ' -s "s/SAMPLES_OGRE = false/SAMPLES_OGRE = true/" config.lua ', os.path.join(os.getcwd(), base, 'projects', 'premake')],
@@ -1127,7 +1139,7 @@ class ogreode(pymodule):
                     ]
 
 class quickgui(pymodule):
-    version = "10.1"
+    version = "10.8"
     name = 'quickgui'
     parent = "ogre/gui"
 
@@ -1149,6 +1161,13 @@ class quickgui(pymodule):
     ]
     libs = [ boost.lib, 'OgreMain' ]
     ModuleName = "QuickGUI"
+
+    source = [
+      wget, "http://stormsonggames.com/downloads/QuickGUI_10_8.zip", downloadPath
+      ]
+    buildCmds = [
+       [0, unzip + os.path.join(downloadPath, "QuickGUI_10_8.zip"), ''],
+      ]
 
 class navi(pymodule):
     active = False
@@ -1594,22 +1613,20 @@ class bullet(pymodule):
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
     package_name = 'bullet'
-    libs = [boost.lib, 'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody', 'libBulletMultiThreaded', 'libGIMPACTUtils']
-    if isWindows():
-        libs.append('libbulletMath')
-    else:
-        libs.append('libLinearMath')
+    ModuleName = 'bullet'
 
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_Bullet,
-    ]
+       ]
     include_dirs = [
         boost.PATH,
-        Config.PATH_INCLUDE_Bullet
-    ]
-
+        Config.PATH_INCLUDE_Bullet,
+        os.path.normpath(os.path.join(Config.PATH_INCLUDE_Bullet, '..'))
+       ]
     if not isWindows():
+        libs = [boost.lib, 'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody', 'libBulletMultiThreaded',
+               'libGIMPACTUtils','libLinearMath']
         source = [
             [wget, "http://bullet.googlecode.com/files/" + base + ".tgz", downloadPath]
         ]
@@ -1623,7 +1640,7 @@ class bullet(pymodule):
     else:
         libs = [boost.lib, 'BulletCollision', 'BulletDynamics',
                 'BulletSoftBody', 'BulletMultiThreaded', 'GIMPACTUtils',
-                'LinearMath', 'BulletFileLoader']
+                'LinearMath', 'BulletFileLoader', 'BulletWorldImporter']
         source = [
             [wget, "http://bullet.googlecode.com/files/" + base + ".zip", downloadPath]
         ]
@@ -1632,7 +1649,6 @@ class bullet(pymodule):
         ]
         CCFLAGS = ' -D"NDEBUG" -D"_CONSOLE"  -D"WIN32" -D"_MBCS" /fp:fast /Gy /GF '
 
-    ModuleName = 'bullet'
 
 class ogrebulletc(pymodule):
     version = "r2684"
@@ -2418,6 +2434,28 @@ class media(pymodule):
    version = ogre.version
    active = False
 
+if _UserName == 'amiller':
+   class ogrear(pymodule):
+       version = "2.1"
+       name="ogrear"
+       ModuleName = "ogrear"
+       parent = "ogre/addons"
+       libs=[boost.lib, 'OgreAR', 'OgreMain']
+       lib_dirs = [ boost.PATH_LIB,
+                    Config.PATH_LIB_OgreAR,
+                    Config.PATH_LIB_Ogre_OgreMain,
+                    Config.PATH_LIB_PGRFlyCapture,
+                    Config.PATH_LIB_ARToolKitPlus
+                        ]
+       include_dirs = [ boost.PATH,
+                        Config.PATH_INCLUDE_OgreAR,
+                        Config.PATH_SOURCE_OgreAR,  # ARTk+ header includes an implementation file
+                        Config.PATH_INCLUDE_Ogre,
+                        Config.PATH_INCLUDE_PGRFlyCapture,
+                        Config.PATH_INCLUDE_ARToolKitPlus
+                       ]
+       active = True
+
 ############################################################################################
 
 ## Here is the master list....
@@ -2478,6 +2516,9 @@ if ogre.version.startswith ("1.7"):
     projects['skyx'] = skyx
     projects['awesomium'] = awesomium
 
+if _UserName == 'amiller':
+   projects['ogrear'] = ogrear
+
 #
 # a couple of specials that should be done differently
 gccxml_bin = Config.gccxml_bin
@@ -2517,6 +2558,11 @@ for name, cls in projects.items():
         cls.cflags = ''
     if not hasattr(cls, 'LINKFLAGS'):
         cls.LINKFLAGS = ''
+
+    if hasattr(Config,"PYPY"):
+      if Config.PYPY:
+         cls.libs.append (Config.python_lib_name)
+         cls.include_dirs = cls.include_dirs + Config.pypy_include_dirs
 
     if isMac():  # On the mac the Ogre library is lined in with the -framework command in scons
         try:
