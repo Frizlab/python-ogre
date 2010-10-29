@@ -197,4 +197,6 @@ Work around for windows compile as align 16 due to the boost library not support
 
 //#include "../../Extras/SATConvexCollision/Hull.h"
 
-
+ // Importers
+#include "Extras/Serialize/BulletWorldImporter/btBulletWorldImporter.h"
+#include "Extras/Serialize/BulletFileLoader/btBulletFile.h"

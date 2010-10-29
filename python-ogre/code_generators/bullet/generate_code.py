@@ -142,7 +142,7 @@ def ManualExclude ( mb ):
 #             ,'::btAlignedObjectArray< unsigned short >::expandNonInitializing'
 #             ,'::btAlignedObjectArray< unsigned int >::expandNonInitializing'
 
-          ]
+              ]
     for e in excludes:
         try:
             global_ns.member_functions(e).exclude()
@@ -214,7 +214,9 @@ def ManualExclude ( mb ):
              ,'::btHashMap< btHashPtr, btPointerUid > >' # fails on Linux, maybe coudl be non-copyable
 
              ,'::btDefaultSerializer'  # btHashInt::btHashInt no default const
-
+             ,'::btAlignedAllocator< bParse::bStructHandle*, 16u >'
+             ,'::btHashMap< btHashPtr, bParse::bStructHandle* >'
+             ,'::btAlignedAllocator< btOptimizedBvh*, 16u >'
             ]
             
     for e in excludes:
@@ -336,7 +338,8 @@ def ManualFixes ( mb ):
         if a._name == 'localScaling':
             a.default_value= "::btVector3( (1.0), (1.0), (1.0) )"
 
-            
+    main_ns.class_( '::btHashMap< btHashPtr, bParse::bStructHandle* >' ).constructors().exclude()
+
 ############################################################
 ##
 ##  And things that need to have their argument and call values fixed.
