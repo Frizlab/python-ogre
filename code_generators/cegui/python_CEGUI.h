@@ -13,15 +13,16 @@
 #include "CEGUIXMLAttributes.h" // needed for FontManager
 #include "CEGUIXMLSerializer.h"
 
-#if defined VERSION_0_7_1
+//#if defined VERSION_0_7_1
     #include "CEGUIOgreRenderer.h"
     #include "CEGUIOgreResourceProvider.h"
-#else 
+/*#else 
     #include "OgreCEGUIRenderer.h"
     #if ( CEGUI_VERSION_MINOR > 5 )
         #include "OgreCEGUIResourceProvider.h"
     #endif
 #endif
+*/
 
 // First we create a magic namespace to hold all our aliases
 namespace pyplusplus { namespace aliases {

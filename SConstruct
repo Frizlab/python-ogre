@@ -151,8 +151,9 @@ for name,cls in environment.projects.items():
 #      'ogreforests', 'et', 'caelum' ]  # 'navi',
 
 # This lets you call scons like: 'scons PROJECTS=ogre,cegui'
-opts = Options('custom.py')
-opts.Add(ListOption('PROJECTS', 'Project to build wrappers for',
+#opts = Options('custom.py')
+opts = Variables('custom.py')
+opts.Add(ListVariable('PROJECTS', 'Project to build wrappers for',
                     default_projects, possible_projects ))
 temp_env = Environment(options = opts)
 tobuild = temp_env['PROJECTS']
@@ -223,6 +224,7 @@ for name, cls in environment.projects.items():
         ##cls._env = _env.Copy()  ## NOT sure this is needed...
 
         ## build it to somewhere else
+        #_env.BuildDir(cls._build_dir, os.path.join( environment.generated_dir_name, cls.dir_name ), duplicate=0)
         _env.BuildDir(cls._build_dir, os.path.join( environment.generated_dir_name, cls.dir_name ), duplicate=0)
         ##cls._env.BuildDir(cls._build_dir, os.path.join( environment.generated_dir_name, cls.dir_name ), duplicate=0)
 

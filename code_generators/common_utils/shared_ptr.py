@@ -65,7 +65,7 @@ class exposer_t:
 
     def expose_single( self, sp_instantiation ):
         sp_instantiation.exclude() # we don't want to export SharedPtr< X >
-        print "SharedPointer Excluded", sp_instantiation, sp_instantiation.decl_string
+        print ("SharedPointer Excluded", sp_instantiation, sp_instantiation.decl_string)
 #         print dir (sp_instantiation)
         sp_instantiation.disable_warnings( messages.W1040 )
         
@@ -77,7 +77,7 @@ class exposer_t:
             assert 1 == len( sp_instantiation.derived )
             sp_derived = sp_instantiation.derived[0].related_class
             sp_derived.exclude()
-            print "SharedPointer Excluded Derived", sp_derived, pointee
+            print ("SharedPointer Excluded Derived", sp_derived, pointee)
             sp_derived.disable_warnings( messages.W1040 )
             
             if Version1:
@@ -126,7 +126,7 @@ class exposer_t:
                                                  , 'base' : '::Ogre::SharedPtr< %s >' % base.related_class.decl_string }
                     , works_on_instance=False)
         except:
-            print "WARNING: Problem with ", pointee.name, " it possibly doesn't have any bases"
+            print ("WARNING: Problem with ", pointee.name, " it possibly doesn't have any bases")
             pass
 
     def expose(self):

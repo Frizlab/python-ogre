@@ -10,18 +10,21 @@ _DEBUG = False
 
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "7"
-PythonOgrePatchVersion = "1"
+PythonOgrePatchVersion = "2"
 
 _UserName = getpass.getuser()
 
-UseSystem = "--usesystem" in sys.argv or (os.environ.has_key('USESYSTEM') and eval(os.environ['USESYSTEM'].title()))
+UseSystem = False
+if 'USESYSTEM' in os.environ.keys():
+   if eval(os.environ['USESYSTEM'].title()):
+      UseSystem = True
 if "--usesystem" in sys.argv:
     sys.argv.remove("--usesystem")
-
+    UseSystem = True
     
 def log(instring):
     if _LOGGING_ON:
-        print __file__, "LOG::", instring
+        print (__file__, "LOG::", instring)
 
 def isWindows():     
     if os.name == 'nt':
@@ -57,7 +60,7 @@ def numCores():
      else: # OSX:
          return int(os.popen2("sysctl -n hw.ncpu")[1].read())
  # Windows
- if os.environ.has_key("NUMBER_OF_PROCESSORS"):
+ if "NUMBER_OF_PROCESSORS" in os.environ.keys():
          ncpus = int(os.environ["NUMBER_OF_PROCESSORS"]);
          if ncpus > 0:
              return ncpus
@@ -151,7 +154,7 @@ if not _ConfigSet:
     ##
     ## PLEASE use an external PythonOgreConfig_<username>.py to hold these value !!!!
     ##
-    print "\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % (os.name)
+    print ("\n\n You DO need to create a PythonOgreConfig_%s.py file with config details" % (os.name))
     sys.exit(-1)
 
 ## BIG assumption about where you want things put
@@ -546,17 +549,17 @@ class boost(module):
     #if Config._SVN:
     #    version = "1.41r57399"
     #else:
-    version = "1.44.0"
+    version = "1.45.0"
     ModuleName = ""
 
     if isWindows():
         PATH_LIB_THREAD = Config.PATH_LIB_Thread_STATIC
         PATH_LIB_DATETIME = Config.PATH_LIB_date_time_STATIC
-        base = 'boost_1_44_0'
+        base = 'boost_1_45_0'
         if _DEBUG:
-            lib = 'boost_python-vc90-mt-gd-1_44'
+            lib = 'boost_python-vc90-mt-gd-1_45'
         else:
-            lib = 'boost_python-vc90-mt-1_44'
+            lib = 'boost_python-vc90-mt-1_45'
         versionBase = '1_42' ## the version used on the library name
     else:
         base = 'boost_1_41_0'
@@ -698,7 +701,7 @@ class ogre(pymodule):
     myLibraries = ['OgreMain']
     libraries = myLibraries
     if isWindows():
-        version = "1.7.1"
+        version = "1.7.2"
         source = [
             [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-7-0.zip", downloadPath],
             [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
@@ -901,10 +904,10 @@ class ois(pymodule):
 
 class cegui(pymodule):
     parent = "ogre/gui"
-    version = "0.7.2"
+    version = "0.7.5"
     package_name = [ogre.package_name, "cegui"]
     if isWindows():
-        version = "0.7.2"
+        version = "0.7.5"
         if _PRECOMPILED:
             pchstop = 'cegui.h'
             pchbuild = 'buildpch.cpp'
@@ -962,14 +965,14 @@ class cegui(pymodule):
         ]
 
     if isWindows():
-        version = "0.7.2"
-        base = "CEGUI-0.7.2"
+        version = "0.7.5"
+        base = "CEGUI-0.7.5"
         source = [
-            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.2.zip?download", downloadPath],
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.5.zip?download", downloadPath],
             [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-DEPS-0.7.x-r2-vc9.zip?download", downloadPath]
         ]
         buildCmds = [
-            [0, unzip + " " + os.path.join(downloadPath, "CEGUI-0.7.2.zip"), os.getcwd()],
+            [0, unzip + " " + os.path.join(downloadPath, "CEGUI-0.7.5.zip"), os.getcwd()],
             [0, unzip + " " + os.path.join(downloadPath, "CEGUI-DEPS-0.7.x-r2-vc9.zip"), os.path.join(os.getcwd(), base) ],
             #[0, 'move CEGUI-0.6.0\dependencies .', os.path.join(os.getcwd(), base) ],
             [0, sed_ + ' -s "s/OGRE_RENDERER = false/OGRE_RENDERER = true/" config.lua ', os.path.join(os.getcwd(), base, 'projects', 'premake')],
@@ -1938,7 +1941,7 @@ class raknet(pymodule):
             #include <stdint.h>
             #endif
     """
-    version = "3.7171"
+    version = "3.81"
     name = 'raknet'
     parent = "ogre/addons"
     include_dirs = [
@@ -1952,7 +1955,7 @@ class raknet(pymodule):
         Config.PATH_LIB_Ogre_Dependencies,
         Config.PATH_LIB_raknet,
     ]
-    libs = [boost.lib, 'OgreMain', 'RakNetLibStatic', 'Ws2_32' ]
+    libs = [boost.lib, 'OgreMain', 'LibStatic', 'Ws2_32' ]
     ModuleName = "raknet"
     descText = "RakNet MultiPlayer Gaming System"
     descLink = "http://www.jenkinssoftware.com/"
@@ -2434,7 +2437,7 @@ class media(pymodule):
    version = ogre.version
    active = False
 
-if _UserName == 'amiller':
+if 0:
    class ogrear(pymodule):
        version = "2.1"
        name="ogrear"
@@ -2516,7 +2519,7 @@ if ogre.version.startswith ("1.7"):
     projects['skyx'] = skyx
     projects['awesomium'] = awesomium
 
-if _UserName == 'amiller':
+if 0:
    projects['ogrear'] = ogrear
 
 #
@@ -2530,12 +2533,12 @@ rpath = Config.RPATH
 for name, cls in projects.items():
     # little hack to allow overriding of settings from the PythonOgreConfig_xxxxx.py file
     if hasattr(Config, name):   # look to see if the class exists in the config file
-        print "Using Override for class ", name
+        print ("Using Override for class ", name)
         _class = Config.__dict__[name]  # get the class
         for key, value in _class.__dict__.items():
             if not key.startswith('_'):
                 cls.__dict__[key] = value
-                print "Set %s.%s to %s" % (name, key, value)
+                print ("Set %s.%s to %s" % (name, key, value))
 
 
     cls.root_dir = os.path.join(root_dir, 'code_generators', name)
@@ -2594,5 +2597,5 @@ for name, cls in projects.items():
         elif os.name == 'posix':
             cls.PydName = cls.PydName + '.so'
         elif os.name == 'mac':
-            print "WARNING - check the last line of environment.py!!"
+            print ("WARNING - check the last line of environment.py!!")
 
