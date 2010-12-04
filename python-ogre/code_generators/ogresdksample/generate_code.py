@@ -323,7 +323,19 @@ def generate_code():
     common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_sdksample,
                             destPath = environment.ogresdksample.generated_dir,
                             recursive=False,
+                            extensions=['h']
                              )
+
+    # need the actual implementation file
+    if environment.isWindows():
+        fileToCopy = ['FileSystemLayerImpl_WIN32.cpp']  
+    elif environment.isLinux():
+        fileToCopy = ['FileSystemLayerImpl_Unix.cpp']  
+    common_utils.copyTree ( sourcePath = environment.Config.PATH_INCLUDE_sdksample,
+                            destPath = environment.ogresdksample.generated_dir,
+                            recursive=False,
+                            files_in= fileToCopy )    
+        
     if environment.ogre.version.startswith("1.7"):
         ## have a code generation issue that needs resolving...
         filesToFix=['SdkTrayManager.pypp.cpp']

@@ -78,6 +78,7 @@ def ManualExclude ( mb ):
               ,'::OgreOggSound::OgreOggStaticWavSound::release'
               ,'::OgreOggSound::OgreOggStreamSound::release'
               ,'::OgreOggSound::OgreOggStreamWavSound::release'
+              ,'::OgreOggSound::OgreOggSoundManager::_destroyTemporarySoundImpl'
               ]
     for e in excludes:
         main_ns.member_functions(e).exclude()

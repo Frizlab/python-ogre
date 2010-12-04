@@ -42,7 +42,7 @@ from pyplusplus import function_transformers as ft
 from pyplusplus.module_builder import call_policies
 try:
   from pyplusplus.creators_factory import sort_algorithms
-except ImportError, e:
+except ImportError as e:
   from pyplusplus.module_creator import sort_algorithms
 
 import common_utils.extract_documentation as exdoc
@@ -514,7 +514,7 @@ def ManualInclude ( mb ):
                 Expose = False
                 oper.exclude() ## need to specifically exclude now...
         if type_or_decl.ignore == False and Expose:
-            print "OPERATOR<<:", oper
+            print ("OPERATOR<<:", oper)
             oper.include()
 
 ############################################################
@@ -635,7 +635,7 @@ def ManualFixes ( mb ):
                     main_ns.class_(f.parent.name).add_wrapper_code( code )
                     code=hand_made_wrappers.WRAPPER_REGISTRATION_GetTypeFix % values
                     main_ns.class_(f.parent.name).add_registration_code( code )
-                    print 'Adjusted pure virtual function returning a static pointer via hand wrapper %s:%s' % ( f.parent.name, f.name)
+                    print ('Adjusted pure virtual function returning a static pointer via hand wrapper %s:%s' % ( f.parent.name, f.name))
 
     if environment.ogre.version.startswith("1.7"):
         # Lots of new wrappers to handle all with uglky aliases that cause issues so rather than many hand entries
@@ -650,7 +650,7 @@ def ManualFixes ( mb ):
             #
             for f in c.arguments:
                 if "<MEMCATEGORY_GENERAL>" in f.type.decl_string:
-                    print "MEMFIX:",f.type
+                    print ("MEMFIX:",f.type)
                     try:
                         f.type.declaration.name = f.type.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
                     except AttributeError:
@@ -659,8 +659,8 @@ def ManualFixes ( mb ):
                          except AttributeError:
                              f.type.base.base.declaration.name = f.type.base.base.declaration.name.replace("<MEMCATEGORY_GENERAL>","<Ogre::MEMCATEGORY_GENERAL>")
                     except:
-                         print "FAILED!!!", f, f.type
-                         print type(f), type(f.type)
+                         print ("FAILED!!!", f, f.type)
+                         print (type(f), type(f.type))
                 if f.default_value and "<MEMCATEGORY_GENERAL>" in f.default_value:
                     f.default_value = f.default_value.replace("<MEMCATEGORY_GENERAL>", "<Ogre::MEMCATEGORY_GENERAL>")\
                     
@@ -684,16 +684,16 @@ def ManualFixes ( mb ):
                         else:
                             dups[newalias]=dups[newalias]+1
                             newalias = newalias + "_" +str(dups[newalias])
-                        print "Set Alias:", newalias, "  ", c.decl_string
+                        print ("Set Alias:", newalias, "  ", c.decl_string)
                         c.alias = newalias
                         c.wrapper_alias = 'wrapper_' + newalias
                     else:
                         ## any that show up here need a manual entry in the python_ogre_aliases.h file
-                        print "NOT Changed:",c.decl_string
-                        print m.groups()
+                        print ("NOT Changed:",c.decl_string)
+                        print (m.groups())
                 else:
                     ## any that show up here need a manual entry in the python_ogre_aliases.h file
-                    print "NO MATCH:", c.decl_string
+                    print ("NO MATCH:", c.decl_string)
 
 
 ##
@@ -936,7 +936,7 @@ def Fix_Posix ( mb ):
     stdex_ns.class_('hash_map<std::string, unsigned short, __gnu_cxx::hash<std::string>, std::equal_to<std::string>, std::allocator<unsigned short> >').exclude
     for f in mb.member_functions():
         if f.name == 'getChildIterator':
-            print "LINUX SPECIAL:", f
+            print ("LINUX SPECIAL:", f)
             #f.exclude()
     #mb.member_functions('::Ogre::Node::getChildIterator').exclude()
 
@@ -983,16 +983,16 @@ def Fix_Ref_Not_Const ( mb ):
         for arg in fun.arguments:
             if 'Ptr' in arg.type.decl_string:
                 if not 'const' in arg.type.decl_string and '&' in arg.type.decl_string:
-                    print "Fixing Const:", arg.type.base, "\n",fun, "\n",fun.parent.name+"::"+fun.name+"::"+arg.name+" ("+arg.type.decl_string+")"
+                    print ("Fixing Const:", arg.type.base, "\n",fun, "\n",fun.parent.name+"::"+fun.name+"::"+arg.name+" ("+arg.type.decl_string+")")
                     if len (fun.transformations) == 0:
                         try:
                             fun.add_transformation( ft.modify_type(arg_position,declarations.remove_reference ), alias=fun.name )
                             fun.documentation = docit ("Fixed Constant Var " + arg.name + " (pos:"+str(arg_position) +")",
                                                             "...", "...")
                         except:
-                            print "FAILED!!!"
+                            print ("FAILED!!!")
                     else:
-                        print "*** Problem adding transform as will cause duplicates", fun
+                        print ("*** Problem adding transform as will cause duplicates", fun)
 #                 else:
 #                     print "arg OK ", fun, arg.name, arg.type.decl_string
             arg_position +=1
@@ -1050,20 +1050,20 @@ def Set_Smart_Pointers( mb ):
 
         if cls.name.startswith( 'SharedPtr<' ):
            v.apply_smart_ptr_wa = True
-           print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
+           print ("Applying Smart Pointer: ",  v.name, " of class: ",  cls.name)
         elif cls.name.endswith( 'SharedPtr' ):
            v.apply_smart_ptr_wa = True
-           print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
+           print ("Applying Smart Pointer: ",  v.name, " of class: ",  cls.name)
         elif cls.name in knownSmartClasses:
            v.apply_smart_ptr_wa = True
-           print "Applying Smart Pointer: ",  v.name, " of class: ",  cls.name
+           print ("Applying Smart Pointer: ",  v.name, " of class: ",  cls.name)
     # now for some specials by variable name..
     known = ['indexBuffer', 'vertexData', 'indexData']
     for c in mb.classes():
         for v in c.variables(allow_empty = True ):
             if v.name in known:
                v.apply_smart_ptr_wa = True
-               print "Applying Smart Pointer (know): ",  v.name, " of class: ",  c.name
+               print ("Applying Smart Pointer (know): ",  v.name, " of class: ",  c.name)
 
 
 #~ def Set_Exception(mb):
@@ -1128,11 +1128,11 @@ def autoCasting ( main_ns, ignores = ['ParamCommand','MovableObjectFactory']  ):
 # #                                 c.add_registration_code( regcode )
 #                                 print "Hand wrapper (as"+r.name+") created to cast from", c.name, "to", r.name, f.name ## b.access
 # #                                 break
-    print "WARNING: Functions that may not be accessable"
+    print ("WARNING: Functions that may not be accessable")
     i= masterlist.keys()
     i.sort()
     for k in i:
-        print k, masterlist[k]
+        print (k, masterlist[k])
 #     sys.exit()
 def FindProtectedVars ( mb ):
     global_ns = mb.global_ns
@@ -1198,6 +1198,7 @@ def generate_code():
     
     if environment.Config._SVN: # building Ogre 1.7
         defined_symbols.append ('HAVE_OGRE_BUILDSETTINGS_H') # it uses the cmake buildsettings include
+    print "***** :",environment.ogre.cflags
     #
     # build the core Py++ system from the GCCXML created source
     #
@@ -1308,9 +1309,9 @@ def generate_code():
             try:
                 for c in cls.constructors():
                     if c.access_type != 'public':
-                        print "NPC:", c.access_type, c
+                        print ("NPC:", c.access_type, c)
             except:
-                print "Class without constructors", cls
+                print ("Class without constructors", cls)
     #Py++ can not expose static pointer member variables
     main_ns.vars( 'ms_Singleton' ).disable_warnings( messages.W1035 )
 
@@ -1363,21 +1364,21 @@ def generate_code():
     count = 0
     for v in main_ns.variables():
         if not v.ignore:
-            print v
+            print (v)
             count +=1
-    print "SPECIAL -- variables:", count
+    print ("SPECIAL -- variables:", count)
     count = 0
     for v in main_ns.member_functions():
         if not v.ignore:
-            print v
+            print (v)
             count +=1
-    print "SPECIAL -- member functions:", count
+    print ("SPECIAL -- member functions:", count)
     count=0
     for v in global_ns.classes():
         if not v.ignore:
-            print "class:",v
+            print ("class:",v)
             count +=1
-    print "SPECIAL -- Number classes:", count
+    print ("SPECIAL -- Number classes:", count)
 
 
 
@@ -1437,7 +1438,7 @@ def generate_code():
 
         if not common_utils.samefile( sourcefile ,destfile ):
             shutil.copy( sourcefile, environment.ogre.generated_dir )
-            print "Updated ", filename, "as it was missing or out of date"
+            print ("Updated ", filename, "as it was missing or out of date")
 
     if environment.ogre.version.startswith("1.7"):
         ## have a code generation issue that needs resolving...
@@ -1458,9 +1459,9 @@ def generate_code():
                     f = open ( fname, 'w+')
                     f.write ( buf )
                     f.close()
-                    print "UGLY FIX OK:", fname
+                    print ("UGLY FIX OK:", fname)
             except:
-                print "ERROR: Unable to fix:", fname
+                print ("ERROR: Unable to fix:", fname)
         
 #     count=0
 #     for v in global_ns.classes():
@@ -1481,4 +1482,4 @@ if __name__ == '__main__':
         pdb.run('generate_code()')
     else:
         generate_code()
-    print 'Python-OGRE source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 )
+    print ('Python-OGRE source code was updated( %f minutes ).' % (  ( time.clock() - start_time )/60 ))

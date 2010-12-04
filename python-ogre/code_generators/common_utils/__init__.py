@@ -270,8 +270,8 @@ def fix_unnamed_classes( classes, namespace ):
             except AttributeError:
                 continue
             except:
-                print "**** Error in unnamed_classes", mvar
-            print "Fixing Unnamed Class:", unnamed_cls, mvar, named_parent.name
+                print ("**** Error in unnamed_classes", mvar)
+            print ("Fixing Unnamed Class:", unnamed_cls, mvar, named_parent.name)
             named_parent.add_code( template % dict( ns=namespace, mvar=mvar.name, parent=named_parent.name ) )
 
 def set_declaration_aliases(global_ns, aliases):
@@ -322,7 +322,7 @@ def remove_DuplicateProperties ( cls ):
     if duplicate:
         for k in unique.keys():  
             if len ( unique[k] ) > 1  :
-                print "DUPLICATE FOUND: ", cls, len ( unique[k] )
+                print ("DUPLICATE FOUND: ", cls, len ( unique[k] ))
                 for p in unique[k]:
 #                     print "   Checking", p.name, p.fget, p.fset
                     prefered = p
@@ -408,7 +408,7 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                             # now look to see if it's a char * and if so we treat it as a string..
 # #                             print "**" , declarations.remove_alias( rawarg ), declarations.type_traits.create_cv_types( declarations.cpptypes.char_t())
                             if declarations.remove_alias( rawarg ) in declarations.type_traits.create_cv_types( declarations.cpptypes.char_t() ): 
-                                print "MATCHED CString", fun
+                                print ("MATCHED CString", fun)
                                 trans.append( ft.input_c_string(arg_position, 4096 ) )
                                 desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) + " - " +\
                                     arg.type.decl_string + " ) takes a python string. \\n"
@@ -428,7 +428,7 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                                 arg.type.decl_string + " ) converted to an input/output (change to return types).\\n"
                             ft_type = 'INOUT'                                
                         elif declarations.is_reference(arg.type):
-                            print "Warning: - possible code change.", fun,arg," not wrapped as const reference to base type invalid"
+                            print ("Warning: - possible code change.", fun,arg," not wrapped as const reference to base type invalid")
                         else:
                             pass # it isn't a pointer or reference so doesn't need wrapping
                     else:
@@ -443,14 +443,14 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                             not declarations.has_public_destructor(fun.parent)
                 
                     if fun.documentation or fun.transformations:   # it's already be tweaked:
-                        print "AUTOFT ERROR: Duplicate Tranforms.", fun, fun.documentation
+                        print ("AUTOFT ERROR: Duplicate Tranforms.", fun, fun.documentation)
                         
                     # if the class has a protected destruction AND the return value is const or a non arithmatic value then exclude it.
                     elif nonpublic_destructor and const_return:
-                        print "AUTOFT ERROR Const: Parent has non public destructor and const return.", fun.parent.name, fun.return_type.decl_string, fun
+                        print ("AUTOFT ERROR Const: Parent has non public destructor and const return.", fun.parent.name, fun.return_type.decl_string, fun)
                         fun.documentation="Python-Ogre Warning: function required transformation - not possible due to non public destructor and const return value.."
                     elif nonpublic_destructor and not simple_return:
-                        print "AUTOFT ERROR Const: Parent has non public destructor and complex return value.", fun.parent.name, fun.return_type.decl_string, fun
+                        print ("AUTOFT ERROR Const: Parent has non public destructor and complex return value.", fun.parent.name, fun.return_type.decl_string, fun)
                         fun.documentation="Python-Ogre Warning: function required transformation - not possible due to non public destructor and complex return value.."
                     else:
                         new_alias = fun.name
@@ -471,9 +471,9 @@ def Auto_Functional_Transformation ( mb, ignore_funs=[], special_vars=[]):
                                 else:
                                     aliases[keyname] = 1   
                                 desc = desc + "\\\nWARNING FUNCTION NAME CHANGE - from "+fun.name + " -- " + fun.decl_string +" to " + new_alias + " \\n"                                    
-                                print "INFO: Adjusting Alias as multiple overlapping functions:", new_alias
+                                print ("INFO: Adjusting Alias as multiple overlapping functions:", new_alias)
                             
-                        print "AUTOFT OK: Tranformed ", fun.return_type.decl_string, fun, "(",new_alias,")"
+                        print ("AUTOFT OK: Tranformed ", fun.return_type.decl_string, fun, "(",new_alias,")")
                         fun.add_transformation ( * trans ,  **{"alias":new_alias}  )
                         fun.documentation = docit ("Auto Modified Arguments:",
                                                         desc, "...")
@@ -500,7 +500,7 @@ def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsig
 #             if fun.virtuality == "pure virtual":
 #                 print "*** WARNING: Unable to apply transformation to PURE VIRTUAL function", fun, desc
 #             else:
-            print "Tranformation applied to ", fun, desc, fun.virtuality
+            print ("Tranformation applied to ", fun, desc, fun.virtuality)
             fun.add_transformation ( * trans , **{"alias":fun.name}  )
             fun.documentation = docit ("Modified Input Argument to work with CTypes",
                                             desc, "...")
@@ -517,7 +517,7 @@ def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsig
         if fun.documentation or fun.ignore: return ## means it's been tweaked somewhere else
         for n in ignore_names:
             if n in fun.name or n in fun.parent.name:  ## exclude class
-                print "Ignoring: ", fun
+                print ("Ignoring: ", fun)
                 return
         trans=[]
         desc=""
@@ -528,13 +528,13 @@ def Fix_Void_Ptr_Args ( mb, pointee_types=['unsigned int','int', 'float', 'unsig
                 for i in pointee_types:
                     if arg.type.decl_string.startswith(i):
                         if Exclude: 
-                            print "WARNING: Excluding:", fun," due to pointer argument", arg.type.decl_string
+                            print ("WARNING: Excluding:", fun," due to pointer argument", arg.type.decl_string)
                             fun.exclude()
                             return
                         else:                        
 #                             trans.append( ft.inout(arg_position) )
 #                             desc = desc +"Argument: "+arg.name+ "( pos:" + str(arg_position) +") now an in/out. "
-                            print "WARNING: Function has pointer argument: ", fun, arg.type.decl_string
+                            print ("WARNING: Function has pointer argument: ", fun, arg.type.decl_string)
                             fun.documentation=docit("SUSPECT - MAYBE BROKEN due to pointer argument", "....", "...")
                             return
 #         if trans:
@@ -563,7 +563,7 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     if not fun.name in known_names:
-                        print "WARNING: Func (", fun.name, ") returns ", i, ".Using ctype return_addressof functionality"
+                        print ("WARNING: Func (", fun.name, ") returns ", i, ".Using ctype return_addressof functionality")
                         fun.call_policies = call_policies.return_value_policy( call_policies.return_addressof )
                         fun.documentation=docit("CTYPE Integration - returns address of return value", "...", "Address of Return Value")
 #                         print "WARNING: Excluding (function):", fun, "as it returns (pointer)", i
@@ -572,7 +572,7 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
         if declarations.is_pointer (fun.return_type) and not fun.documentation:
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
-                    print "WARNING: Excluding (operator):", fun
+                    print ("WARNING: Excluding (operator):", fun)
                     fun.exclude()
                     
     # Change 15 Feb 2008 -- adding free function management                
@@ -581,7 +581,7 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
             for i in pointee_types:
                 if fun.return_type.decl_string.startswith ( i ) and not fun.documentation:
                     if not fun.name in known_names:
-                        print "WARNING: Excluding (free function):", fun, "as it returns (pointer)", i
+                        print ("WARNING: Excluding (free function):", fun, "as it returns (pointer)", i)
                         fun.exclude()
                         
     # Update 30 July 2008 -- support for void * variables to be exposed with ctypes handling                        
@@ -594,7 +594,7 @@ def Fix_Pointer_Returns ( mb, pointee_types=['unsigned int','int', 'float','char
             try:  # this only works on memeber vars not global ones so need to check
                 if v.access_type == 'public' and not v.documentation:
     #                 if not v.parent.noncopyable:    ## this test as we don't support classes with protected destructors
-                    print "CTYPE Implementation on ", v, v.access_type
+                    print ("CTYPE Implementation on ", v, v.access_type)
                     v.expose_address = True
             except : #RunTimeError:
                 pass
@@ -663,7 +663,7 @@ def Find_Problem_Transformations ( mb ):
         if len (f.transformations) > 0:
             if f.parent.find_out_member_access_type( f ) == ACCESS_TYPES.PUBLIC:
                 if f.virtuality == VIRTUALITY_TYPES.PURE_VIRTUAL:
-                    print "WARNING: Pure Virtual function with Transformations - they will not be applied:", f
+                    print ("WARNING: Pure Virtual function with Transformations - they will not be applied:", f)
                     
 def Remove_Static_Consts ( mb ):
     """ linux users have compile problems with vars that are static consts AND have values set in the .h files
@@ -673,7 +673,7 @@ def Remove_Static_Consts ( mb ):
     for var in mb.vars():
         if type(var.type) == declarations.cpptypes.const_t:
             if checker( var ):
-                print "Excluding static const ", var
+                print ("Excluding static const ", var)
                 var.exclude()                         
         
 def Fix_Implicit_Conversions ( mb, ImplicitClasses=[] ):
@@ -728,7 +728,7 @@ def Fix_ReadOnly_Vars ( main_ns, ToFixClasses, knownNonMutable ):
                         if not known:
                             ## OK so it must be mutable so lets fix it..
                             v.exclude() ## remove it as a variable
-                            print "Excluding Problem Const", cls.name, v
+                            print ("Excluding Problem Const", cls.name, v)
                             return_type, ignore = v.type.decl_string.split(' ',1) # remove cont etc from decl
                             return_type = return_type[2:] # remove leading ::
                             variable_name = v.name
@@ -798,7 +798,7 @@ def copyTree ( sourcePath, destPath, recursive=False, extensions=['cpp','h','hxx
         # we only copy the file if it's a different size and or date
         if not samefile( sourceFile ,destFile ):
             shutil.copyfile( sourceFile, destFile )
-            print "Updated ", destFile, "as it was missing or out of date"  
+            print ("Updated ", destFile, "as it was missing or out of date")
 
     ## Main code starts here
     

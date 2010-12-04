@@ -441,7 +441,8 @@ def generate_code():
                         os.path.join( environment.raknet.root_dir, "python_raknet.h" )
                         , environment.raknet.cache_file )
 
-    defined_symbols = [ '_WIN32', '__PYTHONOGRE_BUILD_CODE', '_RELEASE', '_RAKNET_DLL', '_CRT_NONSTDC_NO_DEPRECATE' ] # '_RAKNET_LIB' ]_RAKNET_DLL
+    defined_symbols = [ '_WIN32', '__PYTHONOGRE_BUILD_CODE', '_RELEASE', '_RAKNET_DLL', '_CRT_NONSTDC_NO_DEPRECATE', '_STDINT' ] # '_RAKNET_LIB' ]_RAKNET_DLL
+    # added _STDINT to stop overlaps in defines from stdint.h
 
     defined_symbols.append( 'VERSION_' + environment.raknet.version )  
     
