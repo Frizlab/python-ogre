@@ -83,7 +83,7 @@ class input_c_string_t(transformer.transformer_t):
     def __configure_sealed(self, controller):
         global _seq2arr, _cleanUp
         w_arg = controller.find_wrapper_arg( self.arg.name )
-        w_arg.type = declarations.dummy_type_t( "boost::python::object" )
+        w_arg.type = declarations.dummy_type_t( "boost::python::str" )
 
         # Declare a variable that will hold the C array...
         native_pointer = controller.declare_variable( self.array_item_rawtype

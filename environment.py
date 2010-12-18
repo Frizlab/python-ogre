@@ -1603,15 +1603,15 @@ class et(pymodule):  ## editable terrain
     ModuleName = 'et'
 
 class bullet(pymodule):
-    """ WIndows Build Notes: -- 
-    patch src/LineraMath/btScaler.h -- around line 39 (removes the align 16 issues) to look like:
+    """ Windows Build Notes: -- 
+    patch src/LinearMath/btScaler.h -- around line 39 (removes the align 16 issues) to look like:
         #ifdef WIN32
 
             #if 1 || defined(__MINGW32__) || defined(__CYGWIN__) || (defined (_MSC_VER) && _MSC_VER < 1300)
 
     build ReleaseDLL and copy generated libs into a single directory ie (PATH_Bullet, 'out/release_dll8/libs')
     """
-    version = "2.76"
+    version = "r2243" # "2.77"
     base = "bullet-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
@@ -1955,11 +1955,13 @@ class raknet(pymodule):
         Config.PATH_LIB_Ogre_Dependencies,
         Config.PATH_LIB_raknet,
     ]
-    libs = [boost.lib, 'OgreMain', 'LibStatic', 'Ws2_32' ]
+    libs = [boost.lib, 'OgreMain', 'DLL', 'Ws2_32' ]
+    moduleLibs = [ os.path.join(Config.PATH_LIB_raknet, 'DLL')
+                   ]
     ModuleName = "raknet"
     descText = "RakNet MultiPlayer Gaming System"
     descLink = "http://www.jenkinssoftware.com/"
-    CCFLAGS = ' -D_RELEASE -D_RAKNET_DLL -D_CRT_NONSTDC_NO_DEPRECATE -D_WIN32'
+    CCFLAGS = ' -D_RELEASE -D_RAKNET_LIB -D_CRT_SECURE_NO_DEPRECATE -D_WINDOWS -D_CRT_NONSTDC_NO_DEPRECATE -D_WIN32 -DWIN32  '
     LINKFLAGS = '  /NODEFAULTLIB:LIBCMT.lib '
 
 
@@ -2040,7 +2042,7 @@ class ogreoctreezone(pymodule):
     descText = "Octree Zone Management - Expose all functions in OctreeZone incase required"
 
 class ogreoggsound(pymodule):
-    version = "r274"
+    version = "r391"
     active = True
     name = 'ogreoggsound'
     parent = "ogre/sound"

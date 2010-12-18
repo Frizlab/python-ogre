@@ -24,8 +24,8 @@ def GetPacketInformation (p):
 def main():
    ## Pointers to the interfaces of our server and client.
    ## Note we can easily have both in the same program
-   client=raknet.RakNetworkFactory.GetRakPeerInterface()
- 
+   #client=raknet.RakNetworkFactory.GetRakPeerInterface()
+   client = raknet.RakPeer()
    print "This is a sample implementation of a text based chat client."
    print "Connect to the project 'Chat Example Server'.\n"
 
@@ -65,8 +65,7 @@ def main():
 
          if message=="stat":
              rss=client.GetStatistics(client.GetSystemAddressFromIndex(0))
-             print rss #raknet.StatisticsToString(rss, message, 2)
-             print("Ping=", client.GetAveragePing(client.GetSystemAddressFromIndex(0)))
+             print("Stat=", client.GetAveragePing(raknet.AddressOrGUID (client.GetSystemAddressFromIndex(0))))
              continue
 
          if message=="disconnect":
@@ -76,7 +75,7 @@ def main():
 
          if message=="ping":
             if client.GetSystemAddressFromIndex(0)!=raknet.UNASSIGNED_SYSTEM_ADDRESS:
-               client.Ping(client.GetSystemAddressFromIndex(0))
+               client.Ping(raknet.AddressOrGUID (client.GetSystemAddressFromIndex(0)))
             continue
          
          ## message is the data to send
@@ -84,7 +83,7 @@ def main():
          ## HIGH_PRIORITY doesn't actually matter here because we don't use any other priority
          ## RELIABLE_ORDERED means make sure the message arrives in the right order
          client.Send(message, len(message)+1, raknet.HIGH_PRIORITY, raknet.RELIABLE_ORDERED, '', 
-                           raknet.UNASSIGNED_SYSTEM_ADDRESS, True)
+                           raknet.AddressOrGUID(raknet.UNASSIGNED_SYSTEM_ADDRESS), True)
 
       p = client.Receive()
       if not p:
@@ -149,12 +148,14 @@ def main():
       client.DeallocatePacket(p)
 
    ## Be nice and let the server know we quit.
-   client.Shutdown(300)
-
-   ## We're done with the network
-   raknet.RakNetworkFactory.DestroyRakPeerInterface(client)
-
+   print dir(client)
+   client.Shutdown(1)
+   print dir(client)
+   client.Shutdown ()
+      
    return 0
+   
+   
 
 if __name__ == "__main__":
    main()

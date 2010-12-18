@@ -74,6 +74,7 @@ class SkyBoxApplication(sf.Application):
         craft_node.roll(ogre.Degree(d=20.0), ogre.Node.TS_PARENT)
         
         # sound
+        self.root.loadPlugin("OgreOggSound")  # need to force the load here
         self.mSoundManager = sound.OgreOggSoundManager.getSingletonPtr()
         self.mSoundManager.init()
         self.sound = self.mSoundManager.createSound("Roar", "roar.wav", True, True)

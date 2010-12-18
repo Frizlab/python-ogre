@@ -129,6 +129,7 @@ def ManualExclude ( mb ):
                ,'::ReliabilityLayer'
                ,'::RakPeerInterface' ## this one needs work as it looks useful however has a number of functions that need to be handwrapped
                ,'::RakNet::RakThread' ## Create function needs wrapping
+               ,'::RakNet::CCRakNetUDT' ## doesn't get exposed in dll
 
                ]
     for e in excludes:   
@@ -162,7 +163,12 @@ def ManualExclude ( mb ):
                ]
     for e in excludes:
       print "Excluding Variable", e
-      main_ns.variable(e).exclude()                    
+      main_ns.variable(e).exclude()  
+
+    functions = ['::RakNetworkFactory::GetRakPeerInterface']
+    for f in functions:
+        main_ns.member_functions(f).call_policies = call_policies.return_value_policy(call_policies.reference_existing_object )    
+        
 ############################################################
 ##
 ##  And there are things that manually need to be INCLUDED 
@@ -175,7 +181,8 @@ def ManualInclude ( mb ):
         main_ns = global_ns.namespace( MAIN_NAMESPACE )
     else:
         main_ns = global_ns  
-    includes = ['AVLBalancedBinarySearchTree',
+    includes = ['AddressOrGUID',
+                'AVLBalancedBinarySearchTree',
                 'BinarySearchTree',
                 'BitStream',
                 'BPlusTree',
@@ -441,7 +448,7 @@ def generate_code():
                         os.path.join( environment.raknet.root_dir, "python_raknet.h" )
                         , environment.raknet.cache_file )
 
-    defined_symbols = [ '_WIN32', '__PYTHONOGRE_BUILD_CODE', '_RELEASE', '_RAKNET_DLL', '_CRT_NONSTDC_NO_DEPRECATE', '_STDINT' ] # '_RAKNET_LIB' ]_RAKNET_DLL
+    defined_symbols = [ '_WIN32', '__PYTHONOGRE_BUILD_CODE', '_RELEASE', '_CRT_NONSTDC_NO_DEPRECATE', '_STDINT' ] # '_RAKNET_LIB' ]_RAKNET_DLL
     # added _STDINT to stop overlaps in defines from stdint.h
 
     defined_symbols.append( 'VERSION_' + environment.raknet.version )  
@@ -532,7 +539,8 @@ def generate_code():
                      'SocketLayer.cpp','rijndael.cpp', 'CheckSum.cpp','WSAStartupSingleton.cpp', 'RakPeer.cpp',
                      'RakThread.cpp'
                      ]
-    additional_files=[]                     
+    additional_files=['RakMemoryOverride.cpp','CCRakNetUDT.cpp','SuperFastHash.cpp','RakNetTypes.cpp',
+                       'Itoa.cpp']                     
     for sourcefile in additional_files:
         sourcefile = os.path.join(environment.Config.PATH_INCLUDE_raknet, sourcefile )
         p,filename = os.path.split(sourcefile)

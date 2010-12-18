@@ -13,8 +13,6 @@ import environment
 sys.path.insert(0,os.path.join('..', 'code_generators')) # need this to get svn version from common_utils
 import common_utils
 
-import environment
-
 from utility import * # get samefile helper function
 
 default_demo_data=['.log', '.pyc', '.log','ogre.cfg'] # first symbol indicates include or exclude
@@ -22,7 +20,9 @@ parent_dir= os.path.abspath(os.path.join(os.getcwd(), '..'))
 temp_area = os.path.join(parent_dir, "temp")
 packager = '"\\Program Files\\7-Zip\\7z.exe"'
 uploader = '"\\Program Files\\PuTTY\\pscp"'
-upload_dest = 'frs.sourceforge.net:/home/pfs/project/p/py/python-ogre/Latest/1.7.1'
+
+ver = environment.PythonOgreMajorVersion +'.'+ environment.PythonOgreMinorVersion +'.'+ environment.PythonOgrePatchVersion
+upload_dest = 'frs.sourceforge.net:/home/pfs/project/p/py/python-ogre/Latest/'+ver
 
 if not os.path.isdir(temp_area):
    os.mkdir(temp_area)

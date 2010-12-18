@@ -141,7 +141,13 @@ def ManualExclude ( mb ):
 #             ,'::btAlignedObjectArray< short >::expandNonInitializing'
 #             ,'::btAlignedObjectArray< unsigned short >::expandNonInitializing'
 #             ,'::btAlignedObjectArray< unsigned int >::expandNonInitializing'
-
+            ,'::btHashMap< btHashPtr, btOptimizedBvh* >::find'
+            ,'::btHashMap< btHashPtr, btOptimizedBvh* >::getAtIndex'
+            ,'::btHashMap< btHashPtr, bParse::bChunkInd >::find'
+            ,'::btHashMap< btHashPtr, bParse::bChunkInd >::getAtIndex'
+            ,'::btHashMap< btHashPtr, btTriangleInfoMap* >::find'
+            ,'::btHashMap< btHashPtr, btTriangleInfoMap* >::getAtIndex'
+            
               ]
     for e in excludes:
         try:
@@ -170,6 +176,8 @@ def ManualExclude ( mb ):
             ,'::btAlignedAllocator< unsigned int, 16u >'
             ,'::btAlignedAllocator< void*, 16u >'
             ,'::btAlignedAllocator< btActionInterface*, 16u >'
+            ,'::btAlignedAllocator< btVector3DoubleData*, 16u >'
+            ,'::btAlignedAllocator< btVector3FloatData*, 16u >'
             ,'::btAlignedObjectArray< void* >'
             ,'::btAlignedObjectArray< btMultiSapBroadphase::btBridgeProxy* >'
             ,'::btAlignedObjectArray< btMultiSapBroadphase::btMultiSapProxy* >'
@@ -188,6 +196,8 @@ def ManualExclude ( mb ):
              ,'::btAlignedAllocator< btChunk*, 16u >'
              ,'::btAlignedAllocator< short, 16u >'
              ,'::btAlignedAllocator< short*, 16u >'
+             ,'::btAlignedAllocator< btTriangleIndexVertexArray*, 16u >' #2.76
+             ,'::btAlignedAllocator< btTriangleInfoMap*, 16u >' #2.76
              # btHashString::btHashString doesn't have a default constructor
              # looks like 'fundemental' types are not working'
              ,'::btAlignedObjectArray< btHashInt >'
@@ -211,12 +221,19 @@ def ManualExclude ( mb ):
              ,'::btHashMap< btHashString, int >'
              ,'::btHashMap< btHashInt, btTriangleInfo >'
              ,'::btTriangleInfoMap'
-             ,'::btHashMap< btHashPtr, btPointerUid > >' # fails on Linux, maybe coudl be non-copyable
+#             ,'::btHashMap< btHashPtr, btPointerUid > >' # fails on Linux, maybe coudl be non-copyable
 
              ,'::btDefaultSerializer'  # btHashInt::btHashInt no default const
              ,'::btAlignedAllocator< bParse::bStructHandle*, 16u >'
              ,'::btHashMap< btHashPtr, bParse::bStructHandle* >'
              ,'::btAlignedAllocator< btOptimizedBvh*, 16u >'
+             
+             ,'::btHashMap< btHashPtr, btCollisionObject* >'
+             ,'::btHashMap< btHashPtr, btCollisionShape* >'
+             ,'::btHashMap< btHashString, btCollisionShape* >'
+             ,'::btHashMap< btHashString, btRigidBody* >'
+             ,'::btHashMap< btHashString, btTypedConstraint* >'
+             
             ]
             
     for e in excludes:
@@ -241,13 +258,17 @@ def ManualExclude ( mb ):
          print "WARNING: Unable to exclude variable ", e        
     
         
-    excludes = [ '::btAlignedObjectArray< btCharacterControllerInterface* >::operator[]']
+    excludes = [ '::btAlignedObjectArray< btCharacterControllerInterface* >::operator[]'
+            ,'::btHashMap< btHashPtr, btTriangleInfoMap* >::operator[]'
+            ,'::btHashMap< btHashPtr, btOptimizedBvh* >::operator[]'
+            ,'::btHashMap< btHashPtr, bParse::bChunkInd >::operator[]'
+            ]
     for e in excludes:
       try:
         global_ns.operators(e).exclude()
         print "Excluded operator",e
       except:
-         print "WARNING: Unable to operator", e         
+         print "WARNING: Unable to exclude operator", e         
         
     # an Operator that won't compile
     for c in global_ns.classes():
@@ -257,7 +278,12 @@ def ManualExclude ( mb ):
                 o.exclude()
     global_ns.class_('btQuaternion').operators("operator-", arg_types=[]).exclude()
     
-    noncopy = ['btDbvtBroadphase','btRaycastVehicle','btAlignedObjectArray< btHashInt >']
+    noncopy = ['btDbvtBroadphase','btRaycastVehicle','btAlignedObjectArray< btHashInt >',
+                'btBulletWorldImporter','btHashMap< btHashPtr, btOptimizedBvh* >', 
+                'btHashMap< btHashPtr, bParse::bChunkInd >',
+                'btHashMap< btHashPtr, btTriangleInfoMap* >',
+                'btHashMap< btHashPtr, btPointerUid > >'
+                ]
     for c in noncopy:
         main_ns.class_(c).noncopyable = True
     
@@ -486,8 +512,9 @@ def generate_code():
                         os.path.join( environment.bullet.root_dir, "python_bullet.h" )
                         , environment.bullet.cache_file )
 
-    defined_symbols = [ 'BULLET_EXPORTS', '__GCCXML__', 
+    defined_symbols = [ 'BULLET_EXPORTS', '__GCCXML__', '_MSC_VER',
                         '__MINGW32__'   # needed to turn off allocator allignment which boost can't do..
+                        
                         ]
     defined_symbols.append( 'VERSION_' + environment.bullet.version )  
     if sys.platform.startswith ( 'linux' ):
