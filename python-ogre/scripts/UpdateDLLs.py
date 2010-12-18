@@ -38,3 +38,14 @@ for filename in os.listdir(srcpath):
                 print "Already Exists:", filename ,"\tin", destpath
         except:
             print "Error Copying", filename , "to", destpath
+specials=[os.path.join(environment.Config.PATH_LIB_ogreoggsound,'OgreOggSound.dll')]
+for infile in specials:
+    head, filename = os.path.split (infile )
+    try:
+        if not samefile ( infile, os.path.join(destpath, filename) ):
+            shutil.copy ( infile, destpath )
+            print "Copied", filename , "to", destpath
+        else:
+            print "Already Exists:", filename ,"\tin", destpath
+    except:
+        print "Error Copying", filename , "to", destpath

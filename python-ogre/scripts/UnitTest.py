@@ -101,7 +101,7 @@ def getDemoFiles ( parent, base ):
     ret = []
     p = os.path.abspath( os.path.join ( parent, base) )
     for f in os.listdir ( p ):
-        if f.lower().startswith("demo") and f.lower().endswith(".py") and not f in knownBad:
+        if (f.lower().startswith("demo") or f.lower().startswith("sample") ) and f.lower().endswith(".py") and not f in knownBad:
             if os.path.isfile ( os.path.join(p,f) ):
                 file = open ( os.path.join(p,f) )
                 l = file.readline()

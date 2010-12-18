@@ -30,7 +30,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _MSC_VER // [
-#error "Use this header only with Microsoft Visual C++ compilers!"
+//#error "Use this header only with Microsoft Visual C++ compilers!"
 #endif // _MSC_VER ]
 
 #ifndef _MSC_STDINT_H_ // [
@@ -73,8 +73,9 @@ typedef __int64           int64_t;
 typedef unsigned __int8   uint8_t;
 typedef unsigned __int16  uint16_t;
 typedef unsigned __int32  uint32_t;
-typedef unsigned __int64  uint64_t;
-
+#ifndef __MINGW32__
+    typedef unsigned __int64  uint64_t;
+#endif
 // 7.18.1.2 Minimum-width integer types
 typedef int8_t    int_least8_t;
 typedef int16_t   int_least16_t;
@@ -262,7 +263,7 @@ typedef uint64_t  uintmax_t;
 ///////////////////////////////////////////////////////////////////////////////
 
 #ifndef _MSC_VER // [
-#error "Use this header only with Microsoft Visual C++ compilers!"
+//#error "Use this header only with Microsoft Visual C++ compilers!"
 #endif // _MSC_VER ]
 
 #ifndef _MSC_STDINT_H_ // [

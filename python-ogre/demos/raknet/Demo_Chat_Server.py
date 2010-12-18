@@ -7,27 +7,35 @@ import ogre.addons.raknet as raknet
 ## If the first byte is ID_TIMESTAMP, then we want the 5th byte
 ## Otherwise we want the 1st byte
 def GetPacketInformation (p):
+   print "Identifing packet", p, p.length
    if not p:
-      return 0,255
-   # ugly here -- p.data is the address of the pointer to the data...      
-   pointer = ctypes.c_uint.from_address(p.data)
-   # now we need to get the first byte that it's pointing to..
-   c = ctypes.c_ubyte.from_address(pointer.value)
-   if c.value == int(raknet.ID_TIMESTAMP):
-      print "TIMESTAMP"
-      pointer.value += 5
-      control = ctypes.c_ubyte.from_address(pointer.value)
-   return pointer.value, c.value
+      return 0,[]
+   # p.data is the address of the pointer to the data...      
+   # pointer_base = ctypes.c_char * p.length
+   # data = pointer_base.from_address(p.data)
+   
+   data_type = ctypes.POINTER( ctypes.c_ubyte )
+   data = data_type.from_address( p.data )
+
+   ret = []
+   for x in range ( p.length ):
+      ret.append ( chr(data[x]) )
+   return ret[0], ret
 
 
 def main():
-   server=raknet.RakNetworkFactory.GetRakPeerInterface()
-   i = server.GetNumberOfAddresses()
-   server.SetIncomingPassword("Rumpelstiltskin", len("Rumpelstiltskin"))
 
+   ##server=raknet.RakNetworkFactory.GetRakPeerInterface()
+   server=raknet.RakPeer()
+   print server
+   print dir (server)
+   i = server.GetNumberOfAddresses()
+   print i
+   password = "Rumpelstiltskin"
+   server.SetIncomingPassword(password, len(password))
+   server.SetTimeoutTime(30000, raknet.UNASSIGNED_SYSTEM_ADDRESS)
    ## Record the first client that connects to us so we can pass it to the ping function
    clientID=raknet.UNASSIGNED_SYSTEM_ADDRESS
-
 
    print("This is a sample implementation of a text based chat server.\n")
    print("Connect to the project 'Chat Example Client'.\n")
@@ -104,49 +112,47 @@ def main():
          ## True means broadcast the message to everyone connected
          m = "Server: " + message
          print len (m)
-         server.Send(m, len (m)+1, raknet.HIGH_PRIORITY, raknet.RELIABLE_ORDERED, '', raknet.UNASSIGNED_SYSTEM_ADDRESS, True)
+         server.Send(m, len (m)+1, raknet.HIGH_PRIORITY, raknet.RELIABLE_ORDERED, '0', raknet.AddressOrGUID(raknet.UNASSIGNED_SYSTEM_ADDRESS), True)
 
       ## Get a packet from either the server or the client
+      p=server.Receive()
+      while (p):
+          packetIdentifier,data = GetPacketInformation( p )
+          if packetIdentifier == int(raknet.ID_TIMESTAMP):
+              print "TIMESTAMP"
+              
+          ## Check if this is a network message packet
+          elif packetIdentifier == int(raknet.ID_DISCONNECTION_NOTIFICATION):
+              ## Connection lost normally
+              print("ID_DISCONNECTION_NOTIFICATION\n")
+        
+          elif packetIdentifier == int(raknet.ID_NEW_INCOMING_CONNECTION):
+               ## Somebody connected.  We have their IP now
+              print("ID_NEW_INCOMING_CONNECTION from %s with GUID %s\n", p.systemAddress.ToString(), p.guid.ToString())
+              clientID=p.systemAddress ## Record the player ID of the client
 
-      p,data, time_ = server.ReceiveList()
-      
-      if not p:
-         continue ## Didn't get any packets
-         
-      packetIdentifier = int(data[0]) # first byte is type of packet
-      
-      ## Check if this is a network message packet
-      if packetIdentifier == int(raknet.ID_DISCONNECTION_NOTIFICATION):
-          ## Connection lost normally
-          print("ID_DISCONNECTION_NOTIFICATION\n")
-    
-      elif packetIdentifier == int(raknet.ID_NEW_INCOMING_CONNECTION):
-           ## Somebody connected.  We have their IP now
-          print("ID_NEW_INCOMING_CONNECTION from %s with GUID %s\n", p.systemAddress.ToString(), p.guid.ToString())
-          clientID=p.systemAddress ## Record the player ID of the client
+          elif packetIdentifier == int(raknet.ID_MODIFIED_PACKET):
+              ## Cheater!
+              print("ID_MODIFIED_PACKET\n")
 
-      elif packetIdentifier == int(raknet.ID_MODIFIED_PACKET):
-          ## Cheater!
-          print("ID_MODIFIED_PACKET\n")
+          elif packetIdentifier == int(raknet.ID_CONNECTION_LOST):
+              print("ID_CONNECTION_LOST\n")
+              
+          else:
+              ## The server knows the static data of all clients, so we can prefix the message
+              ## With the name data
+              print "PACKETID:", data
+              s= "".join(data[:]) # map(chr,data[1:]))
+              print s
 
-      elif packetIdentifier == int(raknet.ID_CONNECTION_LOST):
-          print("ID_CONNECTION_LOST\n")
-          
-      else:
-          ## The server knows the static data of all clients, so we can prefix the message
-          ## With the name data
-          
-          s= "".join(map(chr,data))
-          print s
+              ## Relay the message.  We prefix the name for other clients.  This demonstrates
+              ## That messages can be changed on the server before being broadcast
+              ## Sending is the same as before
+              server.Send(s, len(s)+1, raknet.HIGH_PRIORITY, raknet.RELIABLE_ORDERED, '', raknet.AddressOrGUID(raknet.UNASSIGNED_SYSTEM_ADDRESS), True ) #p.systemAddress, True)
 
-          ## Relay the message.  We prefix the name for other clients.  This demonstrates
-          ## That messages can be changed on the server before being broadcast
-          ## Sending is the same as before
-          server.Send(s, len(s)+1, raknet.HIGH_PRIORITY, raknet.RELIABLE_ORDERED, '', p.systemAddress, True)
-
-      ## We're done with the packet
-      server.DeallocatePacket(p)
-
+          ## We're done with the packet
+          server.DeallocatePacket(p)
+          p=server.Receive()
    server.Shutdown(300)
    ## We're done with the network
    raknet.RakNetworkFactory.DestroyRakPeerInterface(server)
