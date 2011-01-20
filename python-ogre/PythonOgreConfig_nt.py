@@ -188,7 +188,7 @@ PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'i
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
 PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include")
 PATH_INCLUDE_sdksample = os.path.join(PATH_THIRDPARTY, "sdksample")
-
+PATH_INCLUDE_ogreproperty = os.path.join(PATH_Ogre,'Components','Property', 'include')
     
 PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
 PATH_INCLUDE_NEDMALLOC=      "" #os.path.join(PATH_Ogre,'OgreMain', 'src', 'nedmalloc')

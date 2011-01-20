@@ -143,6 +143,7 @@ PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManage
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include')
 PATH_INCLUDE_sdksample=   os.path.join(PATH_Ogre,'Samples')
 
+
 PATH_INCLUDE_ogrepaging =   os.path.join(PATH_INCLUDE_Ogre,'Paging')
 PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_INCLUDE_Ogre,'RTShaderSystem')
 PATH_INCLUDE_ogreterrain =   os.path.join(PATH_INCLUDE_Ogre,'Terrain')
@@ -150,6 +151,7 @@ PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeZ
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeSceneManager' )
 #####PATH_INCLUDE_sdksample = os.path.join(module_dir, "..", "ogre", "Samples", "Common", "include")
 PATH_INCLUDE_ogrepcz = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'PCZSceneManager')
+PATH_INCLUDE_ogreproperty = os.path.join(PATH_INCLUDE_Ogre,'Property')
 
 PATH_INCLUDE_OgreNewt =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_OgreNewt2 =     os.path.join(LOCAL_INCLUDE,'OgreNewt') #os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
@@ -202,6 +204,20 @@ PATH_INCLUDE_OggVorbisTheora = [ os.path.join(BASE_DIR,'ogg','include')
                         ##,os.path.join(PATH_OgreAddons,'videoplugin','ptypes-1.8.3','include')
                         ,os.path.join(PATH_THIRDPARTY,'ptypes','include')
                         ]
+PATH_ogrevideo =  os.path.join(BASE_DIR,'ogrevideo','trunk')
+PATH_INCLUDE_ogrevideo  =  os.path.join(PATH_ogrevideo,'include')
+
+PATH_LIB_ogrevideo      =  os.path.join(PATH_ogrevideo,'lib') # 'bin','Release_static')
+PATH_DEMO_ogrevideo   =  os.path.join(PATH_ogrevideo, 'demos', 'audio_openal')
+
+PATH_INCLUDE_ogrevideo = LOCAL_INCLUDE
+PATH_DEMO_ogrevideo = LOCAL_INCLUDE
+PATH_INCLUDE_libtheoraplayer = LOCAL_INCLUDE
+PATH_LIB_ogrevideo = LOCAL_LIB
+PATH_libtheoraplayer =  LOCAL_LIB
+
+PATH_LIB_Ogre_OgreMain_debug =   os.path.join( LOCAL_LIB )
+
 physxbase = os.path.join('/usr/include/', 'PhysX','v2.8.1', 'SDKs')
 PATH_INCLUDE_PhysX= [ physxbase
                     ,os.path.join(physxbase, 'Cooking','include')

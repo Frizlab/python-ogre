@@ -474,7 +474,7 @@ typedef Ogre::String String;
     #endif
     typedef Ogre::MapIterator<std::map<std::string, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*, std::less<std::string>, std::allocator<std::pair<std::string const, std::multimap<std::string, std::string, std::less<std::string>, std::allocator<std::pair<std::string const, std::string> > >*> > > > MapIteratorMapStringMultiMap;
     typedef Ogre::MapIterator<std::multimap<std::string, std::string> > MapIteratorMultiMapStringString;
-    typedef Ogre::StaticCache< 256u > StaticCache256u;
+//    typedef Ogre::StaticCache< 256u > StaticCache256u;
     
 typedef std::vector<int> stdVectorInt;
 typedef std::vector<std::string> stdVectorString;

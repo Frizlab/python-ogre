@@ -184,7 +184,14 @@ PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'inc
 PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
 PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
 PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include"),
+PATH_INCLUDE_ogreproperty = os.path.join(PATH_Ogre,'Components','Property', 'include')
 
+
+PATH_ogrevideo =  os.path.join(BASE_DIR,'ogrevideo','trunk')
+PATH_INCLUDE_ogrevideo  =  os.path.join(PATH_ogrevideo,'include')
+
+PATH_LIB_ogrevideo      =  os.path.join(PATH_ogrevideo,'lib') # 'bin','Release_static')
+PATH_DEMO_ogrevideo   =  os.path.join(PATH_ogrevideo, 'demos', 'audio_openal')
 
 if SDK :
     PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'include','OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's

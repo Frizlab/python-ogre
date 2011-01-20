@@ -760,13 +760,13 @@ class ogre(pymodule):
         LINKFLAGS = ''
 
     elif isLinux():
-        version = "1.7.0"
-        base = "ogre-v1-7-0p1"
+        version = "1.7.2"
+        base = "ogre_src_v1-7-2"
         baseDir = 'ogre'
-        ##https://sourceforge.net/projects/ogre/files/ogre/1.7/ogre-v1-7-0RC1.tar.bz2/download
+        #http://sourceforge.net/projects/ogre/files/ogre/1.7/ogre_src_v1-7-2.tar.bz2/download
 
         source = [
-            [wget, "http://downloads.sourceforge.net/ogre/" + base + ".tar.bz2", downloadPath],
+            [wget, "http://sourceforge.net/projects/ogre/files/ogre/1.7/" + base + ".tar.bz2", downloadPath],
         ]
 
 #         buildCmds = [
@@ -781,6 +781,7 @@ class ogre(pymodule):
 
         buildCmds = [
             [0, tar + " jxf " + os.path.join(downloadPath, base) + ".tar.bz2 --overwrite", os.getcwd() ],
+            [0, "mv ogre_src_v1-7-2 " + baseDir, os.getcwd()],
             [0, "cmake . -DOGRE_INSTALL_PLUGINS_HEADERS=TRUE -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
             [0, "make", baseDir],
             [0, _sudo + " make install", baseDir]
@@ -789,6 +790,7 @@ class ogre(pymodule):
         lib_dirs = [Config.LOCAL_LIB]
         include_dirs = [boost.PATH,
                         Config.PATH_INCLUDE_Ogre,
+	                Config.PATH_INCLUDE_ogreproperty,
                         python_include_dirs,
                         ]
         CCFLAGS = ' -D__PYTHONOGRE_BUILD_CODE '
@@ -942,9 +944,10 @@ class cegui(pymodule):
         libs = [boost.lib, 'OgreMain' ]
 
     if isLinux() or isMac():
-        base = "CEGUI-0.7.1"
+        base = "CEGUI-0.7.5"
+        ##http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.5.tar.gz?download
         source = [
-            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.1.tar.gz?download", downloadPath]
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.5.tar.gz?download", downloadPath]
         ]
 
     if isLinux() :

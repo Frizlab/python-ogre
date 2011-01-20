@@ -1,5 +1,7 @@
 #!/bin/bash
 # Part of the Python-Ogre installation 
+#		python-celementtree 	\
+#		python2.6-clementtree \
 if [ -x /usr/bin/apt-get ]; then
 	sudo apt-get install 		\
 		g++ 					\
@@ -21,9 +23,10 @@ if [ -x /usr/bin/apt-get ]; then
 		libexpat1-dev 			\
 		python 					\
 		python-dev 				\
-		python-celementtree 	\
 		libglew-dev 			\
 		jam                     \
+	cmake libboost-thread-dev libboost-date-time-dev scons \
+	libfreeimage-dev libfreeimage3 libzzip-dev bjam \
 
 fi
 
