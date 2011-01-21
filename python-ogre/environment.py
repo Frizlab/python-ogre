@@ -93,6 +93,7 @@ elif isLinux():
     ## It's linux of some sort
     python_include_dirs = os.path.join('/usr/include/python' + PythonVersionString, '')
     python_lib_dirs = os.path.join('/usr/lib/python' + PythonVersionString, 'libs')
+    
 elif isMac(): ## it's Mac OS X
     pathlist = os.path.normpath(sys.prefix).split('/')
     version = pathlist[pathlist.index('Versions') + 1]
@@ -125,6 +126,11 @@ package_dir_name = 'packages' + "_" + PythonVersionString
 generated_dir = os.path.join(root_dir, generated_dir_name)
 declarations_cache_dir = os.path.join(root_dir, 'code_generators', 'cache')
 
+# 
+if not isWindows():
+   stdFile = os.path.join(root_dir, 'stdint.h')
+   if os.path.exists( stdFile ) : # this file is only for Windows build
+      os.remove ( stdFile ) 
 
 ##
 ## Now we load the user specific stuff
@@ -947,7 +953,7 @@ class cegui(pymodule):
         base = "CEGUI-0.7.5"
         ##http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.5.tar.gz?download
         source = [
-            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.5.tar.gz?download", downloadPath]
+            [wget, "http://prdownloads.sourceforge.net/crayzedsgui/CEGUI-0.7.5.tar.gz", downloadPath]
         ]
 
     if isLinux() :
