@@ -4,6 +4,7 @@ import sys,os
 module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is where this module is located
 ## lets assume that the base development directory is one level higher
 BASE_DIR = "/usr" 
+DEV_DIR,ignore = os.path.split(module_dir)
 
 SDK = False
 _SVN = False    # if building from Ogre svn
@@ -63,7 +64,7 @@ PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
 PATH_NxOgre=        os.path.join(PATH_THIRDPARTY, 'nxogre')
 PATH_NxOgre_09=        os.path.join(PATH_THIRDPARTY, 'nxogre_0.9')
 # PATH_NxOgre=        os.path.join(BASE_DIR, 'nxogre/NxOgre')
-PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.73') 
+PATH_Bullet=        os.path.join(DEV_DIR, 'bullet-svn-r2243') # EXCEPTION here in system config
 ###PATH_PhysX=         os.path.join(BASE_DIR, 'Physx/v2.7.3/SDKs')
 PATH_Theora=        os.path.join(PATH_OgreAddons,'videoplugin','TheoraVideo')
 PATH_ffmpeg=        os.path.join(BASE_DIR) #, 'ffmpeg')

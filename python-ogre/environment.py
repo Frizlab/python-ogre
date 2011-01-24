@@ -1621,7 +1621,7 @@ class bullet(pymodule):
     build ReleaseDLL and copy generated libs into a single directory ie (PATH_Bullet, 'out/release_dll8/libs')
     """
     version = "r2243" # "2.77"
-    base = "bullet-" + version
+    base = "bullet-svn-" + version
     baseDir = os.path.join(os.getcwd(), base)
     parent = "ogre/physics"
     package_name = 'bullet'
@@ -1640,13 +1640,13 @@ class bullet(pymodule):
         libs = [boost.lib, 'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody', 'libBulletMultiThreaded',
                'libGIMPACTUtils','libLinearMath']
         source = [
-            [wget, "http://bullet.googlecode.com/files/" + base + ".tgz", downloadPath]
+            [wget, "http://bullet.googlecode.com/files/" + base + ".zip", downloadPath]
         ]
         buildCmds = [
-            [0, "tar zxf " + os.path.join(downloadPath, base) + ".tgz", ''],
-            [0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
-            [0, "make", baseDir],
-            [0, "find . -name *.a -execdir cp {} %s/lib \;" % PREFIX, baseDir]
+            #[0, unzip + os.path.join(downloadPath, base) + ".zip", ''],
+            #[0, "cmake . -DCMAKE_INSTALL_PREFIX:PATH=%s" % PREFIX, baseDir],
+            #[0, "make", baseDir],
+            [0, _sudo + "find . -name *.a -execdir cp {} %s/lib \;" % PREFIX, baseDir]
         ]
         CCFLAGS = ' -D"NDEBUG" -D"_CONSOLE" -D"_MBCS"  '
     else:
