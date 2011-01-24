@@ -1638,7 +1638,7 @@ class bullet(pymodule):
        ]
     if not isWindows():
         libs = [boost.lib, 'libBulletCollision', 'libBulletDynamics', 'libBulletSoftBody', 'libBulletMultiThreaded',
-               'libGIMPACTUtils','libLinearMath']
+               'libGIMPACTUtils','libLinearMath', 'libBulletWorldImporter', 'libBulletFileLoader']
         source = [
             [wget, "http://bullet.googlecode.com/files/" + base + ".zip", downloadPath]
         ]

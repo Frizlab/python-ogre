@@ -623,8 +623,10 @@ def generate_code():
     ## now we need to ensure a series of headers and additional source files are
     ## copied to the generaated directory..
     additional_files=[
-            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_bullet_masterlist.h' )
+            os.path.join( os.path.abspath(os.path.dirname(__file__) ), 'python_bullet_masterlist.h' )	    
             ]
+    if environment.isLinux(): #sBulletDNAlen is defined in the cpp file not the header!! 
+       additional_files.append ( os.path.join( environment.Config.PATH_Bullet, 'src', 'LinearMath','btSerializer.cpp' ) )
     for sourcefile in additional_files:
         p,filename = os.path.split(sourcefile)
         destfile = os.path.join(environment.bullet.generated_dir, filename )
