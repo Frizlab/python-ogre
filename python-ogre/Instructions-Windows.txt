@@ -1,0 +1,38 @@
+
+<< Prepare Building Tools/Env >>
+
+install VC++ 2008
+install Python 2.7.1
+install CMake
+
+>python python-ogre\BuildModule.py -r gccxml boost scons pygccxml pyplusplus
+
+cmake/VC++2008 -> /gccxml
+
+>python python-ogre\BuildModule.py -b boost
+>python python-ogre\BuildModule.py -b scons
+>python python-ogre\BuildModule.py -b pygccxml pyplusplus
+
+	---------------------------
+
+<< Build Python-Ogre Core >>
+	
+>python python-ogre/BuildModule.py -r ogre
+>python python-ogre/BuildModule.py -b ogre
+
+Unzip Ogre & Dependencies
+VC++2008 -> /ogre/Dependencies
+cmake/VC++2008 -> /ogre
+
+(Make sure to give cmake your path to boost, in order to build OgreProperty)
+
+>python python-ogre/BuildModule.py -g -v ogre
+>python python-ogre/BuildModule.py -c -v ogre
+
+
+	---------------------------
+
+<< Build Python-Ogre Add-ons >>
+
+>python python-ogre/BuildModule.py -r raknet
+>python python-ogre/BuildModule.py -b raknet

@@ -768,6 +768,7 @@ class ogre(pymodule):
         include_dirs = [
             boost.PATH,
             Config.PATH_INCLUDE_Ogre,
+            os.path.join(Config.PATH_Ogre,'include'),
             Config.PATH_INCLUDE_ogreproperty,
             python_include_dirs,
         ]
