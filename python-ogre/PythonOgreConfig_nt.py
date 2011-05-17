@@ -54,7 +54,7 @@ else:
 if SDK:
     PATH_Ogre =         "C:\\development\\ogre"
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.7.1')
+PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.7.5')
 
 PATH_OIS =          os.path.join(BASE_DIR, 'ois' ) ##'ois-1.0RC1')
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
