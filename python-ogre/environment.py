@@ -708,16 +708,21 @@ class ogre(pymodule):
     libraries = myLibraries
     if isWindows():
         version = "1.7.2"
-        source = [
-            [ wget, "http://downloads.sourceforge.net/ogre/ogre-v1-7-0.zip", downloadPath],
-            [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_VC9_Eihort_20080203.zip", downloadPath],
-        ]
+        base = "ogre_src_v1-7-2"
+        baseDir = 'ogre'
 
+        source = [
+            [ wget, "http://sourceforge.net/projects/ogre/files/ogre/1.7/" + base + ".tar.bz2", downloadPath],
+            [ wget, "http://downloads.sourceforge.net/ogre/OgreDependencies_MSVC_20101231.zip", downloadPath],          
+        ] 
+        
         buildCmds = [
-            [0, unzip + os.path.join(downloadPath, "ogre-v1-7-0.zip"), os.getcwd()  ],
-            [0, unzip + os.path.join(downloadPath, "OgreDependencies_VC9_Eihort_20080203.zip"), Config.PATH_Ogre  ],
-            [0, 'echo Please use MSVC Express Edition to build Ogre Release.', '']
+            [0, 'echo Use Winrar to extract downloads/ogre_src_v1-7-2.tar.bz2 to /ogre', ''],
+            [0, 'echo Use Winrar to extract downloads/OgreDependencies_MSVC_20101231.zip to /ogre/Dependencies', ''],
+            [0, 'echo Then use MSVC Express Edition to build Dependencies Release.', ''],
+            [0, 'echo Then use Cmake and MSVC Express Edition to build Ogre Release.', ''],
         ]
+        
         try:
             if Config._SVN:
                 version = "1.7.x-SVN"
@@ -1953,6 +1958,15 @@ class raknet(pymodule):
     version = "3.81"
     name = 'raknet'
     parent = "ogre/addons"
+    
+    source = [
+        [ wget, "http://www.raknet.net/raknet/downloads/RakNet-3.81.zip", downloadPath],
+    ]     
+    buildCmds = [
+        [0, 'mkdir raknet', ''],
+        [0, unzip + os.path.join(downloadPath, 'RakNet-3.81.zip'), os.path.join(os.getcwd(), 'raknet') ],    
+        [0, 'echo Use Cmake and MSVC Express Edition to build Raknet Release.', ''],
+    ]               
     include_dirs = [
         boost.PATH,
         Config.PATH_INCLUDE_raknet,
