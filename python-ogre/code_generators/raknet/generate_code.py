@@ -535,12 +535,14 @@ def generate_code():
     ## copied to the generated directory..
     # we could change raknet to be dll exported in raknet source but this would mean patching :(.
     # so instead we simply include the missing class in our own wrapper..
-    additional_files=[ 'ReliabilityLayer.cpp','RakMemoryOverride.cpp','DataBlockEncryptor.cpp',
-                     'SocketLayer.cpp','rijndael.cpp', 'CheckSum.cpp','WSAStartupSingleton.cpp', 'RakPeer.cpp',
-                     'RakThread.cpp'
-                     ]
-    additional_files=['RakMemoryOverride.cpp','CCRakNetUDT.cpp','SuperFastHash.cpp','RakNetTypes.cpp',
-                       'Itoa.cpp']                     
+    
+    #additional_files=[ 'ReliabilityLayer.cpp','RakMemoryOverride.cpp','DataBlockEncryptor.cpp',
+    #                 'SocketLayer.cpp','rijndael.cpp', 'CheckSum.cpp','WSAStartupSingleton.cpp', 'RakPeer.cpp',
+    #                 'RakThread.cpp' ]
+    
+    additional_files=['ReliabilityLayer.cpp','RakMemoryOverride.cpp','CCRakNetUDT.cpp','SuperFastHash.cpp','RakNetTypes.cpp',
+                       'CheckSum.cpp','Itoa.cpp','SocketLayer.cpp','WSAStartupSingleton.cpp', 'RakPeer.cpp'] 
+                       
     for sourcefile in additional_files:
         sourcefile = os.path.join(environment.Config.PATH_INCLUDE_raknet, sourcefile )
         p,filename = os.path.split(sourcefile)

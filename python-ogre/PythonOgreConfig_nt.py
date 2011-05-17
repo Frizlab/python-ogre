@@ -55,10 +55,7 @@ pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplusplus')
 
 ## Parent directories of the libraries
 PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
-if _SVN:
-    PATH_Ogre = os.path.join(BASE_DIR, 'ogre')
-else:
-    PATH_Ogre = "c:\\ogre"
+PATH_Ogre = os.path.join(BASE_DIR, 'ogre')
 if _SDK:
     PATH_Ogre =         "C:\\development\\ogre"
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
@@ -141,7 +138,7 @@ PATH_libtheoraplayer = os.path.join(BASE_DIR, "libtheoraplayer")
 ### Override anything that is different
 ###        
 PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_CEGUI, 'lib')
-PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib' ) #, 'Release' )
+PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib', 'Release' )
 PATH_LIB_Ogre_OgreMain_debug =   os.path.join( PATH_Ogre, 'lib' )
 
 if _SVN:

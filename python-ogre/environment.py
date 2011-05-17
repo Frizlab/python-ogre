@@ -1981,14 +1981,18 @@ class raknet(pymodule):
         Config.PATH_LIB_Ogre_Dependencies,
         Config.PATH_LIB_raknet,
     ]
-    libs = [boost.lib, 'OgreMain', 'DLL', 'Ws2_32' ]
-    moduleLibs = [ os.path.join(Config.PATH_LIB_raknet, 'DLL')
-                   ]
+    if isWindows():
+        libs = [boost.lib, 'OgreMain', 'RakNetDLL', 'Ws2_32' ]
+        moduleLibs = [ os.path.join(Config.PATH_LIB_raknet, 'RakNet') ]
+        CCFLAGS = ' -D_RELEASE -D_RAKNET_LIB -D_CRT_SECURE_NO_DEPRECATE -D_WINDOWS -D_CRT_NONSTDC_NO_DEPRECATE -D_WIN32 -DWIN32  '
+        LINKFLAGS = '  /NODEFAULTLIB:LIBCMT.lib '
+    else:
+        libs = [boost.lib, 'OgreMain', 'RakNetStatic' ]        
+        CCFLAGS = ' -D_RELEASE -D_RAKNET_LIB -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE '
+
     ModuleName = "raknet"
     descText = "RakNet MultiPlayer Gaming System"
     descLink = "http://www.jenkinssoftware.com/"
-    CCFLAGS = ' -D_RELEASE -D_RAKNET_LIB -D_CRT_SECURE_NO_DEPRECATE -D_WINDOWS -D_CRT_NONSTDC_NO_DEPRECATE -D_WIN32 -DWIN32  '
-    LINKFLAGS = '  /NODEFAULTLIB:LIBCMT.lib '
 
 
 class doctester(pymodule):

@@ -111,7 +111,7 @@ PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
 PATH_plsm2 =        os.path.join(PATH_THIRDPARTY, 'plsm2' )
 
 PATH_raknet = os.path.join(BASE_DIR, 'raknet')
-PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib')
+PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib/LibStatic')
 PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
 
 PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
