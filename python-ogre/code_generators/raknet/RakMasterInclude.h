@@ -1,3 +1,11 @@
+
+#if defined(_WIN32)
+  // nothing
+#else
+  int __dummy__(...);
+  #define __builtin_va_arg_pack_len __dummy__
+#endif
+
 #ifdef ANDYHERE
 #include "RakPeerInterface.h"
 #include "RakNetworkFactory.h"
