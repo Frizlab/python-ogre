@@ -1,0 +1,132 @@
+
+<< Build Python 2.7.1 >>
+
+Download and unzip python 2.7.1 src
+
+>sudo apt-get build-dep python2.7
+>./configure --prefix=/home/mohican/pyogre/root/usr --with-threads --enable-shared --enable-profiling --enable-unicode=ucs4
+
+The zlib module is deactivated by default. 
+Edit the file ./Modules/Setup and replace the commented zlib line with:
+    zlib zlibmodule.c -I/usr/include -L/usr/lib -lz
+    
+>make
+>make install
+
+	---------------------------
+
+<< Prepare Building Tools/Env >>
+
+>sudo apt-get install subversion
+>sudo apt-get install cmake
+>sudo apt-get install gccxml
+>sudo apt-get install scons
+
+>export PATH="/home/mohican/pyogre/root/usr/bin:$PATH"
+>export LD_LIBRARY_PATH="/home/mohican/pyogre/root/usr/lib"
+>export PYTHONPATH="/home/mohican/pyogre/root/usr/lib/python2.7/site-packages:"
+
+>ln -s python-ogre/scripts/00-PreReqs.sh
+>sh ./00-PreReqs.sh
+
+>python python-ogre/BuildModule.py -r cg
+>python python-ogre/BuildModule.py -b cg
+
+>python python-ogre/BuildModule.py -r pygccxml 
+>python python-ogre/BuildModule.py -b pygccxml 
+
+>python python-ogre/BuildModule.py -r pyplusplus
+>python python-ogre/BuildModule.py -b pyplusplus 
+
+>python python-ogre/BuildModule.py -b boost_python
+
+	---------------------------
+
+<< Build Python-Ogre Core >>
+
+>python python-ogre/BuildModule.py -r ois
+>python python-ogre/BuildModule.py -b -v ois
+
+>python python-ogre/BuildModule.py -r ogre
+>python python-ogre/BuildModule.py -b -v ogre
+
+>python python-ogre/BuildModule.py -g -v ogre
+>python python-ogre/BuildModule.py -c -v ogre
+
+>python python-ogre/BuildModule.py -g -v ois
+>python python-ogre/BuildModule.py -c -v ois
+
+>python python-ogre/BuildModule.py -b -v install
+
+	---------------------------
+
+<< Build Python-Ogre Modules >>
+
+>python python-ogre/BuildModule.py -g -v ogrepaging
+>python python-ogre/BuildModule.py -c -v ogrepaging
+
+>python python-ogre/BuildModule.py -g -v ogreterrain
+>python python-ogre/BuildModule.py -c -v ogreterrain
+(Note: ogreterrain compiles on rev 1098 - above that, iteratorWrapper errors that '_tree' is not part of 'std')
+
+>python python-ogre/BuildModule.py -g -v ogrepcz
+>python python-ogre/BuildModule.py -c -v ogrepcz
+(Error: cannot find -lPlugin_PCZSceneManager)
+
+>python python-ogre/BuildModule.py -g -v ogrertshadersystem
+>python python-ogre/BuildModule.py -c -v ogrertshadersystem
+(Error: 
+/home/mohican/pyogre/ogre/Components/RTShaderSystem/include/OgreShaderFFPLighting.h: In function ‘void register_FFPLighting_class()’:
+/home/mohican/pyogre/ogre/Components/RTShaderSystem/include/OgreShaderFFPLighting.h:95:2: error: ‘struct Ogre::RTShader::FFPLighting::LightParams’ is protected)
+
+>python python-ogre/BuildModule.py -b -v install
+
+	---------------------------
+
+<< Build Python-Ogre Add-ons >>
+
+>python python-ogre/BuildModule.py -r cegui
+>python python-ogre/BuildModule.py -b -v cegui
+>python python-ogre/BuildModule.py -g -v cegui
+>python python-ogre/BuildModule.py -c -v cegui
+
+>sudo apt-get install libpq-dev
+>sudo apt-get install libspeex-dev
+>sudo apt-get install libspeexdsp-dev
+>sudo apt-get install libportaudio-dev
+>python python-ogre/BuildModule.py -r raknet
+>python python-ogre/BuildModule.py -b -v raknet
+>raknet/cmake . -DUSEIRRLICHT=FALSE -DUSEOGRE3D=FALSE -DCMAKE_INSTALL_PREFIX=/home/mohican/pyogre/root/usr
+>raknet/make
+>raknet/make install
+>python python-ogre/BuildModule.py -g -v raknet
+
+comment out code in RakPeer.pypp.cpp as follows:
+
+    virtual bool IsActive(  ) const  {
+/*        if( bp::override func_IsActive = this->get_override( "IsActive" ) )
+            return func_IsActive(  );
+        else{
+*/          return this->RakPeer::IsActive(  );
+//        }
+    }
+
+    virtual bool IsBanned( char const * IP ) {
+/*        namespace bpl = boost::python;
+        if( bpl::override func_IsBanned = this->get_override( "IsBanned" ) ){
+            boost::python::list py_IP;
+            // set a max inbound string length to ensure some level of saftey
+            int len_py_IP = strnlen ( IP, 4096 );
+            pyplus_conv::copy_container( IP, IP + len_py_IP, pyplus_conv::list_inserter( py_IP ) );
+            bpl::object py_result = bpl::call<bpl::object>( func_IsBanned.ptr(), IP );
+            return bpl::extract< bool >( pyplus_conv::get_out_argument( py_result, 0 ) );
+        }
+        else{
+*/            return RakPeer::IsBanned( IP );
+//        }
+    }
+
+>python python-ogre/BuildModule.py -c -v raknet
+
+>python python-ogre/BuildModule.py -b -v install
+
