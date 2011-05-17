@@ -6,7 +6,7 @@ module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is
 BASE_DIR = "/usr" 
 DEV_DIR,ignore = os.path.split(module_dir)
 
-SDK = False
+_SDK = False
 _SVN = False    # if building from Ogre svn
 
 # the base of the /usr/... dircetory structure that we are using

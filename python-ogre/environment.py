@@ -566,7 +566,7 @@ class boost(module):
             lib = 'boost_python-vc90-mt-gd-1_45'
         else:
             lib = 'boost_python-vc90-mt-1_45'
-        versionBase = '1_42' ## the version used on the library name
+        versionBase = '1_45' ## the version used on the library name
     else:
         base = 'boost_1_41_0'
         versionBase = '1_41' ## the version used on the library name
@@ -722,12 +722,15 @@ class ogre(pymodule):
             [0, 'echo Then use MSVC Express Edition to build Dependencies Release.', ''],
             [0, 'echo Then use Cmake and MSVC Express Edition to build Ogre Release.', ''],
         ]
-        
-        try:
-            if Config._SVN:
-                version = "1.7.x-SVN"
-        except:
-            pass
+
+        # not sure why you want this... so I kept it there just for you.
+        if (getpass.getuser() == 'amiller' ):
+            try:
+                if Config._SVN:
+                    version = "1.7.x-SVN"
+            except:
+                pass
+            
         # requirements to build a precompiled header on the fly
         if _PRECOMPILED:
             pchstop = 'python_ogre_precompiled.h'
@@ -886,7 +889,7 @@ class ois(pymodule):
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'OIS.h']
 
-        if Config.SDK:
+        if Config._SDK:
             if _DEBUG:
                 libs = ['OIS_d', boost.lib]
             else:
@@ -1234,7 +1237,7 @@ class betagui(pymodule):
         Config.PATH_LIB_betagui,
         Config.PATH_LIB_OIS
     ]
-    if Config.SDK:
+    if Config._SDK:
         libs = [  boost.lib, 'OgreMain', 'OIS' ]
     else:
         libs = [  boost.lib, 'OgreMain', 'OIS_static' ]

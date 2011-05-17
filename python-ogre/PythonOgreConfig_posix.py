@@ -5,7 +5,7 @@ module_dir = os.path.abspath(os.path.dirname(__file__) )## The root directory is
 ## lets assume that the base development directory is one level higher
 BASE_DIR,ignore = os.path.split(module_dir) ##  r'/home/andy/development'
 
-SDK = False
+_SDK = False
 _SVN = False    # if building from Ogre svn
 
 # the base of the /usr/... directory structure that we are using
@@ -47,7 +47,7 @@ if os.sys.platform == 'darwin':  # for the Mac
                              os.path.abspath(os.path.join(os.path.expanduser('~'), 'Library','Frameworks'))]
 
 
-#    SDK = True
+#    _SDK = True
 #    FRAMEWORK_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'Library','Frameworks'))   ## need this for the Mac
 #    MAC_SDK_INCLUDE= '/Developer/SDKs/MacOSX10.4u.sdk/Developer/Headers/CFMCarbon'
 #    MAC_CCFLAGS = ' -DBOOST_PYTHON_MAX_ARITY=19 -D_POSIX_C_SOURCE -DCF_OPEN_SOURCE'
@@ -62,7 +62,7 @@ PATH_OgreAddons =   os.path.join(BASE_DIR, 'ogreaddons')
 PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.7.5' )
 PATH_OIS =          os.path.join(BASE_DIR, 'ois')
 
-if SDK:
+if _SDK:
     PATH_CEGUI =        os.path.join(BASE_DIR, 'ogre','Dependencies')
     PATH_OIS =          os.path.join(BASE_DIR, 'ogre','Dependencies')
 if isMAC:
@@ -135,7 +135,7 @@ PATH_LIB_Ogre_OgreMain_debug =   os.path.join( LOCAL_LIB )
 PATH_LIB_OIS =                  os.path.join( LOCAL_LIB ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
 PATH_LIB_OIS_debug  =                  os.path.join( LOCAL_LIB )
 PATH_LIB_CEGUI =                os.path.join( LOCAL_LIB ) #PATH_Ogre, r'Dependencies/lib/Release' )
-if SDK:
+if _SDK:
     PATH_LIB_OIS =                  os.path.join( PATH_OIS,'lib', 'Release' ) #PATH_OIS, 'dll') ## NOTE Posix platforms this lives in'lib' not 'dll'
     PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI,'lib', 'Release' ) #PATH_Ogre, r'Dependencies/lib/Release' )
     PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'OgreMain/lib/Release' )
@@ -193,7 +193,7 @@ PATH_INCLUDE_ogrevideo  =  os.path.join(PATH_ogrevideo,'include')
 PATH_LIB_ogrevideo      =  os.path.join(PATH_ogrevideo,'lib') # 'bin','Release_static')
 PATH_DEMO_ogrevideo   =  os.path.join(PATH_ogrevideo, 'demos', 'audio_openal')
 
-if SDK :
+if _SDK :
     PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'include','OIS') #os.path.join(PATH_OIS,'includes')    ## Note the plural include's
     PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI,'include','CEGUI') #os.path.join(PATH_CEGUI, r'include/CEGUI')
     PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include')
