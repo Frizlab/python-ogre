@@ -116,7 +116,7 @@ PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
 
 PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
 PATH_INCLUDE_ogreoggsound = os.path.join(PATH_ogreoggsound,'include')
-PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'Release')
+PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound)
 
 ###
 ### these paths assume you've left all the directory structure as standard
@@ -213,9 +213,9 @@ PATH_INCLUDE_ODE =          os.path.join(LOCAL_INCLUDE,'ode') #os.path.join( PAT
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    '' #      os.path.join( PATH_ODE, 'ode/src')
 PATH_INCLUDE_OgreAL =       PATH_OGREAL
-PATH_INCLUDE_OPENAL =       os.path.join( LOCAL_INCLUDE ) #os.path.join( PATH_OPENAL, 'include')
-PATH_INCLUDE_OGG=           os.path.join( LOCAL_INCLUDE,'ogg' ) #os.path.join( PATH_OGG, 'include' )
-PATH_INCLUDE_VORBIS=        os.path.join( LOCAL_INCLUDE,'vorbis' ) #os.path.join( PATH_VORBIS, 'include' )
+PATH_INCLUDE_OPENAL =       '/usr/include' #os.path.join( LOCAL_INCLUDE ) #os.path.join( PATH_OPENAL, 'include')
+PATH_INCLUDE_OGG=           '/usr/include/ogg' #os.path.join( LOCAL_INCLUDE,'ogg' ) #os.path.join( PATH_OGG, 'include' )
+PATH_INCLUDE_VORBIS=        '/usr/include/vorbis' #os.path.join( LOCAL_INCLUDE,'vorbis' ) #os.path.join( PATH_VORBIS, 'include' )
 
 # PATH_INCLUDE_OgreBullet =   [
 #                         os.path.join( PATH_OgreBullet,'Collisions','include')

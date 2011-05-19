@@ -2073,11 +2073,21 @@ class ogreoctreezone(pymodule):
     descText = "Octree Zone Management - Expose all functions in OctreeZone incase required"
 
 class ogreoggsound(pymodule):
-    version = "r391"
+    version = "1.21"
     active = True
     name = 'ogreoggsound'
     parent = "ogre/sound"
     package_name=[ogre.package_name, 'ogreoggsound']
+
+    source = [
+        [ wget, "http://sourceforge.net/projects/ogreoggsound/files/OgreOggSound-Cthugha/ogreoggsound-v1.21.zip", downloadPath],
+    ] 
+
+    buildCmds = [
+        [0, unzip + os.path.join(downloadPath, 'ogreoggsound-v1.21.zip'), os.getcwd() ],    
+        [0, 'echo Use Cmake to build OgreOggSound Release.', ''],
+    ]   
+
     include_dirs = [
         boost.PATH,
         Config.PATH_INCLUDE_Ogre,
@@ -2086,11 +2096,13 @@ class ogreoggsound(pymodule):
         Config.PATH_INCLUDE_VORBIS,
         Config.PATH_INCLUDE_OPENAL,
     ]
+
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
         Config.PATH_LIB_ogreoggsound
     ]
+
     moduleLibs = [os.path.join(Config.PATH_LIB_ogreoggsound, 'OgreOggSound')]
     libs = [boost.lib, 'OgreMain', 'OgreOggSound' ]
     ModuleName = "ogreoggsound"

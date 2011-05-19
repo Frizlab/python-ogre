@@ -25,6 +25,7 @@ Edit the file ./Modules/Setup and replace the commented zlib line with:
 >export PATH="/home/mohican/pyogre/root/usr/bin:$PATH"
 >export LD_LIBRARY_PATH="/home/mohican/pyogre/root/usr/lib"
 >export PYTHONPATH="/home/mohican/pyogre/root/usr/lib/python2.7/site-packages:"
+>export PKG_CONFIG_PATH="/home/mohican/pyogre/root/usr/lib/pkgconfig"
 
 >ln -s python-ogre/scripts/00-PreReqs.sh
 >sh ./00-PreReqs.sh
@@ -75,7 +76,7 @@ Edit the file ./Modules/Setup and replace the commented zlib line with:
 
 >python python-ogre/BuildModule.py -g -v ogrertshadersystem
 >python python-ogre/BuildModule.py -c -v ogrertshadersystem
-(Error: 
+--ERROR-- 
 /home/mohican/pyogre/ogre/Components/RTShaderSystem/include/OgreShaderFFPLighting.h: In function ‘void register_FFPLighting_class()’:
 /home/mohican/pyogre/ogre/Components/RTShaderSystem/include/OgreShaderFFPLighting.h:95:2: error: ‘struct Ogre::RTShader::FFPLighting::LightParams’ is protected)
 
@@ -83,12 +84,36 @@ Edit the file ./Modules/Setup and replace the commented zlib line with:
 
 	---------------------------
 
-<< Build Python-Ogre Add-ons >>
+<< CEGUI Add-on >>
 
 >python python-ogre/BuildModule.py -r cegui
 >python python-ogre/BuildModule.py -b -v cegui
 >python python-ogre/BuildModule.py -g -v cegui
 >python python-ogre/BuildModule.py -c -v cegui
+
+	---------------------------
+
+<< OgreOggSound Add-on >>
+
+>sudo apt-get install libogg-dev
+>sudo apt-get install libopenal-dev
+>sudo apt-get install libvorbis-dev
+>python python-ogre/BuildModule.py -r ogreoggsound
+>python python-ogre/BuildModule.py -b -v ogreoggsound
+>ogreoggsound/cmake . -DCMAKE_INSTALL_PREFIX=/home/mohican/pyogre/root/usr
+>ogreoggsound/make
+>ogreoggsound/make install
+>python python-ogre/BuildModule.py -g -v ogreoggsound
+>python python-ogre/BuildModule.py -c -v ogreoggsound
+--ERROR-- 
+generated/ogreoggsound_1.21/OgreOggSoundRecord.pypp.cpp:89:1:   instantiated from here
+/home/mohican/pyogre/root/usr/include/boost/python/type_id.hpp:89:9: error: invalid use of incomplete type ‘struct ALCdevice_struct’
+/usr/include/AL/alc.h:43:16: error: forward declaration of ‘struct ALCdevice_struct’
+scons: *** [build_dir_2.7/ogreoggsound_1.21/OgreOggSoundRecord.pypp.os] Error 1
+
+	---------------------------
+
+<< Raknet Add-on >>
 
 >sudo apt-get install libpq-dev
 >sudo apt-get install libspeex-dev
@@ -101,32 +126,16 @@ Edit the file ./Modules/Setup and replace the commented zlib line with:
 >raknet/make install
 >python python-ogre/BuildModule.py -g -v raknet
 
-comment out code in RakPeer.pypp.cpp as follows:
+Replace code in RakPeer.pypp.cpp as follows:
 
     virtual bool IsActive(  ) const  {
-/*        if( bp::override func_IsActive = this->get_override( "IsActive" ) )
-            return func_IsActive(  );
-        else{
-*/          return this->RakPeer::IsActive(  );
-//        }
+	return this->RakPeer::IsActive(  );
     }
 
     virtual bool IsBanned( char const * IP ) {
-/*        namespace bpl = boost::python;
-        if( bpl::override func_IsBanned = this->get_override( "IsBanned" ) ){
-            boost::python::list py_IP;
-            // set a max inbound string length to ensure some level of saftey
-            int len_py_IP = strnlen ( IP, 4096 );
-            pyplus_conv::copy_container( IP, IP + len_py_IP, pyplus_conv::list_inserter( py_IP ) );
-            bpl::object py_result = bpl::call<bpl::object>( func_IsBanned.ptr(), IP );
-            return bpl::extract< bool >( pyplus_conv::get_out_argument( py_result, 0 ) );
-        }
-        else{
-*/            return RakPeer::IsBanned( IP );
-//        }
+	return RakPeer::IsBanned( IP );
     }
 
 >python python-ogre/BuildModule.py -c -v raknet
 
->python python-ogre/BuildModule.py -b -v install
 
