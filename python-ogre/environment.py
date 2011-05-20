@@ -551,9 +551,7 @@ class boost_python(module):
         [0, 'bjam -j%i release --with-python --with-thread --with-date_time --prefix=%s' % (NUMBER_OF_CORES, PREFIX), boostDir ],
         [0, 'echo This may take a while -- copying each include file individually!!', ''],
         [0, _sudo + ' bjam  install --with-python  --prefix=%s' % (PREFIX), boostDir ],
-        ]
-        
-        
+        ]               
         
 class boost(module):
     """Boost module, also included bjam."""

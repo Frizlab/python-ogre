@@ -25,12 +25,17 @@ set PATH="tools\tortoisesvn";%PATH%
 >python python-ogre\BuildModule.py -b pygccxml 
 >python python-ogre\BuildModule.py -b pyplusplus
 
-Edit "\boost_1_45_0\boost\config\auto_link.hpp" and add the line:
+In "\boost_1_45_0\stage\lib\" make copies of the files:
+    boost_date_time-vc90-mt-1_45 -> libboost_date_time-vc90-mt-1_45
+    boost_python-vc90-mt-1_45 -> libboost_python-vc90-mt-1_45
+    boost_thread-vc90-mt-1_45 -> libboost_thread-vc90-mt-1_45
+
+Edit "\boost_1_45_0\boost\config\auto_link.hpp" and add:
   #define BOOST_LIB_TOOLSET "vc90"
   
 Add "BOOST_ROOT" to environment variables, pointing to "...\boost_1_45_0".
 
-Edit C:\Python27\Lib\site-packages\pygccxml\parser\source_reader.py (line 149)
+Edit "C:\Python27\Lib\site-packages\pygccxml\parser\source_reader.py" (line 149)
     if not os.path.isabs( ffname ):
         ffname = self.__file_full_name(header)
     command_line = self.__create_command_line( ffname, gccxml_file )  
@@ -49,14 +54,40 @@ Unzip Ogre & Dependencies
 VC++2008 -> /ogre/Dependencies
 cmake/VC++2008 -> /ogre
 
+Copy the following files:
+    \ogre\include\OgreBuildSettings.h:
+                        \ogre\OgreMain\include
+
+    \ogre\bin\release\cg.dll:
+    \ogre\bin\release\OgreMain.dll:
+    \ogre\bin\release\OgreProperty.dll:
+    \boost_1_45_0\stage\boost_python-vc90-mt-1_45.dll,
+                        \python-ogre\packages_2.7\ogre\renderer\OGRE
+
+    \ogre\bin\release\OgrePaging.dll:
+                        \python-ogre\packages_2.7\ogre\renderer\ogrepaging
+
+    \ogre\bin\release\OgreRTShaderSystem.dll:
+                        \python-ogre\packages_2.7\ogre\renderer\ogrertshadersystem
+
+    \ogre\bin\release\OgreTerrain.dll:
+                        \python-ogre\packages_2.7\ogre\renderer\ogreterrain
+                        
+    \ogre\Dependencies\bin\Release\OIS.dll:
+    \boost_1_45_0\stage\boost_python-vc90-mt-1_45.dll,
+                        \python-ogre\packages_2.7\ogre\io\OIS
+
+Edit "ogre\OgreMain\include\OgreIteratorRange.h" and add:
+    #define OGRE_USE_BOOST 0
+
 >python python-ogre/BuildModule.py -g -v ogre
 >python python-ogre/BuildModule.py -c -v ogre
 
 
 >python python-ogre/BuildModule.py -r ois
 >python python-ogre/BuildModule.py -b ois
->python python-ogre/BuildModule.py -g -v ogre
->python python-ogre/BuildModule.py -c -v ogre
+>python python-ogre/BuildModule.py -g -v ois
+>python python-ogre/BuildModule.py -c -v ois
 
 		---------------------------
 

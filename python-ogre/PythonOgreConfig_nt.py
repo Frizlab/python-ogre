@@ -6,7 +6,6 @@ _UserName = getpass.getuser()
 
 _SDK = False        # Changes Ogre include path settings
 _SVN = False        # if building from Ogre svn
-_EXPRESS = False    # using VS Express?
 
 ## The root directory is where this module is located
 module_dir = os.path.abspath(os.path.dirname(__file__) )
@@ -18,29 +17,18 @@ LOCAL_LIB = os.path.join(ROOT_DIR,'usr/lib')
 LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
-PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_45_0' ) #-trunk')
-#PATH_Boost =        os.path.join(BASE_DIR, 'boost_svn')
+PATH_Boost = os.path.join(BASE_DIR, 'boost_1_45_0' )
+#PATH_Boost = os.path.join(BASE_DIR, 'boost_svn')
 
 ## Path to your boost_pythonxxxx lib file
-if _EXPRESS:
-    PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0express/release/threading-multi')
-    #PATH_LIB_Boost_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0express/release/link-static/threading-multi')
-    PATH_LIB_Thread_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/thread/build/msvc-9.0express/release/link-static/threading-multi')
-    PATH_LIB_date_time_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/date_time/build/msvc-9.0express/release/link-static/threading-multi')
-else:
-    PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/threading-multi')
-    #PATH_LIB_Boost_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/python/build/msvc-9.0/release/link-static/threading-multi')
-    PATH_LIB_Thread_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/thread/build/msvc-9.0/release/link-static/threading-multi')
-    PATH_LIB_date_time_STATIC = os.path.join(PATH_Boost, 'bin.v2/libs/date_time/build/msvc-9.0/release/link-static/threading-multi')
+PATH_LIB_Boost = os.path.join(PATH_Boost, 'stage/lib' )
+PATH_LIB_Thread_STATIC = PATH_LIB_Boost
+PATH_LIB_date_time_STATIC = PATH_LIB_Boost
 
 if (getpass.getuser() == 'amiller' ):  # special for Andy's machine as I tend to build against multiple python versions
    PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
    PATH_LIB_Boost =    os.path.join(PATH_Boost, 'bin.v2/libs/python_' +PythonVersionString +'/build/msvc-9.0/release/threading-multi')
 #    _SVN = True
-
-PATH_LIB_Boost = os.path.join(PATH_Boost, 'stage/lib' )
-PATH_LIB_Thread_STATIC = PATH_LIB_Boost
-PATH_LIB_date_time_STATIC = PATH_LIB_Boost
 
 # in Linux we need to code in the Relative path for the library
 RPATH=""
@@ -111,6 +99,23 @@ PATH_hydrax = os.path.join(BASE_DIR, 'hydrax')
 PATH_LIB_hydrax = os.path.join ( PATH_hydrax, 'Hydrax\lib')
 PATH_INCLUDE_hydrax= os.path.join(PATH_hydrax,'Hydrax\include')
 
+## Bullet
+# # PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
+PATH_OgreBullet=    os.path.join(PATH_THIRDPARTY,'ogrebullet')
+PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.76')
+#PATH_LIB_OgreBullet =              os.path.join( PATH_OgreBullet, 'lib/Release') 
+#PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
+#PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release_dll8/libs' )
+PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'lib', 'Release' )
+#PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/debug8/libs' )
+# # PATH_INCLUDE_OgreBullet =   [ 
+# #                         os.path.join( PATH_OgreBullet,'Collisions','include')
+# #                         ,os.path.join( PATH_OgreBullet,'Dynamics','include')
+# #                         ]
+##PATH_INCLUDE_OgreBullet =   PATH_OgreBullet
+PATH_INCLUDE_Bullet=        os.path.join(PATH_Bullet, 'src')
+
+
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
 PATH_Newton2 =       os.path.join(BASE_DIR, 'newtonsdk2','sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
@@ -119,10 +124,8 @@ PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
 PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
 PATH_OPENAL=        os.path.join(BASE_DIR, 'OpenAL.1.1' ) # 'openal-soft-1.5.304') #'openal')
 PATH_OgreOde=       os.path.join(BASE_DIR, PATH_OgreAddons,'ogreode')
-# # PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
 # # PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
 
-PATH_OgreBullet=    os.path.join(PATH_THIRDPARTY,'ogrebullet')
 PATH_ogreforests=   os.path.join(PATH_THIRDPARTY,'forests')
 PATH_OGREAL=        os.path.join(PATH_THIRDPARTY,'ogreal')
 
@@ -147,7 +150,6 @@ PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
 PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 
 PATH_ogrevideoffmpeg = os.path.join(PATH_THIRDPARTY,'ffmpeg')
-PATH_Bullet=        os.path.join(BASE_DIR, 'bullet-2.76')
 PATH_PhysX=         "c:/program files/NVIDIA Corporation/NVIDIA Physx SDK/v2.8.1/SDKs"
 PATH_Theora=        os.path.join(BASE_DIR,'ogrevideo','trunk','TheoraVideoPlugin')
 
@@ -180,7 +182,6 @@ PATH_LIB_Newton2 =               os.path.join( PATH_Newton2 ,'x32','lib_vs9_mt')
 PATH_LIB_ODE =                  os.path.join( PATH_ODE, 'lib/ReleaseSingleLib')## probable releaselib for posix
 PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE ) 
 PATH_LIB_OgreOde =              os.path.join( PATH_OgreOde, 'lib/Release') 
-# # PATH_LIB_OgreBullet =              os.path.join( PATH_OgreBullet, 'lib/Release') 
 PATH_LIB_OgreOdePrefab =        os.path.join( PATH_OgreOde, 'prefab/lib/Release' )
 PATH_LIB_OgreOdeLoader =        os.path.join( PATH_OgreOde, 'loader/lib/Release' )
 
@@ -189,11 +190,7 @@ PATH_LIB_betagui =              PATH_betagui
 PATH_LIB_quickgui =             PATH_quickgui
 PATH_LIB_NxOgre=                os.path.join(PATH_NxOgre, 'lib')
 PATH_LIB_PhysX =                os.path.join(PATH_PhysX,'lib/win32')
-#PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release8/libs' )
-#PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/release_dll8/libs' )
-PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'lib', 'Release' )
 
-# PATH_LIB_Bullet =               os.path.join(PATH_Bullet, 'out/debug8/libs' )
 PATH_LIB_Theora=                os.path.join(PATH_Theora, 'bin', 'Release')
 PATH_LIB_ogrevideoffmpeg =      PATH_ogrevideoffmpeg
 PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
@@ -219,12 +216,6 @@ PATH_INCLUDE_OgreAL =       os.path.join( PATH_OGREAL ) #, 'include' )
 PATH_INCLUDE_OPENAL =       os.path.join( PATH_OPENAL, 'include')
 PATH_INCLUDE_OGG=           os.path.join( PATH_OGG, 'include' )
 PATH_INCLUDE_VORBIS=        os.path.join( PATH_VORBIS, 'include' )
-
-# # PATH_INCLUDE_OgreBullet =   [ 
-# #                         os.path.join( PATH_OgreBullet,'Collisions','include')
-# #                         ,os.path.join( PATH_OgreBullet,'Dynamics','include')
-# #                         ]
-##PATH_INCLUDE_OgreBullet =   PATH_OgreBullet
                         
 PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'Core','include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab','include')
@@ -235,7 +226,6 @@ PATH_INCLUDE_quickgui =     PATH_quickgui
 PATH_INCLUDE_NxOgre_09=        PATH_NxOgre_09
 PATH_INCLUDE_NxOgre=        os.path.join(PATH_NxOgre, 'include')
 # # # PATH_INCLUDE_NxOgre=        PATH_NxOgre
-PATH_INCLUDE_Bullet=        os.path.join(PATH_Bullet, 'src')
 PATH_INCLUDE_freetype=      os.path.join(PATH_INCLUDE_quickgui,'FreeType2.3.5')    
 PATH_INCLUDE_betagui =      PATH_betagui
 PATH_INCLUDE_Theora =       os.path.join (PATH_Theora,'include')
