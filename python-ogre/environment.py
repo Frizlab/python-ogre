@@ -3,10 +3,10 @@ import sys
 import getpass
 import subprocess
 
-_LOGGING_ON = False
 _PRECOMPILED = True
+_LOGGING_ON = False
 _DEBUG = False
-#_DEBUG = True
+_MSVC9 = False
 
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "7"
@@ -164,9 +164,14 @@ if not _ConfigSet:
     sys.exit(-1)
 
 ## BIG assumption about where you want things put
-if UseSystem and not isWindows():
-    ROOT = '/'
+if isWindows():  
+    Config.ROOT_DIR = '/'
+    ROOT = ''
+    PREFIX = ''
+    _sudo = ''
+elif UseSystem:  
     Config.ROOT_DIR = '/'  # need to override this so the code generation stuff works
+    ROOT = '/'
     PREFIX = '/usr'
     _sudo = 'sudo '
 else:
@@ -849,13 +854,13 @@ class ogre(pymodule):
 class ois(pymodule):
     version = "1.0"
     package_name = ogre.package_name  # this is part of the base package
-
     parent = "ogre/io"
+
     if isMac():
         base = "ois"
         source = [
             [cvs, "-z3 -d:pserver:anonymous@wgois.cvs.sourceforge.net:/cvsroot/wgois co -D 01Jan2009 -P ois", os.getcwd()]
-        ]
+        ]        
         buildCmds = [
             [0, "xcodebuild -project ois/Mac/XCode-2.2/OIS.xcodeproj -configuration Release -sdk %s " % (MAC_SDK), ''],
             [0, 'cp -R ois/Mac/XCode-2.2/build/Release/OIS.Framework ~/Library/Frameworks ', '']
@@ -866,7 +871,6 @@ class ois(pymodule):
         source = [
             [cvs, "-z3 -d:pserver:anonymous@wgois.cvs.sourceforge.net:/cvsroot/wgois co -D 01Jan2009 -P ois", os.getcwd()]
         ]
-
         buildCmds = [
             [0, "./bootstrap", os.path.join(os.getcwd(), base)],
             [0, "./configure --prefix=%s --includedir=%s/include" % (PREFIX, PREFIX), os.path.join(os.getcwd(), base)],
@@ -1983,8 +1987,8 @@ class raknet(pymodule):
         Config.PATH_LIB_raknet,
     ]
     if isWindows():
-        libs = [boost.lib, 'OgreMain', 'RakNetDLL', 'Ws2_32' ]
-        moduleLibs = [ os.path.join(Config.PATH_LIB_raknet, 'RakNet') ]
+        libs = [boost.lib, 'OgreMain', 'LibStatic', 'Ws2_32' ]
+        moduleLibs = [ os.path.join(Config.PATH_LIB_raknet, 'DLL') ]
         CCFLAGS = ' -D_RELEASE -D_RAKNET_LIB -D_CRT_SECURE_NO_DEPRECATE -D_WINDOWS -D_CRT_NONSTDC_NO_DEPRECATE -D_WIN32 -DWIN32  '
         LINKFLAGS = '  /NODEFAULTLIB:LIBCMT.lib '
     else:
@@ -2628,7 +2632,8 @@ for name, cls in projects.items():
                 cls.CCFLAGS += ' -F' + f + ' '
                 cls.LINKFLAGS += ' -F' + f + ' '
     elif isWindows():
-        cls.cflags += ' -D"_HAS_TR1=0" ' # to solve an issue with <map> include with MSVC 9 and advanced feature pack and gccxml ?????
+        if _MSVC9:  # to solve an issue with <map> include with MSVC 9 and advanced feature pack and gccxml ?????
+            cls.cflags += ' -D"_HAS_TR1=0" ' 
         if Config._SVN: # building Ogre 1.7
             cls.include_dirs.insert (0, os.path.join (Config.PATH_Ogre, 'include')) # puts buildsettings.h in the path
             cls.CCFLAGS += " -DHAVE_OGRE_BUILDSETTINGS_H "

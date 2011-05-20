@@ -393,8 +393,10 @@ if __name__ == '__main__':
 
     if not os.path.exists( environment.Config.ROOT_DIR ):
         os.mkdir ( environment.Config.ROOT_DIR )
+        
     if not os.path.exists( os.path.join(environment.Config.ROOT_DIR, 'usr' ) ):
         os.mkdir ( os.path.join(environment.Config.ROOT_DIR, 'usr' )  )
+        
     if options.gencodeall or options.compilecodeall:
         for name,cls in environment.projects.items():
             if cls.active and cls.pythonModule:
@@ -402,27 +404,33 @@ if __name__ == '__main__':
                     generateCode( cls )
                 if options.compilecodeall:
                     compileCode( cls )
-
     else:
-        for moduleName  in args:
+        for moduleName in args:
+        
             if not classList.has_key( moduleName ):
                 exit("Module specificed was not found (%s is not in environment.py) " % moduleName )
+                
             if options.retrieve:
                 retrieveSource ( classList[ moduleName ] )
+                
             if options.buildservice:
                 buildService( classList[ moduleName ] )
+                
             elif options.builddeb:
                 buildDeb( classList[ moduleName ] )
+                
             if options.installdeb:
                 buildInstall( classList[ moduleName ] )
-
+                
             if options.build :
                 buildModule ( classList[ moduleName ] )
+                
             if options.gencode :
                 if classList[ moduleName ].pythonModule == True:
                     generateCode ( classList[ moduleName ] )
                 else:
                     print ( "Module specificed does not generate source code (%s is a supporting module)" % moduleName )
+                    
             if options.compilecode :
                 if classList[ moduleName ].pythonModule == True:
                     compileCode ( classList[ moduleName ] )

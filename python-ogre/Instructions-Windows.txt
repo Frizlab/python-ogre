@@ -2,16 +2,33 @@
 << Prepare Building Tools/Env >>
 
 install VC++ 2008
+install CMake 2.8
 install Python 2.7.1
-install CMake
 
->python python-ogre\BuildModule.py -r gccxml boost scons pygccxml pyplusplus
+set PATH="tools";%PATH%
+set PATH="tools\gnuwin32";%PATH%
+set PATH="tools\tortoisesvn";%PATH%
 
-cmake/VC++2008 -> /gccxml
+>"C:\Program Files (x86)\Microsoft Visual Studio 9.0\Common7\Tools\vsvars32.bat"
+
+>svn co https://python-ogre.svn.sourceforge.net/svnroot/python-ogre/trunk/python-ogre python-ogre
+
+>python python-ogre\BuildModule.py -r boost   
+>python python-ogre\BuildModule.py -r scons
+>python python-ogre\BuildModule.py -r gccxml
+>python python-ogre\BuildModule.py -r pygccxml
+>python python-ogre\BuildModule.py -r pyplusplus
 
 >python python-ogre\BuildModule.py -b boost
 >python python-ogre\BuildModule.py -b scons
->python python-ogre\BuildModule.py -b pygccxml pyplusplus
+>python python-ogre\BuildModule.py -b gccxml
+>python python-ogre\BuildModule.py -b pygccxml 
+>python python-ogre\BuildModule.py -b pyplusplus
+
+Edit "\boost_1_45_0\boost\config\auto_link.hpp" and add the line:
+  #define BOOST_LIB_TOOLSET "vc90"
+  
+Add "BOOST_ROOT" to environment variables, pointing to "...\boost_1_45_0".
 
 	---------------------------
 
@@ -24,15 +41,32 @@ Unzip Ogre & Dependencies
 VC++2008 -> /ogre/Dependencies
 cmake/VC++2008 -> /ogre
 
-(Make sure to give cmake your path to boost, in order to build OgreProperty)
-
 >python python-ogre/BuildModule.py -g -v ogre
 >python python-ogre/BuildModule.py -c -v ogre
 
 
-	---------------------------
+>python python-ogre/BuildModule.py -r ois
+>python python-ogre/BuildModule.py -b ois
+>python python-ogre/BuildModule.py -g -v ogre
+>python python-ogre/BuildModule.py -c -v ogre
 
-<< Build Python-Ogre Add-ons >>
+		---------------------------
+
+<< Raknet Add-on >>
 
 >python python-ogre/BuildModule.py -r raknet
->python python-ogre/BuildModule.py -b raknet
+>python python-ogre/BuildModule.py -b -v raknet
+cmake/VC++2008 -> /raknet
+>python python-ogre/BuildModule.py -g -v raknet
+
+Replace code in RakPeer.pypp.cpp as follows:
+
+    virtual bool IsActive(  ) const  {
+	return this->RakPeer::IsActive(  );
+    }
+
+    virtual bool IsBanned( char const * IP ) {
+	return RakPeer::IsBanned( IP );
+    }
+
+>python python-ogre/BuildModule.py -c -v raknet

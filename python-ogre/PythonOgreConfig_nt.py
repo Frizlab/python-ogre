@@ -8,7 +8,6 @@ _SDK = False        # Changes Ogre include path settings
 _SVN = False        # if building from Ogre svn
 _EXPRESS = True     # using VS Express?
 
-
 ## The root directory is where this module is located
 module_dir = os.path.abspath(os.path.dirname(__file__) )
 BASE_DIR, ignore = os.path.split(module_dir)
@@ -18,11 +17,9 @@ ROOT_DIR = os.path.join(BASE_DIR,'root')
 LOCAL_LIB = os.path.join(ROOT_DIR,'usr/lib')
 LOCAL_INCLUDE = os.path.join(ROOT_DIR, 'usr/include')
 
-
 ## path to the root of your boost dir, should have 'libs', 'boost' subdirectories
 PATH_Boost =        os.path.join(BASE_DIR, 'boost_1_45_0' ) #-trunk')
 #PATH_Boost =        os.path.join(BASE_DIR, 'boost_svn')
-
 
 ## Path to your boost_pythonxxxx lib file
 if _EXPRESS:
@@ -49,19 +46,71 @@ PATH_LIB_date_time_STATIC = PATH_LIB_Boost
 RPATH=""
 
 # We need to know where to find gccxml......
-gccxml_bin =        os.path.join(BASE_DIR, 'gccxml/bin/release/gccxml.exe')
+gccxml_bin = os.path.join(BASE_DIR, 'gccxml/bin/release/gccxml.exe')
+
 # and the Py++ directory as sometimes we need access to the code repository there
 pyplusplus_install_dir = os.path.join(BASE_DIR, 'pyplusplus')
 
-## Parent directories of the libraries
-PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )
+## Ogre Itself
 PATH_Ogre = os.path.join(BASE_DIR, 'ogre')
 if _SDK:
-    PATH_Ogre =         "C:\\development\\ogre"
+    PATH_Ogre = "C:\\development\\ogre"
+    
+PATH_LIB_Ogre_OgreMain = os.path.join( PATH_Ogre, 'lib', 'Release' )
+PATH_LIB_Ogre_OgreMain_debug = os.path.join( PATH_Ogre, 'lib' )
+if _SVN:
+    PATH_LIB_Ogre_OgreMain = os.path.join( PATH_Ogre, 'lib', 'Release' )
+    
 PATH_OgreAddons =   os.path.join(BASE_DIR, 'OgreAddons')
-PATH_CEGUI =        os.path.join(BASE_DIR, 'CEGUI-0.7.5')
+PATH_THIRDPARTY =   os.path.join(module_dir, 'ThirdParty' )    
 
-PATH_OIS =          os.path.join(BASE_DIR, 'ois' ) ##'ois-1.0RC1')
+PATH_INCLUDE_Ogre = os.path.join(PATH_Ogre,'OgreMain\\include') 
+PATH_INCLUDE_ogrepaging = os.path.join(PATH_Ogre,'Components','Paging', 'include')
+PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_Ogre,'Components','RTShaderSystem', 'include')
+PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
+PATH_INCLUDE_ogreproperty = os.path.join(PATH_Ogre,'Components','Property', 'include')
+PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
+PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
+PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include")
+PATH_INCLUDE_sdksample = os.path.join(PATH_THIRDPARTY, "sdksample")
+
+PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
+PATH_INCLUDE_Ogre_Dependencies = os.path.join( PATH_Ogre, 'Dependencies/include')
+
+## Ogre Plugins
+PATH_plugins = os.path.join(PATH_Ogre, 'PlugIns')
+PATH_ogrepcz = os.path.join(PATH_plugins, 'PCZSceneManager' )
+PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
+PATH_particleuniverse = os.path.join(PATH_plugins, 'ParticleUniverse' )
+PATH_LIB_particleuniverse =     os.path.join(PATH_particleuniverse, 'bin', 'release')
+
+## OIS
+PATH_OIS =            os.path.join( BASE_DIR, 'ois' ) ## ois-1.2.0
+PATH_LIB_OIS =        os.path.join( PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
+PATH_LIB_OIS_debug =  os.path.join( PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
+PATH_INCLUDE_OIS =    os.path.join( PATH_OIS, 'includes') ## Note the plural include's
+
+## CEGUI
+PATH_CEGUI = os.path.join(BASE_DIR, 'CEGUI-0.7.5')
+PATH_LIB_CEGUI = os.path.join( PATH_CEGUI, 'lib' )
+PATH_INCLUDE_CEGUI = os.path.join(PATH_CEGUI, 'cegui','include')
+PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_CEGUI, 'lib')
+
+## OgreOggSound
+PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
+PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'lib')
+PATH_INCLUDE_ogreoggsound = os.path.join(PATH_ogreoggsound,'include')
+
+## Raknet
+PATH_raknet = os.path.join(BASE_DIR, 'raknet')
+PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib\\LibStatic\\Release')
+PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
+
+## Hydrax
+PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
+PATH_INCLUDE_hydrax = PATH_hydrax
+
+
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
 PATH_Newton2 =       os.path.join(BASE_DIR, 'newtonsdk2','sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
@@ -105,25 +154,9 @@ PATH_Theora=        os.path.join(BASE_DIR,'ogrevideo','trunk','TheoraVideoPlugin
 PATH_ffmpeg=        os.path.join(PATH_THIRDPARTY,'extra')
 PATH_navi =         os.path.join(BASE_DIR, 'navi', 'navi')
 
-PATH_plugins = os.path.join(PATH_Ogre, 'PlugIns')
-
-PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
-PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
-
-
-PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
-
 PATH_hikari = os.path.join(PATH_THIRDPARTY, 'Hikari' ) #BASE_DIR, 'hikari', 'hikari')
 PATH_mygui = os.path.join(BASE_DIR, 'MyGUI2.2.3_source' ) # \development\MyGUI2.2.2_source\MyGUIEngine\include
 PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
-
-PATH_raknet = os.path.join(BASE_DIR, 'raknet')
-PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib')
-PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
-
-PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
-PATH_INCLUDE_ogreoggsound = os.path.join(PATH_ogreoggsound,'include')
-PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'lib')
  
 PATH_ogrevideo =  os.path.join(BASE_DIR,'ogrevideo','trunk')
 PATH_INCLUDE_ogrevideo  =  os.path.join(PATH_ogrevideo,'include')
@@ -137,22 +170,13 @@ PATH_libtheoraplayer = os.path.join(BASE_DIR, "libtheoraplayer")
 ### these paths assume you've left all the directory structure as standard
 ### Override anything that is different
 ###        
-PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_CEGUI, 'lib')
-PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib', 'Release' )
-PATH_LIB_Ogre_OgreMain_debug =   os.path.join( PATH_Ogre, 'lib' )
 
-if _SVN:
-    PATH_LIB_Ogre_OgreMain=         os.path.join( PATH_Ogre, 'lib', 'Release' )
-PATH_LIB_Ogre_Dependencies =    os.path.join( PATH_Ogre, 'Dependencies/lib/Release')
 PATH_LIB_OgreRefApp =           os.path.join( PATH_Ogre, 'lib')
 PATH_LIB_OgreNewt =             os.path.join( PATH_OgreAddons, 'ogrenewt/OgreNewt_Main/lib/Release') 
 PATH_LIB_OgreNewt2 =             os.path.join( PATH_OgreAddons, 'ogrenewt2/lib') 
 PATH_LIB_Newton =               os.path.join( PATH_Newton ,'dll')  ##NOTE Posix platforms this lives in 'lib-mt'
 PATH_LIB_Newton2 =               os.path.join( PATH_Newton2 ,'x32','lib_vs9_mt')  ##NOTE Posix platforms this lives in 'lib-mt'
 
-PATH_LIB_OIS =                  os.path.join( PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
-PATH_LIB_OIS_debug =                  os.path.join( PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
-PATH_LIB_CEGUI =                os.path.join( PATH_CEGUI, 'lib' )
 PATH_LIB_ODE =                  os.path.join( PATH_ODE, 'lib/ReleaseSingleLib')## probable releaselib for posix
 PATH_LIB_OPCODE =               os.path.join( PATH_OPCODE ) 
 PATH_LIB_OgreOde =              os.path.join( PATH_OgreOde, 'lib/Release') 
@@ -176,33 +200,17 @@ PATH_LIB_ffmpeg=                os.path.join(PATH_ffmpeg, 'lib')
 PATH_LIB_plib =                 PATH_plib
 PATH_LIB_navi=                  os.path.join(PATH_navi, 'lib')
 PATH_LIB_ogredshow =            PATH_ogredshow
-PATH_LIB_particleuniverse =     os.path.join(PATH_particleuniverse, 'bin', 'release')
 PATH_LIB_opensteer = os.path.join(PATH_opensteer, 'win32','release')
 PATH_LIB_hikari = os.path.join(PATH_hikari ) # , 'lib')
 PATH_LIB_mygui = os.path.join(PATH_mygui, 'MyGUIEngine','lib','Release')
 PATH_LIB_canvas = os.path.join(PATH_canvas )
-PATH_LIB_pcz = os.path.join(PATH_LIB_Ogre_OgreMain, 'OGRE')
 PATH_LIB_plsm2 = PATH_plsm2
-PATH_LIB_OPENAL=        os.path.join(PATH_OPENAL, 'libs','win32' ) ##'release') #'openal')
-                
-
-PATH_INCLUDE_ogrepaging =   os.path.join(PATH_Ogre,'Components','Paging', 'include')
-PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_Ogre,'Components','RTShaderSystem', 'include')
-PATH_INCLUDE_ogreterrain =   os.path.join(PATH_Ogre,'Components','Terrain', 'include')
-PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_Ogre,'Plugins', 'OctreeZone', 'include' )
-PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_Ogre,'Plugins', 'OctreeSceneManager', 'include' )
-PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include")
-PATH_INCLUDE_sdksample = os.path.join(PATH_THIRDPARTY, "sdksample")
-PATH_INCLUDE_ogreproperty = os.path.join(PATH_Ogre,'Components','Property', 'include')
+PATH_LIB_OPENAL=        os.path.join(PATH_OPENAL, 'libs','win32' ) ##'release') #'openal')                
     
-PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'OgreMain/include') 
 PATH_INCLUDE_NEDMALLOC=      "" #os.path.join(PATH_Ogre,'OgreMain', 'src', 'nedmalloc')
-PATH_INCLUDE_Ogre_Dependencies = os.path.join( PATH_Ogre, 'Dependencies/include')
-PATH_INCLUDE_OIS =          os.path.join(PATH_OIS,'includes')    ## Note the plural include's
 PATH_INCLUDE_OgreRefApp =   os.path.join(PATH_Ogre,'ReferenceApplication/ReferenceAppLayer/include') 
 PATH_INCLUDE_OgreNewt =     os.path.join(PATH_OgreAddons,'ogrenewt/OgreNewt_Main/inc')
 PATH_INCLUDE_OgreNewt2 =     os.path.join(PATH_OgreAddons,'ogrenewt2/inc')
-PATH_INCLUDE_CEGUI =        os.path.join(PATH_CEGUI, 'cegui','include')
 PATH_INCLUDE_ODE =          os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    os.path.join( PATH_ODE, 'ode/src')
@@ -247,7 +255,6 @@ PATH_INCLUDE_noise = PATH_noise
 PATH_INCLUDE_ogreforests =         PATH_ogreforests
 PATH_INCLUDE_particleuniverse = os.path.join(PATH_particleuniverse, 'include' )
 PATH_INCLUDE_ogrepcz = os.path.join(PATH_ogrepcz,'include')
-PATH_INCLUDE_hydrax=        PATH_hydrax
 PATH_INCLUDE_hikari = os.path.join(PATH_hikari ) #, 'include')
 PATH_INCLUDE_mygui = os.path.join(PATH_mygui,'MyGUIEngine','include') 
 PATH_INCLUDE_canvas=        PATH_canvas
