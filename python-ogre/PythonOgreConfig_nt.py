@@ -6,7 +6,7 @@ _UserName = getpass.getuser()
 
 _SDK = False        # Changes Ogre include path settings
 _SVN = False        # if building from Ogre svn
-_EXPRESS = True     # using VS Express?
+_EXPRESS = False    # using VS Express?
 
 ## The root directory is where this module is located
 module_dir = os.path.abspath(os.path.dirname(__file__) )
@@ -85,10 +85,10 @@ PATH_particleuniverse = os.path.join(PATH_plugins, 'ParticleUniverse' )
 PATH_LIB_particleuniverse =     os.path.join(PATH_particleuniverse, 'bin', 'release')
 
 ## OIS
-PATH_OIS =            os.path.join( BASE_DIR, 'ois' ) ## ois-1.2.0
-PATH_LIB_OIS =        os.path.join( PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
-PATH_LIB_OIS_debug =  os.path.join( PATH_OIS, 'lib') ## NOTE Posix platforms this lives in'lib' not 'dll'
-PATH_INCLUDE_OIS =    os.path.join( PATH_OIS, 'includes') ## Note the plural include's
+PATH_OIS =            os.path.join( PATH_Ogre, 'Dependencies' ) ## ois-1.2.0
+PATH_LIB_OIS =        os.path.join( PATH_OIS, 'lib/Release') ## NOTE Posix platforms this lives in'lib' not 'dll'
+PATH_LIB_OIS_debug =  os.path.join( PATH_OIS, 'lib/Debug') ## NOTE Posix platforms this lives in'lib' not 'dll'
+PATH_INCLUDE_OIS =    os.path.join( PATH_OIS, 'include/OIS') ## Note the plural include's
 
 ## CEGUI
 PATH_CEGUI = os.path.join(BASE_DIR, 'CEGUI-0.7.5')
@@ -107,9 +107,9 @@ PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib\\LibStatic\\Release')
 PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
 
 ## Hydrax
-PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
-PATH_INCLUDE_hydrax = PATH_hydrax
-
+PATH_hydrax = os.path.join(BASE_DIR, 'hydrax')
+PATH_LIB_hydrax = os.path.join ( PATH_hydrax, 'Hydrax\lib')
+PATH_INCLUDE_hydrax= os.path.join(PATH_hydrax,'Hydrax\include')
 
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
 PATH_Newton2 =       os.path.join(BASE_DIR, 'newtonsdk2','sdk')

@@ -30,6 +30,14 @@ Edit "\boost_1_45_0\boost\config\auto_link.hpp" and add the line:
   
 Add "BOOST_ROOT" to environment variables, pointing to "...\boost_1_45_0".
 
+Edit C:\Python27\Lib\site-packages\pygccxml\parser\source_reader.py (line 149)
+    if not os.path.isabs( ffname ):
+        ffname = self.__file_full_name(header)
+    command_line = self.__create_command_line( ffname, gccxml_file )  
+    command_line = command_line.replace ( '""', '"' )
+    command_line = command_line.replace ( '   ', ' ' )
+    command_line = command_line.replace ( '  ', ' ' )
+
 	---------------------------
 
 << Build Python-Ogre Core >>

@@ -6,7 +6,7 @@ import subprocess
 _PRECOMPILED = True
 _LOGGING_ON = False
 _DEBUG = False
-_MSVC9 = False
+_MSVC9 = True
 
 PythonOgreMajorVersion = "1"
 PythonOgreMinorVersion = "7"
@@ -852,11 +852,11 @@ class ogre(pymodule):
         LINKFLAGS = ''
 
 class ois(pymodule):
-    version = "1.0"
     package_name = ogre.package_name  # this is part of the base package
     parent = "ogre/io"
 
     if isMac():
+        version = "1.0"
         base = "ois"
         source = [
             [cvs, "-z3 -d:pserver:anonymous@wgois.cvs.sourceforge.net:/cvsroot/wgois co -D 01Jan2009 -P ois", os.getcwd()]
@@ -867,6 +867,7 @@ class ois(pymodule):
         ]
 
     if isLinux():
+        version = "1.0"
         base = "ois"
         source = [
             [cvs, "-z3 -d:pserver:anonymous@wgois.cvs.sourceforge.net:/cvsroot/wgois co -D 01Jan2009 -P ois", os.getcwd()]
@@ -879,6 +880,7 @@ class ois(pymodule):
         ]
 
     if isWindows():
+        version = "1.2"
         base = "ois"
         source = [
             [cvs, "-z3 -d:pserver:anonymous@wgois.cvs.sourceforge.net:/cvsroot/wgois co -D 01Jan2009 -P ois", os.getcwd()]
@@ -894,16 +896,16 @@ class ois(pymodule):
             pchbuild = 'buildpch.cpp'
             pchincludes = ['boost/python.hpp', 'OIS.h']
 
-        if Config._SDK:
-            if _DEBUG:
-                libs = ['OIS_d', boost.lib]
-            else:
-                libs = ['OIS', boost.lib]
+        if _DEBUG:
+            libs = ['OIS_d', boost.lib]
         else:
-            libs = ['OIS_static', boost.lib]
+            libs = ['OIS', boost.lib]
+                
         libs.append("User32") # needed for static linking
+        
     elif isLinux():
         libs = ['OIS', boost.lib]
+        
     else: # MAC
         libs = ['OIS.dylib', boost.lib]
 
@@ -1856,32 +1858,39 @@ class opensteer(pymodule):
     ModuleName = "opensteer"
 
 class hydrax(pymodule):
+    name = "hydrax"
     version = "0.5.1"
     parent = "ogre/addons"
     cflags = ""
     include_dirs = [
         boost.PATH,
-        Config.PATH_INCLUDE_hydrax,
         Config.PATH_INCLUDE_Ogre,
+        Config.PATH_INCLUDE_hydrax,
+        'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\PlatformSDK\Include'
     ]
     lib_dirs = [
         boost.PATH_LIB,
         Config.PATH_LIB_Ogre_OgreMain,
-    ]
-    libs = [  boost.lib, 'OgreMain' ]
+        Config.PATH_LIB_Ogre_Dependencies,
+#        Config.PATH_LIB_hydrax,
+        'C:\Program Files (x86)\Microsoft Visual Studio 9.0\VC\PlatformSDK\Lib'
+    ]          
+    libs = [  boost.lib, 'OgreMain'] #, 'Hydrax' ]
+    moduleLibs = [ os.path.join(Config.PATH_LIB_hydrax, 'Hydrax')]
+
     ModuleName = "hydrax"
     descText = "Fantastic water/ocean effects"
+    descLink = "http://www.ogre3d.org/"
 
-    if isWindows():
-        CCFLAGS = " /fp:fast "
-        LINKFLAGS = "  /LTCG /DYNAMICBASE:NO /MACHINE:X86 "
+    CCFLAGS = " /fp:fast " #-D_RELEASE -D_WIN32 "
+    LINKFLAGS = "  /LTCG /DYNAMICBASE:NO /MACHINE:X86 "
 
     # testing dll linkage..
     if False:
         libs.append('Hydrax')
         lib_dirs.append(Config.PATH_LIB_hydrax)
         for p in Config.PATH_INCLUDE_hydrax_modules:
-            include_dirs.insert(0, p)
+            include_dirs.insert(0, p)         
 
 class hikari(pymodule):
     active=True
