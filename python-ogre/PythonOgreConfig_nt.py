@@ -83,21 +83,28 @@ PATH_CEGUI = os.path.join(BASE_DIR, 'CEGUI-0.7.5')
 PATH_LIB_CEGUI = os.path.join( PATH_CEGUI, 'lib' )
 PATH_INCLUDE_CEGUI = os.path.join(PATH_CEGUI, 'cegui','include')
 PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_CEGUI, 'lib')
+PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_INCLUDE_CEGUI, 'RendererModules','Ogre')
 
 ## OgreOggSound
+PATH_OGG = os.path.join(BASE_DIR, 'ogreoggsound')
+PATH_VORBIS = os.path.join(BASE_DIR, 'ogreoggsound')
+PATH_OPENAL = os.path.join(BASE_DIR, 'OpenAL.1.1' )
 PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
-PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'lib')
+PATH_INCLUDE_OGG = os.path.join( PATH_OGG, 'include/ogg' )
+PATH_INCLUDE_VORBIS = os.path.join( PATH_VORBIS, 'include/vorbis' )
+PATH_INCLUDE_OPENAL = os.path.join( PATH_OPENAL, 'include')
 PATH_INCLUDE_ogreoggsound = os.path.join(PATH_ogreoggsound,'include')
+PATH_LIB_ogreoggsound = os.path.join(PATH_ogreoggsound,'lib')
 
 ## Raknet
 PATH_raknet = os.path.join(BASE_DIR, 'raknet')
-PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib\\LibStatic\\Release')
+PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib/LibStatic/Release')
 PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
 
 ## Hydrax
 PATH_hydrax = os.path.join(BASE_DIR, 'hydrax')
-PATH_LIB_hydrax = os.path.join ( PATH_hydrax, 'Hydrax\lib')
-PATH_INCLUDE_hydrax= os.path.join(PATH_hydrax,'Hydrax\include')
+PATH_LIB_hydrax = os.path.join ( PATH_hydrax, 'Hydrax/lib')
+PATH_INCLUDE_hydrax= os.path.join(PATH_hydrax,'Hydrax/include')
 
 ## Bullet
 # # PATH_OgreBullet=    os.path.join(PATH_OgreAddons,'ogrebullet')
@@ -120,9 +127,6 @@ PATH_Newton =       os.path.join(BASE_DIR, 'newtonsdk','sdk')
 PATH_Newton2 =       os.path.join(BASE_DIR, 'newtonsdk2','sdk')
 PATH_FMOD =         os.path.join(BASE_DIR, 'fmod')
 PATH_ODE =          os.path.join(BASE_DIR, 'ode-0.11.1')
-PATH_OGG =          os.path.join(BASE_DIR, 'ogg')
-PATH_VORBIS=        os.path.join(BASE_DIR, 'vorbis')
-PATH_OPENAL=        os.path.join(BASE_DIR, 'OpenAL.1.1' ) # 'openal-soft-1.5.304') #'openal')
 PATH_OgreOde=       os.path.join(BASE_DIR, PATH_OgreAddons,'ogreode')
 # # PATH_ogreforests=    os.path.join(PATH_OgreAddons,'forests')
 
@@ -212,16 +216,11 @@ PATH_INCLUDE_ODE =          os.path.join( PATH_ODE, 'include')
 PATH_INCLUDE_OPCODE =       PATH_OPCODE
 PATH_INCLUDE_ODESOURCE =    os.path.join( PATH_ODE, 'ode/src')
 
-PATH_INCLUDE_OgreAL =       os.path.join( PATH_OGREAL ) #, 'include' )
-PATH_INCLUDE_OPENAL =       os.path.join( PATH_OPENAL, 'include')
-PATH_INCLUDE_OGG=           os.path.join( PATH_OGG, 'include' )
-PATH_INCLUDE_VORBIS=        os.path.join( PATH_VORBIS, 'include' )
-                        
+PATH_INCLUDE_OgreAL =       os.path.join( PATH_OGREAL ) #, 'include' )                        
 PATH_INCLUDE_OgreOde =      os.path.join( PATH_OgreOde,'Core','include')
 PATH_INCLUDE_OgreOdePrefab= os.path.join( PATH_OgreOde,'prefab','include')
 PATH_INCLUDE_OgreOdeLoader= os.path.join( PATH_OgreOde,'loader','include')
 PATH_INCLUDE_FMOD =          os.path.join(PATH_FMOD, 'api/inc')
-PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_INCLUDE_CEGUI, 'RendererModules','Ogre')
 PATH_INCLUDE_quickgui =     PATH_quickgui
 PATH_INCLUDE_NxOgre_09=        PATH_NxOgre_09
 PATH_INCLUDE_NxOgre=        os.path.join(PATH_NxOgre, 'include')
@@ -271,25 +270,29 @@ PATH_INCLUDE_opensteer_opensteer = os.path.join(PATH_opensteer, 'include', 'Open
 
 if _SDK:
     PATH_Ogre =         "C:\\development\\ogre"
-#     PATH_CEGUI =        PATH_Ogre
-    PATH_OIS =          PATH_Ogre
     PATH_INCLUDE_Ogre=          os.path.join(PATH_Ogre,'include','OGRE')
-    PATH_INCLUDE_OIS =          os.path.join(PATH_Ogre,'include','OIS')
-#     PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'include/CEGUI')
-#    PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples','Common','include')
     PATH_INCLUDE_Ogre_Dependencies = os.path.join(PATH_Ogre,'include')
     PATH_LIB_Ogre_OgreMain =        os.path.join( PATH_Ogre, 'lib', 'release' )
     PATH_LIB_Ogre_OgreMain_debug =        os.path.join( PATH_Ogre, 'lib', 'debug' )
-#     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib', 'release')
+
+    PATH_OIS =          PATH_Ogre
+    PATH_INCLUDE_OIS =          os.path.join(PATH_Ogre,'include','OIS')
     PATH_LIB_OIS =                  os.path.join( PATH_Ogre, 'lib', 'release')
     PATH_LIB_OIS_debug  =                  os.path.join( PATH_Ogre, 'lib', 'debug')
+
+#     PATH_CEGUI =        PATH_Ogre
+#     PATH_INCLUDE_CEGUI =        os.path.join(PATH_Ogre, 'include/CEGUI')
 #     PATH_LIB_CEGUI =                os.path.join( PATH_Ogre, 'lib', 'release' )
+#     PATH_INCLUDE_Ogre_CEGUIRenderer = os.path.join( PATH_Ogre, 'Samples','Common','include')
+#     PATH_LIB_Ogre_CEGUIRenderer =   os.path.join( PATH_Ogre, 'lib', 'release')
+
     PATH_LIB_pcz =                  os.path.join( PATH_Ogre, 'lib', 'release','opt' )
+    PATH_INCLUDE_ogrepcz = os.path.join(PATH_INCLUDE_Ogre,'Plugins','PCZSceneManager')
     PATH_INCLUDE_ogrepaging =   os.path.join(PATH_INCLUDE_Ogre,'Paging')
     PATH_INCLUDE_ogrertshadersystem =   os.path.join(PATH_INCLUDE_Ogre,'RTShaderSystem')
     PATH_INCLUDE_ogreterrain =   os.path.join(PATH_INCLUDE_Ogre,'Terrain')
     PATH_INCLUDE_ogreoctreezone = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeZone' )
     PATH_INCLUDE_ogreoctreesm = os.path.join(PATH_INCLUDE_Ogre,'Plugins', 'OctreeSceneManager' )
+    
 #     PATH_INCLUDE_sdksample = os.path.join(PATH_Ogre, "Samples", "Common", "include")
     PATH_INCLUDE_sdksample = os.path.join(PATH_THIRDPARTY, "sdksample")
-    PATH_INCLUDE_ogrepcz = os.path.join(PATH_INCLUDE_Ogre,'Plugins','PCZSceneManager')

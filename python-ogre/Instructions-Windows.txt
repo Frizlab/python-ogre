@@ -54,14 +54,20 @@ Unzip Ogre & Dependencies
 VC++2008 -> /ogre/Dependencies
 cmake/VC++2008 -> /ogre
 
+Copy  \ogre\include\OgreBuildSettings.h  to  \ogre\OgreMain\include
+Edit the file and modify:
+    #define OGRE_USE_BOOST 0
+
+>python python-ogre/BuildModule.py -g -v ogre
+>python python-ogre/BuildModule.py -c -v ogre
+
 Copy the following files:
-    \ogre\include\OgreBuildSettings.h:
-                        \ogre\OgreMain\include
 
     \ogre\bin\release\cg.dll:
     \ogre\bin\release\OgreMain.dll:
     \ogre\bin\release\OgreProperty.dll:
     \boost_1_45_0\stage\boost_python-vc90-mt-1_45.dll,
+    \boost_1_45_0\stage\boost_thread-vc90-mt-1_45.dll,
                         \python-ogre\packages_2.7\ogre\renderer\OGRE
 
     \ogre\bin\release\OgrePaging.dll:
@@ -74,20 +80,60 @@ Copy the following files:
                         \python-ogre\packages_2.7\ogre\renderer\ogreterrain
                         
     \ogre\Dependencies\bin\Release\OIS.dll:
-    \boost_1_45_0\stage\boost_python-vc90-mt-1_45.dll,
                         \python-ogre\packages_2.7\ogre\io\OIS
 
-Edit "ogre\OgreMain\include\OgreIteratorRange.h" and add:
-    #define OGRE_USE_BOOST 0
+	---------------------------
 
->python python-ogre/BuildModule.py -g -v ogre
->python python-ogre/BuildModule.py -c -v ogre
-
+<< Build Python-Ogre Modules >>
 
 >python python-ogre/BuildModule.py -r ois
 >python python-ogre/BuildModule.py -b ois
 >python python-ogre/BuildModule.py -g -v ois
 >python python-ogre/BuildModule.py -c -v ois
+
+>python python-ogre/BuildModule.py -g -v ogrepcz
+>python python-ogre/BuildModule.py -c -v ogrepcz
+
+>python python-ogre/BuildModule.py -g -v ogrepaging
+>python python-ogre/BuildModule.py -c -v ogrepaging
+
+>python python-ogre/BuildModule.py -g -v ogreterrain
+>python python-ogre/BuildModule.py -c -v ogreterrain
+
+>python python-ogre/BuildModule.py -g -v ogrertshadersystem
+>python python-ogre/BuildModule.py -c -v ogrertshadersystem
+
+	---------------------------
+
+<< CEGUI Add-on >>
+
+>python python-ogre/BuildModule.py -r cegui
+>python python-ogre/BuildModule.py -b -v cegui
+
+Run \CEGUI-0.7.5\projects\premake\build_vs2008.bat
+VC++2008 -> CEGUI
+
+>python python-ogre/BuildModule.py -g -v cegui
+--ERROR--
+OgreLog.h:202: internal compiler error ... at decl12.c:1521
+
+		---------------------------
+
+<< OgreOggSound Add-on >>
+
+Install OpenAL SDK: http://connect.creativelabs.com/openal/Downloads/OpenAL11CoreSDK.zip
+Copy OpenAL from "C:\Program Files (x86)\OpenAL 1.1 SDK" to "OpenAL.1.1"
+Add "OPENAL_SDK" to environment variables, pointing to ".../OpenAL.1.1"
+
+>python python-ogre/BuildModule.py -r ogreoggsound
+>python python-ogre/BuildModule.py -b -v ogreoggsound
+
+VC++2008 -> OgreOggSoundLib_vc9
+
+>python python-ogre/BuildModule.py -g -v ogreoggsound
+>python python-ogre/BuildModule.py -c -v ogreoggsound
+
+Copy  \ogreoggsound\lib\OgreOggSound.dll  to  \python-ogre\packages_2.7\ogre\sound\ogreoggsound
 
 		---------------------------
 
