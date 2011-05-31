@@ -68,6 +68,19 @@ if _SDK:
 if isMAC:
     PATH_CEGUI =        os.path.join(BASE_DIR, 'ogre','Dependencies')
     #PATH_OIS = os.path.join(BASE_DIR, 'ogre','Dependencies')
+    
+## Raknet
+PATH_raknet = os.path.join(BASE_DIR, 'raknet')
+PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib/LibStatic')
+PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
+
+## Hydrax
+PATH_hydrax = os.path.join(BASE_DIR, 'Hydrax-v0.5.1')
+PATH_LIB_hydrax = os.path.join ( PATH_hydrax, 'Hydrax/bin')
+PATH_INCLUDE_hydrax = [ os.path.join(PATH_hydrax,'Hydrax/include'),
+                        os.path.join(PATH_hydrax,'Hydrax/include/Modules/ProjectedGrid'),
+                        os.path.join(PATH_hydrax,'Hydrax/include/Modules/SimpleGrid'),
+                        os.path.join(PATH_hydrax,'Hydrax/include/Noise/Perlin') ]    
 
 
 PATH_Newton =       os.path.join(BASE_DIR, 'newtonSDK','sdk')
@@ -104,15 +117,10 @@ PATH_particleuniverse = os.path.join(PATH_Ogre, 'PlugIns', 'ParticleUniverse' )
 PATH_cadunetree=        os.path.join(PATH_THIRDPARTY, 'cadunetree')
 PATH_opensteer =        os.path.join(BASE_DIR, 'opensteer', 'trunk')
 PATH_ogrepcz = os.path.join(PATH_Ogre, 'PlugIns', 'PCZSceneManager' )
-PATH_hydrax = os.path.join(PATH_THIRDPARTY, 'Hydrax')
 PATH_hikari = os.path.join(PATH_THIRDPARTY, 'Hikari' ) # BASE_DIR, 'hikari', 'hikari')
 PATH_mygui = os.path.join(BASE_DIR, 'MyGUI_2.2.0_RC1_source' )
 PATH_canvas = os.path.join(PATH_THIRDPARTY, 'canvas')
 PATH_plsm2 =        os.path.join(PATH_THIRDPARTY, 'plsm2' )
-
-PATH_raknet = os.path.join(BASE_DIR, 'raknet')
-PATH_LIB_raknet = os.path.join ( PATH_raknet, 'Lib/LibStatic')
-PATH_INCLUDE_raknet = os.path.join ( PATH_raknet, 'Source')
 
 PATH_ogreoggsound = os.path.join(BASE_DIR,'ogreoggsound')
 PATH_INCLUDE_ogreoggsound = os.path.join(PATH_ogreoggsound,'include')
@@ -272,7 +280,6 @@ PATH_INCLUDE_PhysX= [ physxbase
 PATH_INCLUDE_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
 PATH_INCLUDE_opensteer_opensteer = os.path.join(LOCAL_INCLUDE, 'OpenSteer')
 PATH_INCLUDE_ogrepcz = os.path.join(PATH_ogrepcz,'include')
-PATH_INCLUDE_hydrax=        PATH_hydrax
 PATH_INCLUDE_hikari = os.path.join(PATH_hikari ) #, 'include')
 PATH_INCLUDE_mygui = os.path.join(PATH_mygui,'MyGUIEngine','include')
 PATH_INCLUDE_canvas=        PATH_canvas
