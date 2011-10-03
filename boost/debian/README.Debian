@@ -1,0 +1,8 @@
+boost-python-index for Debian
+-----------------------------
+
+This package is the extra index stuff needed by python-ogre (and possibly
+others). It does not refer to a real upstream object, we expect this to go way
+once boot-python is updated.
+
+ -- Tim Ansell <mithro@mithis.com>  Fri, 18 Apr 2008 15:37:15 +0930

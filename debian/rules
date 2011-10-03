@@ -1,0 +1,100 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# GNU copyright 1997 to 1999 by Joey Hess.
+
+# Uncomment this to turn on verbose mode.
+export DH_VERBOSE=1
+export DH_COMPAT=5
+
+export CFLAGS=-g
+PYTHON	:= /usr/bin/python
+PYVERS  := $(shell $(PYTHON) -c 'import sys; print sys.version[:3]')
+#PYVERS	= 2.5 #$(shell pyversions -vr)
+
+export BUILDFLAGS=--usesystem --verbose --failhard -g
+
+setup: setup-stamp
+setup-stamp:
+	# Patch the python-ogre build system.
+	patch -p0 < ./patch/python-ogre-deb.patch
+	touch $@
+
+
+build: setup $(PYVERS:%=build-stamp%)
+build-stamp%:
+	# We set LD_PRELOAD='' to stop fakeroot from killing the code generation
+	# Core Modules
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogre
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c ois
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c cegui
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c ogre
+	# Extra modules
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c noise
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} ogreode
+#	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} betagui
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c cadunetree || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c caelum || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c et || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c plib || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c ogreforests || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c ogreal || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c ogrevideoffmpeg || true
+	LD_PRELOAD='' python$* BuildModule.py ${BUILDFLAGS} -c watermesh || true
+	touch $@
+
+build-python%:
+	dh_testdir
+	python$* setup.py build
+
+clean:
+	dh_testdir
+	dh_testroot
+	rm -f build-python* || true
+	rm -rf build || true
+	rm *-stamp* || true
+	-find . -name '*.py[co]' | xargs rm -f
+	dh_clean
+
+install: build $(PYVERS:%=build-python%) $(PYVERS:%=install-python%)
+	echo $(PYVERS:%=build-python%) $(PYVERS:%=install-python%)
+
+install-python%:
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+	python$* setup.py install --root=$(CURDIR)/debian/python-ogre
+	python$* setup.py install --root=$(CURDIR)/debian/tmp
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do here.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_strip --dbg-package=python-ogre-dbg
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs
+	dh_installdocs README ChangeLog.txt
+	dh_pycentral
+	dh_compress -X.py
+	dh_fixperms
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+#prep:
+#	# Build and install the lastest gccxml
+#	cd ..; python python-ogre/BuildModule.py -r -b gccxml
+#	# Build and install the lastest pygccxml
+#	cd ..; python python-ogre/BuildModule.py -r -b pygccxml
+#	# Build and install the extra boost stuff we need
+#	cd boost; fakeroot ./debian/rules binary-arch
+#	sudo dpkg --install libboost-python1.34.1-index*.deb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure prep build 

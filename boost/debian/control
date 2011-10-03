@@ -1,0 +1,33 @@
+Source: boost-python%%VERSION%%-index
+Priority: extra
+Maintainer: Tim Ansell <mithro@mithis.com>
+Build-Depends: debhelper (>= 5), libboost-python-dev (>= %%VERSION%%) | libboost-python%%VERSION%%-dev (>= %%VERSION%%), libstdc++6-4.1-dev | libstdc++6-4.2-dev, python-dev
+Standards-Version: 3.7.2
+Section: libs
+
+Package: libboost-python%%VERSION%%-index-dev
+Section: libdevel
+Architecture: any
+Depends: libboost-python%%VERSION%%-index (= ${Source-Version})
+Description: Extra index stuff for boost-python
+ This package is the extra index stuff needed by python-ogre (and possibly
+ others). It does not refer to a real upstream object, we expect this to go way
+ once boost-python is updated.
+
+Package: libboost-python%%VERSION%%-index
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Extra index stuff for boost-python
+ This package is the extra index stuff needed by python-ogre (and possibly
+ others). It does not refer to a real upstream object, we expect this to go way
+ once boost-python is updated.
+
+Package: libboost-python%%VERSION%%-index-dbg
+Section: libdevel
+Architecture: any
+Depends: libboost-python%%VERSION%%-index (= ${Source-Version})
+Description: Extra index stuff for boost-python
+ This package is the extra index stuff needed by python-ogre (and possibly
+ others). It does not refer to a real upstream object, we expect this to go way
+ once boost-python is updated.

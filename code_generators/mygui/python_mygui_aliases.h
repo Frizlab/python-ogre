@@ -1,0 +1,22 @@
+typedef MyGUI::EventPair<MyGUI::EventHandle_WidgetVoid, MyGUI::EventHandle_ComboBoxPtrSizeT> eventVoidComboBox;
+typedef MyGUI::EventPair<MyGUI::EventHandle_WidgetSizeT, MyGUI::EventHandle_ComboBoxPtrSizeT> eventSizeTComboBox;
+typedef MyGUI::EventPair<MyGUI::EventHandle_WidgetVoid, MyGUI::EventHandle_DDContainerPtr> _eventVoidContainer;
+typedef MyGUI::EventPair<MyGUI::EventHandle_WidgetVoid, MyGUI::EventHandle_EditPtr> eventVoidEdit;
+typedef MyGUI::EventPair<MyGUI::EventHandle_WidgetSizeT, MyGUI::EventHandle_ListPtrSizeT> eventSizeTList;
+typedef MyGUI::EventPair<MyGUI::EventHandle_WidgetSizeT, MyGUI::EventHandle_MultiListPtrSizeT> eventSizeTMultiList;
+typedef MyGUI::EventPair<MyGUI::EventHandle_WidgetSizeT, MyGUI::EventHandle_TabPtrSizeT> eventSizeTTab;
+typedef MyGUI::EventPair<MyGUI::EventHandle_WidgetSizeT, MyGUI::EventHandle_VScrollPtrSizeT> eventSizeTVScroll;
+typedef MyGUI::EventPair<MyGUI::EventHandle_WidgetString, MyGUI::EventHandle_WindowPtrCStringRef> eventStringWindow;
+typedef MyGUI::EventPair<MyGUI::EventHandle_WidgetVoid, MyGUI::EventHandle_WindowPtr> eventVoidWindow;
+
+typedef ::MyGUI::delegates::CDelegate3< MyGUI::IResource*&, MyGUI::xml::ElementEnumerator, MyGUI::Version > CDelegate3IResouceElementEnumVersion;
+typedef ::MyGUI::types::TPoint< int > typesTPointInt;
+typedef ::MyGUI::types::TRect< float > typesTRectFloat;
+typedef ::std::vector< MyGUI::Widget* > stdVectorWidgetPtr;
+typedef ::std::vector< MyGUI::GroupImage > stdVectorGroupImage;
+typedef ::std::vector< MyGUI::LayerKeeper* > stdVectorLayerKeeper;
+typedef ::std::vector< MyGUI::MessageBoxStyle > stdVectorTextMessageBoxStyle;
+typedef ::std::vector< MyGUI::TextCommandInfo > stdVectorTextCommandInfo;
+typedef ::std::vector< MyGUI::types::TPoint<int> > stdVectorTPointInt;
+typedef ::std::vector< MyGUI::types::TRect<float> > stdVectorTRectFloat;
+typedef ::std::vector< MyGUI::StateInfo* > stdVectorStateInfo;

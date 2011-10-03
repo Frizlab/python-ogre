@@ -1,0 +1,122 @@
+--- c:\temp\ogre\/OgreMain/include/OgreDataStream.h	2008-06-26 06:40:09.000000000 +0800
++++ ogre/OgreMain/include/OgreDataStream.h	2008-08-29 21:13:39.984375000 +0800
+@@ -33,6 +33,7 @@
+ #include "OgreString.h"
+ #include "OgreSharedPtr.h"
+ #include <istream>
++#include <stdexcept>
+ 
+ namespace Ogre {
+ 
+@@ -79,7 +80,7 @@
+ 		@param count Number of bytes to read
+ 		@returns The number of bytes read
+ 		*/
+-		virtual size_t read(void* buf, size_t count) = 0;
++		virtual size_t read(void* buf, size_t count) { throw std::runtime_error ( std::string ("Virtual function DataStream::read called!") ); }
+ 		/** Get a single line from the stream.
+ 		@remarks
+ 			The delimiter character is not included in the data
+--- c:\temp\ogre\/OgreMain/include/OgreHardwareBuffer.h	2008-06-12 22:10:57.000000000 +0800
++++ ogre/OgreMain/include/OgreHardwareBuffer.h	2008-08-29 21:13:40.000000000 +0800
+@@ -31,6 +31,8 @@
+ 
+ // Precompiler options
+ #include "OgrePrerequisites.h"
++#include <stdexcept>
++
+ 
+ namespace Ogre {
+ 
+@@ -244,7 +246,7 @@
+             @param pDest The area of memory in which to place the data, must be large enough to 
+                 accommodate the data!
+             */
+-            virtual void readData(size_t offset, size_t length, void* pDest) = 0;
++            virtual void readData(size_t offset, size_t length, void* pDest) { throw std::runtime_error ( std::string ("Virtual function HardwareBuffer::readData called!") ); }
+             /** Writes data to the buffer from an area of system memory; note that you must
+                 ensure that your buffer is big enough.
+ 		    @param offset The byte offset from the start of the buffer to start writing
+@@ -254,7 +256,7 @@
+ 				such that DMA stalls can be avoided; use if you can.
+             */
+             virtual void writeData(size_t offset, size_t length, const void* pSource,
+-					bool discardWholeBuffer = false) = 0;
++					bool discardWholeBuffer = false) { throw std::runtime_error ( std::string ("Virtual function HardwareBuffer::writeData called!") ); }
+ 
+ 			/** Copy data from another buffer into this one.
+ 			@remarks
+--- c:\temp\ogre\/OgreMain/include/OgreMovableObject.h	2008-06-24 20:05:44.000000000 +0800
++++ ogre/OgreMain/include/OgreMovableObject.h	2008-08-29 21:13:39.968750000 +0800
+@@ -482,7 +482,7 @@
+ 			included too.
+ 		*/
+ 		virtual void visitRenderables(Renderable::Visitor* visitor, 
+-			bool debugRenderables = false) = 0;
++			bool debugRenderables = false) { throw std::runtime_error ( std::string ("Virtual function MovableObject::visitRenderables called!") ); }
+ 
+ 		/** Sets whether or not the debug display of this object is enabled.
+ 		@remarks
+--- c:\temp\ogre\/Samples/Common/include/ExampleFrameListener.h	2008-06-12 22:10:57.000000000 +0800
++++ ogre/Samples/Common/include/ExampleFrameListener.h	2008-08-29 21:17:49.546875000 +0800
+@@ -41,7 +41,7 @@
+ 
+ //Use this define to signify OIS will be used as a DLL
+ //(so that dll import/export macros are in effect)
+-#define OIS_DYNAMIC_LIB
++//#define OIS_DYNAMIC_LIB
+ #include <OIS/OIS.h>
+ 
+ using namespace Ogre;
+--- c:\temp\ogre\/OgreMain/include/OgreRenderQueueListener.h	2008-06-12 22:10:57.000000000 +0800
++++ ogre/OgreMain/include/OgreRenderQueueListener.h	2008-08-29 21:13:39.984375000 +0800
+@@ -31,6 +31,8 @@
+ 
+ #include "OgrePrerequisites.h"
+ #include "OgreRenderQueue.h"
++#include <stdexcept>
++
+ 
+ namespace Ogre {
+ 
+@@ -64,8 +66,8 @@
+ 			rendered. Note that in this case the renderQueueEnded event will not be raised
+ 			for this queue group.
+         */
+-        virtual void renderQueueStarted(uint8 queueGroupId, const String& invocation, 
+-			bool& skipThisInvocation) = 0;
++        virtual void renderQueueStarted(uint8 queueGroupId, const String& invocation, 
++			bool& skipThisInvocation) { throw std::runtime_error ( std::string ("Virtual function RenderQueueListener::renderQueueStarted called!") ); }
+ 
+         /** Event raised after a queue group is rendered. 
+         @remarks
+@@ -79,8 +81,8 @@
+ 			rendered will be repeated, and the renderQueueStarted and renderQueueEnded
+ 			events will also be fired for it again.
+         */
+-        virtual void renderQueueEnded(uint8 queueGroupId, const String& invocation, 
+-			bool& repeatThisInvocation) = 0;
++        virtual void renderQueueEnded(uint8 queueGroupId, const String& invocation, 
++			bool& repeatThisInvocation) { throw std::runtime_error ( std::string ("Virtual function RenderQueueListener::renderQueueEnded called!") ); }
+     };
+ 
+ }
+--- c:\temp\ogre\/OgreMain/include/OgreResourceGroupManager.h	2008-07-05 06:10:45.000000000 +0800
++++ ogre/OgreMain/include/OgreResourceGroupManager.h	2008-08-29 21:13:39.984375000 +0800
+@@ -37,6 +37,7 @@
+ #include "OgreArchive.h"
+ #include "OgreIteratorWrappers.h"
+ #include <ctime>
++#include <stdexcept>
+ 
+ namespace Ogre {
+ 
+@@ -92,7 +93,7 @@
+ 			parsed. Note that in this case the scriptParseEnded event will not be raised
+ 			for this script.
+ 		*/
+-		virtual void scriptParseStarted(const String& scriptName, bool& skipThisScript) = 0;
++		virtual void scriptParseStarted(const String& scriptName, bool& skipThisScript)  { throw std::runtime_error ( std::string ("Virtual function ResourceGroupListener::scriptParseStarted called!") ); }
+ 
+ 		/** This event is fired when the script has been fully parsed.
+ 		*/

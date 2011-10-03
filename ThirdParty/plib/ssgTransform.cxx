@@ -1,0 +1,242 @@
+/*
+     PLIB - A Suite of Portable Game Libraries
+     Copyright (C) 1998,2002  Steve Baker
+ 
+     This library is free software; you can redistribute it and/or
+     modify it under the terms of the GNU Library General Public
+     License as published by the Free Software Foundation; either
+     version 2 of the License, or (at your option) any later version.
+ 
+     This library is distributed in the hope that it will be useful,
+     but WITHOUT ANY WARRANTY; without even the implied warranty of
+     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+     Library General Public License for more details.
+ 
+     You should have received a copy of the GNU Library General Public
+     License along with this library; if not, write to the Free Software
+     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+ 
+     For further information visit http://plib.sourceforge.net
+
+     $Id: ssgTransform.cxx,v 1.14 2004/12/01 08:28:05 wolfram_kuss Exp $
+*/
+
+
+#include "ssgLocal.h"
+
+void ssgTransform::copy_from ( ssgTransform *src, int clone_flags )
+{
+  ssgBaseTransform::copy_from ( src, clone_flags ) ;
+}
+
+ssgBase *ssgTransform::clone ( int clone_flags )
+{
+  ssgTransform *b = new ssgTransform ;
+  b -> copy_from ( this, clone_flags ) ;
+  return b ;
+}
+
+
+ssgTransform::ssgTransform ( sgCoord *c )
+{
+  type = ssgTypeTransform () ;
+  setTransform ( c ) ;
+}
+
+ssgTransform::ssgTransform (void)
+{
+  type = ssgTypeTransform () ;
+}
+
+ssgTransform::~ssgTransform (void)
+{
+}
+
+void ssgTransform::recalcBSphere (void)
+{
+  ssgBranch::recalcBSphere () ;
+
+  if ( ! bsphere . isEmpty () )
+    bsphere . orthoXform ( transform ) ;
+}
+
+void ssgTransform::cull ( sgFrustum *f, sgMat4 m, int test_needed )
+{
+  if ( ! preTravTests ( &test_needed, SSGTRAV_CULL ) )
+    return ;
+
+  int cull_result = cull_test ( f, m, test_needed ) ;
+
+  if ( cull_result == SSG_OUTSIDE )
+    return ;
+
+  sgMat4 tmp ;
+
+  sgCopyMat4 ( tmp, m ) ;
+  sgPreMultMat4 ( tmp, transform ) ;
+
+  _ssgPushMatrix ( tmp ) ;
+  glPushMatrix () ;
+  glLoadMatrixf ( (float *) tmp ) ;
+
+  for ( ssgEntity *e = getKid ( 0 ) ; e != NULL ; e = getNextKid() )
+    e -> cull ( f, tmp, cull_result != SSG_INSIDE ) ;
+
+  glPopMatrix () ;
+  _ssgPopMatrix () ;
+
+  postTravTests ( SSGTRAV_CULL ) ; 
+}
+
+void ssgTransform::hot ( sgVec3 s, sgMat4 m, int test_needed )
+{
+  if ( ! preTravTests ( &test_needed, SSGTRAV_HOT ) )
+    return ;
+
+  int hot_result = hot_test ( s, m, test_needed ) ;
+
+  if ( hot_result == SSG_OUTSIDE )
+    return ;
+
+  sgMat4 tmp ;
+
+  sgCopyMat4 ( tmp, m ) ;
+  sgPreMultMat4 ( tmp, transform ) ;
+
+  _ssgPushPath ( this ) ;
+
+  for ( ssgEntity *e = getKid ( 0 ) ; e != NULL ; e = getNextKid() )
+    e -> hot ( s, tmp, hot_result != SSG_INSIDE ) ;
+
+  _ssgPopPath () ;
+
+  postTravTests ( SSGTRAV_HOT ) ;
+}
+
+void ssgTransform::los ( sgVec3 s, sgMat4 m, int test_needed )
+{
+  if ( ! preTravTests ( &test_needed, SSGTRAV_LOS ) )
+    return ;
+
+  int los_result = los_test ( s, m, test_needed ) ;
+
+  if ( los_result == SSG_OUTSIDE )
+    return ;
+
+  sgMat4 tmp ;
+
+  sgCopyMat4 ( tmp, m ) ;
+  sgPreMultMat4 ( tmp, transform ) ;
+
+  _ssgPushPath ( this ) ;
+
+  for ( ssgEntity *e = getKid ( 0 ) ; e != NULL ; e = getNextKid() )
+    e -> los ( s, tmp, los_result != SSG_INSIDE ) ;
+
+  _ssgPopPath () ;
+
+  postTravTests ( SSGTRAV_LOS ) ;
+}
+
+void ssgTransform::isect ( sgSphere *s, sgMat4 m, int test_needed )
+{
+  if ( ! preTravTests ( &test_needed, SSGTRAV_ISECT ) )
+    return ;
+
+  int isect_result = isect_test ( s, m, test_needed ) ;
+
+  if ( isect_result == SSG_OUTSIDE )
+    return ;
+
+  sgMat4 tmp ;
+
+  sgCopyMat4 ( tmp, m ) ;
+  sgPreMultMat4 ( tmp, transform ) ;
+
+  _ssgPushPath ( this ) ;
+
+  for ( ssgEntity *e = getKid ( 0 ) ; e != NULL ; e = getNextKid() )
+    e -> isect ( s, tmp, isect_result != SSG_INSIDE ) ;
+
+  _ssgPopPath () ;
+
+  postTravTests ( SSGTRAV_ISECT ) ; 
+}
+
+void ssgTransform::setTransform ( sgVec3 xyz )
+{
+  sgMat4 tmp_trans;
+  sgMakeTransMat4 ( tmp_trans, xyz ) ;
+  setTransform ( tmp_trans ) ;
+}
+
+void ssgTransform::setTransform ( sgCoord *xform )
+{
+  sgMat4 tmp_trans;
+  sgMakeCoordMat4 ( tmp_trans, xform ) ;
+  setTransform ( tmp_trans ) ;
+}
+
+void ssgTransform::setTransform ( sgCoord *xform, float sx, float sy, float sz )
+{
+  sgMat4 tmp_trans;
+  sgMakeCoordMat4 ( tmp_trans, xform ) ;
+  sgScaleVec3     ( tmp_trans[0], sx ) ;
+  sgScaleVec3     ( tmp_trans[1], sy ) ;
+  sgScaleVec3     ( tmp_trans[2], sz ) ;
+  setTransform ( tmp_trans );
+}
+
+void ssgTransform::setTransform ( sgMat4 xform )
+{
+  if ( sgEqualVec4( xform[0], transform[0] ) &&
+       sgEqualVec4( xform[1], transform[1] ) &&
+       sgEqualVec4( xform[2], transform[2] ) &&
+       sgEqualVec4( xform[3], transform[3] ) )
+    return;
+
+  updateTransform () ;
+  sgCopyMat4      ( transform, xform ) ;
+  firsttime       () ; 
+  dirtyBSphere () ;
+}
+
+
+void ssgTransform::getNetTransform ( sgMat4 xform )
+{
+  if ( getNumParents () > 0 )
+  {
+    getParent ( 0 ) -> getNetTransform ( xform ) ;
+    sgPreMultMat4 ( xform, transform ) ;
+  }
+  else 
+    sgCopyMat4 ( xform, transform ) ;
+}
+
+
+void ssgTransform::getLastNetTransform ( sgMat4 xform )
+{
+  sgMat4 last_xform ;
+  getLastTransform ( last_xform ) ;
+
+  if ( getNumParents () > 0 )
+  {
+    getParent ( 0 ) -> getLastNetTransform ( xform ) ;
+    sgPreMultMat4 ( xform, last_xform ) ;
+  }
+  else 
+    sgCopyMat4 ( xform, last_xform ) ;
+}
+
+
+int ssgTransform::load ( FILE *fd )
+{
+  return ssgBaseTransform::load(fd) ;
+}
+
+int ssgTransform::save ( FILE *fd )
+{
+  return ssgBaseTransform::save(fd) ;
+}
+
+

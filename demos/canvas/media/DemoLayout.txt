@@ -1,0 +1,100 @@
+Assets
+{
+	resource-group: General
+	fonts: sans, sansItalic, sansBold, sansBoldItalic
+	textures: logo.png
+}
+
+sans
+{
+	filename: LucidaSans.ttf
+	sizes: 14
+}
+
+sansItalic
+{
+	filename: LucidaSansItalic.ttf
+	sizes: 14
+}
+
+sansBold
+{
+	filename: LucidaSansBold.ttf
+	sizes: 14, 18
+}
+
+sansBoldItalic
+{
+	filename: LucidaSansBoldItalic.ttf
+	sizes: 14
+}
+
+TextFlow
+{
+	name: backstory
+	alignment: left
+	offset: 20, 0
+	size: 320, 470
+	background-color: #002d5e, #0578ff
+	border-width: 10
+	border-color: #001935
+	padding: 15
+	font: sans, 14, #FFFFFF
+	text: [
+	A few months ago, I began researching lightweight, 2D-rendering solutions for <font face="sansBold"><font color="#c2ff95">Ogre</font>3D</font> to ultimately power the interface for my game.
+
+	I tested out a bunch of existing options but was quite disappointed to find that all <font color="#ff7db4">suffered</font> from one of two problems: <font face="sansBold" size="18">large</font> increases in batch counts <font face="sansItalic">(due to material switching)</font> and/or massive texture memory usage <font face="sansItalic">(due to 'cached' windows)</font>.
+	
+	Multi-font text rendering seemed to be the <font face="sansBold">most inefficient</font> operation primarily because each block of text with a unique font forced a new batch call.
+	
+	I became interested in the issue and decided to write my own solution; my approach <font face="sansItalic">(codenamed '<font face="sansBoldItalic" color="#ffea5a">Canvas</font>')</font> is able to <font face="sansBoldItalic">batch all rendering into one operation</font> without any expensive <font face="sansBold">RTT</font> or real-time texture caching.
+	]
+}
+
+TextFlow
+{
+	name: stats
+	offset: 5, 5
+	size: 140, 70
+	padding: 5
+	font: sansBold, 18, #FFFFFF
+	text: [
+FPS: 777
+Batch: 777
+	]
+}
+
+TextFlow
+{
+	name: controls
+	offset: -40, -50
+	alignment: right
+	size: 200, 300
+	font: sans, 14, #cecece
+	text: [
+<font face="sansBold">Controls</font>:
+	F1 - <font face="sansItalic" color="#90ff59">Print stats</font>
+	F2 - <font face="sansItalic" color="#90ff59">Toggle wireframe</font>
+	F3 - <font face="sansItalic" color="#90ff59">Animate text</font>
+	Esc - <font face="sansItalic" color="#de5067">Quit</font>
+]
+}
+
+Image
+{
+	name: logo
+	alignment: bottom-right
+	source: logo.png
+}
+
+DancingGraph
+{
+	name: pulser
+	alignment: top-right
+	offset: 0, 5
+	size: 240, 40
+	count: 15
+	period: 5
+	speed: 2
+	colors: #0254b0, #002f6333
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<GUILayout>
+ 
+      <Window Type="Marti/TabControl" Name="TabCtrl">
+		<Property Name="AlwaysOnTop" Value="True" />
+   	     	<Property Name="AbsolutePosition" Value="x:0 y:30" />
+           	<Property Name="AbsoluteSize" Value="w:150 h:1024" />		
+
+           	<Window Type="DefaultGUISheet" Name="TabPage1">
+			<Property Name="Position" Value="x:0 y:0" />
+	           	<Property Name="Size" Value="w:1.0 h:1.0" />
+           		<Property Name="Text" Value="Morph" />
+           	</Window>
+
+           	<Window Type="DefaultGUISheet" Name="TabPage2">
+      		<Property Name="Text" Value="Texture" />
+			<Property Name="Position" Value="x:0 y:0" />
+	           	<Property Name="Size" Value="w:1.0 h:1.0" />
+           	</Window>
+		<Window Type="DefaultGUISheet" Name="TabPage3">
+      		<Property Name="Text" Value="Items" />
+			<Property Name="Position" Value="x:0 y:0" />
+	           	<Property Name="Size" Value="w:1.0 h:1.0" />
+           	</Window>
+ 	</Window>
+
+</GUILayout>

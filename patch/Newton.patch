@@ -1,0 +1,10 @@
+--- newtonSDK/sdk/Newton.h	2006-05-25 11:49:50.000000000 +0800
++++ newtonSDK/sdk/Newton.h	2007-09-29 11:57:16.000000000 +0800
+@@ -8,6 +8,7 @@
+ 
+ #ifndef NEWTON_H__736495_6495_076__INCLUDED_
+ #define NEWTON_H__736495_6495_076__INCLUDED_
++#include <stddef.h>
+ 
+ // force all not visual studio platform to be in library form
+ #ifndef _MSC_VER

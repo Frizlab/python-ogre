@@ -1,0 +1,21 @@
+Source: python-ogre-demos
+Section: python
+XS-Python-Version: >=2.4
+Priority: optional
+Maintainer: Tim 'Mithro' Ansell <mithro@mithis.com>
+Build-Depends-Indep: python-central (>= 0.5.6), python-setuptools (>= 0.6b3-1), python-all
+Build-Depends: debhelper (>= 5.0.38)
+Standards-Version: 3.7.2
+
+Package: python-ogre-demos
+Architecture: all
+Depends: ${python:Depends}, ${misc:Depends}, python-ogre
+Recommends: python-gconf
+XB-Python-Version: ${python:Versions}
+Description: Example programs using the python-ogre package.
+ .
+ Python-Ogre is a free open source Python interface to a wide range of C++
+ libraries. Focused primarly on supporting the Ogre 3D graphics library and
+ other Graphics and Gaming libraries. Python-Ogre allows developers to focus
+ on their 'application', taking advantage of the simplicity of Python with 
+ the performance and functionality of the underlying libraries.

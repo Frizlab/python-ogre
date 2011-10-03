@@ -1,0 +1,88 @@
+abstract material _base
+{
+	technique
+	{
+		pass AMBIENT
+		{
+			ambient  0.4 0.4 0.5
+
+			vertex_program_ref ambient_vs {}
+			fragment_program_ref ambient_ps {}
+
+			texture_unit diffuse_tex
+			{
+				texture $diffuse
+				filtering anisotropic
+				max_anisotropy 16
+			}
+			texture_unit
+			{
+				texture $ambientOcclusion
+				filtering anisotropic
+				max_anisotropy 16
+			}
+		}
+		pass DIFFUSE
+		{
+			scene_blend add
+			iteration once directional
+			alpha_rejection greater_equal 128
+
+			ambient  0 0 0
+			diffuse  1 1 1
+			specular 1 1 1 128
+
+			vertex_program_ref shadowDiffuse_vs {}
+			fragment_program_ref shadowDiffuse_ps {}
+
+			texture_unit shadow_tex0
+			{
+				content_type shadow
+				filtering anisotropic
+				max_anisotropy 16
+				tex_address_mode clamp
+			}
+			texture_unit shadow_tex1
+			{
+				content_type shadow
+				filtering anisotropic
+				max_anisotropy 16
+				tex_address_mode clamp
+			}
+			texture_unit shadow_tex2
+			{
+				content_type shadow
+				filtering anisotropic
+				max_anisotropy 16
+				tex_address_mode clamp
+			}
+
+			texture_unit diffuse_tex
+			{
+				texture $diffuse
+				filtering anisotropic
+				max_anisotropy 16
+			}
+			texture_unit specular_tex
+			{
+				texture $specular
+				filtering anisotropic
+				max_anisotropy 16
+			}
+			texture_unit normal_tex
+			{
+				texture $normal
+				filtering anisotropic
+				max_anisotropy 16
+			}
+		}
+	}
+}
+
+material city : _base
+{
+	set $diffuse cement.dds
+	set $specular cementSPEC.dds
+	set $normal cementNRM.dds
+	set $ambientOcclusion cityAO.dds
+}

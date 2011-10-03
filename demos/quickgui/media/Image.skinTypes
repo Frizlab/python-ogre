@@ -1,0 +1,10 @@
+SkinClass Image
+{ 
+    SkinType default 
+    { 
+        SkinElement background
+        { 
+        } 
+    } 
+
+}

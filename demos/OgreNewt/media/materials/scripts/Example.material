@@ -1,0 +1,52 @@
+
+
+material ConveyorBelt1
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0
+			texture_unit
+			{
+				texture conveyor.png
+				scroll_anim 0.225 0
+				scale 0.5 1
+			}
+		}
+	}
+}
+
+
+material ConveyorBelt2
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0
+			texture_unit
+			{
+				texture conveyor.png
+				scroll_anim -0.575 0
+				scale 0.35 1
+			}
+		}
+	}
+}
+
+material Simple/Translucent
+{
+	technique
+	{
+		pass
+		{
+			diffuse 0.2 0.2 0.8
+			specular 0 0 0 0
+			ambient 0 0 0
+			emissive 0.2 0.2 0.8
+			scene_blend add
+			depth_write off
+		}
+	}
+}

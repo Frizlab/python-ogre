@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://www.python-ogre.org/
+#
+# Copyright (c) 2006-2007 Python-Ogre Development Team
+#
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+# Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+# http://www.gnu.org/copyleft/lesser.txt.
+#
+# You may alternatively use this source under the terms of a specific version of
+# the Python-Ogre Unrestricted License provided you have obtained such a license
+# -----------------------------------------------------------------------------
+#
+
+_Description = """Python-Ogre is a Python wrapper module for the
+OGRE 3D Graphics library. It contains python functions and classes
+that will allow you to fully utilitize the Ogre library.  It is 
+Unique in that the python wrappers are created automatically by
+Py++, hence making maintainence etc very simple."""
+
+import environment
+import subprocess
+import sys, os
+
+sys.path.append( os.path.join('.', 'code_generators') )
+import common_utils
+
+from setuptools import setup, find_packages
+
+
+_Version = ".".join([environment.PythonOgreMajorVersion,environment.PythonOgreMinorVersion,
+               environment.PythonOgrePatchVersion])
+_Version = _Version + '-r' + common_utils.getSVNVersion ( environment )
+_PythonVersionString = str(sys.version_info[0]) + '.' + str(sys.version_info[1])
+    
+_Packages = find_packages('packages_'+ _PythonVersionString )
+print _Packages
+setup(
+    name="Python-Ogre",
+    license="LGPL",
+    url="http://www.python-ogre.org/",
+    author="Andy Miller, Lakin Wecker, Roman Yakovenko",
+    author_email="python-ogre-developers@googlegroups.com",
+    description="Py++ Ogre Python Binding",
+    long_description = _Description,
+    version = _Version,
+
+    # Project uses reStructuredText, so ensure that the docutils get
+    # installed or upgraded on the target machine
+#     install_requires = ['docutils>=0.3'],
+    package_dir={'':'packages_'+ _PythonVersionString},
+    package_data ={'': ['*.pyd', '*.dll', '*.so', '*.dylib'] },
+#     packages = find_packages(os.path.join('packages_'+ _PythonVersionString, 'ogre', 'renderer') ),
+#     packages = find_packages('packages_'+ _PythonVersionString ),
+    packages=['ogre','ogre.io', 'ogre.io.OIS','ogre.renderer.OGRE'],
+    data_files = [('demos',['demos/Enums.py','demos/SampleFramework.py']),
+                  ('demos/ogre',['demos/ogre/Demo_Smoke.py','demos/ogre/Demo_Basic.py'])
+                  ],
+
+    # other arguments here...
+    entry_points = {
+        'console_scripts': [
+            'foo = ogre:Function1',
+        ],
+        'gui_scripts': [
+            'baz = my_package_gui.start_func',
+        ]
+    },
+    eager_resources=['ogre/io/OIS/_ois_.pyd', 'ogre/io/OIS/_ois_'],
+#     zip_safe=False
+    # could also include long_description, download_url, classifiers, etc.
+)

@@ -1,0 +1,15 @@
+material fxpression/ac3dmat1
+{
+	technique
+	{
+		pass
+		{
+			ambient 1 0.05 0
+			diffuse 1 0.05 0
+			texture_unit
+			{
+				texture pu_plate.jpg
+			}
+		}
+	}
+}

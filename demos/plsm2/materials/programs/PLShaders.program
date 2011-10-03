@@ -1,0 +1,125 @@
+vertex_program PLDecompressAmbientVPCG cg
+{
+  source PLDecompressAmbientVP.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+}
+
+vertex_program PLDecompressDirectionalVP2CG cg
+{
+  source PLDecompressDirectionalVP2.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+}
+
+vertex_program PLDecompressPointVP2HighCG cg
+{
+  source PLDecompressPointVP2High.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+}
+
+vertex_program PLDecompressPointVP2MedCG cg
+{
+  source PLDecompressPointVP2Med.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+}
+
+vertex_program PLAmbientVPCG cg
+{
+  source PLAmbientVP.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+}
+
+vertex_program PLDirectionalVP2CG cg
+{
+  source PLDirectionalVP2.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+}
+
+vertex_program PLPointVP2HighCG cg
+{
+  source PLPointVP2High.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+}
+
+vertex_program PLPointVP2MedCG cg
+{
+  source PLPointVP2Med.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+}
+
+vertex_program PLUnlitVP2CG cg
+{
+  source PLUnlitVP2.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+}
+
+vertex_program PLDecompressUnlitVP2CG cg
+{
+  source PLDecompressUnlitVP2.cg
+  entry_point main
+  profiles vs_1_1 arbvp1
+}
+
+fragment_program PLSplatPointFP2MedCG cg
+{
+  source PLSplatPointFP2Med.cg
+  entry_point main
+  profiles ps_2_0 arbfp1
+}
+
+fragment_program PLSplatPointFP2HighCG cg
+{
+  source PLSplatPointFP2High.cg
+  entry_point main
+  profiles ps_2_0 arbfp1
+}
+
+fragment_program PLSplatDirectionalFP2CG cg
+{
+  source PLSplatDirectionalFP2.cg
+  entry_point main
+  profiles ps_2_0 arbfp1
+}
+
+fragment_program PLPointFP2MedCG cg
+{
+  source PLPointFP2Med.cg
+  entry_point main
+  profiles ps_2_0 arbfp1
+}
+
+fragment_program PLPointFP2HighCG cg
+{
+  source PLPointFP2High.cg
+  entry_point main
+  profiles ps_2_0 arbfp1
+}
+
+fragment_program PLDirectionalFP2CG cg
+{
+  source PLDirectionalFP2.cg
+  entry_point main
+  profiles ps_2_0 arbfp1
+}
+
+fragment_program PLUnlitFP2CG cg
+{
+  source PLUnlitFP2.cg
+  entry_point main
+  profiles ps_2_0 arbfp1
+}
+
+fragment_program PLSplatUnlitFP2CG cg
+{
+  source PLSplatUnlitFP2.cg
+  entry_point main
+  profiles ps_2_0 arbfp1
+}

@@ -1,0 +1,22 @@
+Index: pygccxml/declarations/type_traits.py
+===================================================================
+--- pygccxml/declarations/type_traits.py	(revision 1441)
++++ pygccxml/declarations/type_traits.py	(working copy)
+@@ -989,11 +989,12 @@
+             return False
+         return type.decl_string.startswith( '::boost::shared_ptr<' )
+ 
+-    @staticmethod
+-    def value_type( type ):
+-        """returns reference to boost::shared_ptr value type"""
+-        if not smart_pointer_traits.is_smart_pointer( type ):
+-            raise TypeError( 'Type "%s" is not instantiation of boost::shared_ptr' % type.decl_string )
++    @staticmethod
++    def value_type( type, check=True ):
++        """returns reference to boost::shared_ptr value type"""
++        if check:
++            if not smart_pointer_traits.is_smart_pointer( type ):
++                raise TypeError( 'Type "%s" is not instantiation of boost::shared_ptr' % type.decl_string )
+         type = remove_alias( type )
+         cls = remove_cv( type )
+         cls = remove_declarated( type )

@@ -1,0 +1,117 @@
+<html>
+<head>
+<script type="text/javascript" src="mootools.v1.1.js"></script>
+<script type="text/javascript" src="Navi.js"></script>
+<script type="text/javascript">
+function setHP(amount)
+{
+	$('HP').effect('width',{
+		duration: 500,
+		transition: Fx.Transitions.Quad.easeOut
+	}).start((amount/100)*315);
+}
+</script>
+<style type="text/css">
+body
+{
+	background-color: #808080;
+	overflow: hidden;
+	font-family: Verdana;
+	color: #192836;
+}
+#container
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	background-image: url('status_bg.png');
+	width: 512px;
+	height: 256px;
+}
+#playerName
+{
+	position: absolute;
+	top: 80px;
+	left: 190px;
+	width: 165px;
+	height: 30px;
+	font-size: 30px;
+	font-style: italic;
+	text-align: center;
+}
+#playerTitle
+{
+	position: absolute;
+	left: 201px;
+	top: 116px;
+	width: 150px;
+	height: 20px;
+	font-size: 18px;
+	font-style: italic;
+	font-variant: small-caps;
+	font-weight: bold;
+}
+#level
+{
+	position: absolute;
+	left: 68px;
+	top: 34px;
+	width: 65px;
+	height: 54px;
+	font-size: 54px;
+	font-style: italic;
+	text-align: center;
+}
+#levelLabel
+{
+	position: absolute;
+	left: 41px;
+	top: 75px;
+	width: 88px;
+	height: 40px;
+	font-style: italic;
+	font-variant: small-caps;
+	font-weight: bold;
+	font-size: 36px;
+}
+#HP
+{
+	position: absolute;
+	top: 164px;
+	left: 113px;
+	width: 315px;
+	height: 74px;
+	background-image: url('hpbar.png');
+}
+#HPgloss
+{
+	position: absolute;
+	width: 303px;
+	height: 50px;
+	left: 119px;
+	top: 163px;
+	background-image: url('hpbar_gloss.png');
+}
+#gloss
+{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	background-image: url('status_gloss.png');
+	width: 512px;
+	height: 256px;
+}
+</style>
+</head>
+<body>
+<div id="container">
+<div id="playerName">Shrouden</div>
+<div id="playerTitle">Midnight Mage</div>
+<div id="level">12</div>
+<div id="levelLabel">Level</div>
+<div id="HP"></div>
+<div id="HPgloss"></div>
+</div>
+<div id="gloss" onclick="$('level').innerHTML = Math.floor(Math.random()*50) + 1"></div>
+</body>
+</html>

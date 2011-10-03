@@ -1,0 +1,60 @@
+material Ground
+{
+	receive_shadows on
+	
+	technique
+	{
+		pass
+		{
+			ambient 0.6 0.6 0.6 1
+            diffuse 0.7 0.7 0.7 
+
+			texture_unit
+			{
+				texture ground.jpg
+				scale 0.03 0.03
+			}
+		}
+	}
+}
+
+material Knot
+{
+	receive_shadows on
+	
+	technique
+	{
+		pass
+		{
+			ambient 0.5 0.5 0.5 1
+            diffuse 0.5 0.5 0.5 
+
+			texture_unit
+			{
+				texture cerulean.jpg
+				scale 0.5 0.5
+				scroll_anim 0.35 0.05
+			}
+		}
+	}
+}
+
+material FPSMaterial
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			depth_check off
+			depth_write off
+			scene_blend alpha_blend
+
+			texture_unit
+			{
+				colour_op_ex source1 src_manual src_current 0 0 0
+				alpha_op_ex source1 src_manual src_current 0.5
+			}
+		}
+	}
+}

@@ -1,0 +1,532 @@
+May 15 2010: Release 1.7.1
+==========================
+Based on Ogre 1.7.1 SDK
+Changed to Mit license
+Added automation for packaging
+A number of minor fixes
+
+March 21 2010: Release 1.7RC1
+=============================
+Based on Ogre 1.7 SDK
+Many Updates to modules
+Removed a number of 'less popular' modules
+See SVn log for details
+
+November 21 2009: Release 1.7.0 R1029
+=====================================
+Added SkyX module
+Fixed ogreode to work with Ogre1.7
+Updated ODE to 0.11.1
+Small fix to a couple of demos
+
+November 13 2009: Release 1.7.0 R1018
+=====================================
+<BLEEDING EDGE RELEASE>
+Initial release based upon Ogre 1.7 - there will be code breaking changes here
+CEGUI 0.7.1 -- using the CEGUI 'ogre' renderer (not the native Ogre one) so none of the demos currently work due to api changes
+Latest QuickGUI from the SVN
+see ReportVersion.out for detailed modules and their versions.
+
+October 30 2009:  Release 1.6.4 R1017
+=====================================
+Enhanced OgreAny support
+QuickGui 9.10
+Fix to ogrenewt2 to expose body class
+Updates to ReportVerion to work in non svn environment
+
+October 15 2009:  Release 1.6.4 R1001
+=====================================
+Basically an Ogre 1.6.4 release with every module updated :)
+See ReportVersion.out for the various versions...
+
+April 2 2009: Release 1.6.1 R940
+=================================
+
+Python 2.6 has been tested as part of this release..
+
+Fix: Bullet wrapper for Windows -- incompatibility between the way the base bullet library was built and the
+     way Python-Ogre wrappers were done -- the base library had byte alignment enabled on a number of functions
+     which is not supported (completely) with boost so lots of stack corruption
+Fix: Minor fixes to Build scripts when using differnet versions of Python on a single machine   
+Change: Theora video library name changed to OgreVideo - reflects the base code is now from the OgreVideo project
+        and not from the ogreaddons/video module (which is inactive)
+            
+Update: Caelum, Hydrax, OgreForests, OgreBullet, ODE and OgreODE all updated to latest versions    
+Update: Using latest Boost 1.38
+
+Feburary 26 2009 : Release 1.6.1r906
+====================================
+<<SnapShot Release>>
+FIX: Modified tranformation code to not use strnlen on mac as it's not available on that platform
+FIX: Pretty printing of Vectors etc fixed
+Fix: Exposed std::vector<bool> for joystick buttons in OIS
+Fix: DataStream Ptr's were broken - fixed issues with non const shared pointers being exposed
+
+Update: OgreMovableFactoryObect (specifically getType function) can now be sub classed
+Update: Bullet modules created around Bullet 2.73 now working properly and wrappers improved
+Update: ogre.LodDistanceList is now ogre.stdVectorFloat -- change in ET demo
+Update: QuickGUI Demo updated - works and shows more functionality
+Update: Canvas wrapper expanded to include helper functions and demo completed
+Update: FFmpeg wrapper is back 
+Update: Updated dotsceneloader and added demo 
+
+Change: Exposing functions that return standard pointers (int *, float * etc) with ctype return_addressof functionality
+        previously these had been excluded
+Change: Added RakNet Module
+Change: Added plsm2 module
+Change: name property now exposed on PhysX desc opjects which required a change in the demo
+                
+
+Janurary 25 2009 : Release 1.6.1
+================================
+Latest build using Ogre 1.6.1 -- Note that the underlying Ogre C++ is NOT Patched!! 
+
+Fix: Improved extract_document functions to improve pydoc stings - remove excess leading whitespace and wraps at 100 chars
+Fix: PhysX library exposes various NxArray objects that previously were excluded due to compile issues
+Fix: Ogre library excludes xxxMutex variables from a few classes (Pass etc) as these are not correctly exposed 
+
+Update: PhysX can now be 'retrieved' and 'built' from windows (BuildModule.py -r -b physx)
+Update: Extend the PhysX demo a little
+Update: Update Bullet libraries to bullet 2.73
+Update: SampleFramework now uses a 'PythonOgre' overlay
+Update: SampleFramework will now look for plugins.cfg or plugins.cfg.<platform name> ('nt' or 'linux') in the current and
+        parent directories -- this will allow a single demo tree to automatically work on any platform unstead of the 
+        current suitation of having to manually edit the plugins file.. 
+Update: Plib ssgLoaderOptions (ssgLoad) can now be subclassed and createBranch/createState used as callback functions 
+Update: Latest QuickGUI, OgreForest (Paging), OgreBullet 
+Update/Fix: Using OIS CVS version as it fixes issues with joystick/slider 'drivers'...      
+
+Change: Using latest Py++ which has boost indexing implemented as header files (BOOST is NOT Patched!)
+Change: Added Canvas module
+Change: Removed OgreRefApp and Watermesh modules 
+
+November 14 2008 : Release 1.6.0 
+==================================
+Run "python ReportVersion.py" to get the module version information
+
+** Various Fixes/Changes ** 
+Fix: PSSM camera functionality - it was missing from the sizeof.h file
+Fix: Smart pointer handling in Ogre -- getting clever about detecting them as arguments as well as return types
+Fix: QuickGui with static consts not having default value and causing a boost load error
+Fix/Update/Change: Removed constant 'vars' and replaced them with properties that return a copy of the object. 
+     Specifically ZERO, UNIT_X, UNIT_Y, UNIT_Z, Black, White, Red, Green, Blue in Classes ColourValue, MatrixX, 
+     Quaternion and VectorX.
+     This is due to the fact they were actually passing a pointer to a non constant (mutable) variable which 
+     caused very annoying bugs.  So now Ogre.Vector3.ZERO has to be replaced with Ogre.Vector3().ZERO etc...
+Fix: Auto transform funtion to not wrap reference arguments that are const (bug)
+Fix: Auto transform funtion to handle extern free functions
+Fix: to Py++ to handle bool/int references correctly (renderQueueListener functions)
+Fix: a couple of incorrect versions in environment.py
+Fix: code generation for QuickGui, bullet and noise to correctly generate PyDoc documentation strings
+
+Change: All code generation modules to use the common_code Auto_Functional_Transformation function
+Change: Added helper functions to OgreODE as constructors needed hand wrapping (makeTriangleMeshGeometry, makeConvexGeometry)
+Change: Simplified Ogre patch file requirements due to fix in Py++ for bool refs
+Change: Using OpenAL-soft-1.5.304 as this makes it consistant between platforms
+Change: Including source libs and header files in the release so people can link c++ code with Python-Ogre modules
+
+Update: NxOgre using 0.22
+Update: Removed 'asClassType' functions as they didn't actually do anything (and are not needed)
+Update: All libraries including to QuickGUI and Caelum
+Update: Implemented Hikari demo (implemented callbacks in the wrapper generation)
+Update: Implemented description text and description links in environment.py to help automate module summary
+Update: SampleFramework - additional function (_inputSystemParameters ) to pass parameters to OIS setup - see Hikari demo
+Update: SampleFramework - Move code from frameStarted to frameRenderingQueue 
+
+
+
+August 29 2008 : Release 1.6.0 RC1
+==================================
+The Python-Ogre version numbering has changed to match the Ogre release versions along with the SVN release numbering
+    'Python-Ogre-<ogre version>-<SVN Version>-<Python Version>'
+    Built using MSVC 9, DirectX August 2008, Boost 1.36.0, Py++ r1383
+    
+** Modules Included and their versions **
+  OGRE 1.6.0RC1
+  OIS 1.2
+  CEGUI 0.6.1
+  QuickGUI 0.9.7
+  betagui 1.7
+  OgreAL 0.3
+  ODE 0.10.1
+  OgreRefApp 1.6.1RC1
+  OgreOde 1.0
+  OgreNewt 1.0
+  Opcode 1.3
+  bullet 2.70
+  PhysX 2.8.1
+  NxOgre 1.0-21
+  OgreBulletC 1.0
+  OgreBulletD 1.0
+  theora 0.5.0
+  plib 1.8.4
+  ogreforests 0.1
+  et 2.2
+  caelum 0.2.1
+  noise 1.0
+  watermesh 1.0
+  particleuniverse 0.8
+  cadunetree 0.6
+  ogrepcz 1.0
+  hydrax 0.3
+
+** Various Fixes/Changes ** 
+Change: OgreOde and OgreRefApp tweaked to work with ODE 0.10  (change to initalisation)
+Change: Ogre renderQueueStarted (etc) modules to return bool instead of passing as a reference
+Change: Theora is now the only support Video module -- fixed demo to use a different source file as sound corrupted on 'fish'
+Change: Updated all media to match Ogre 1.6.0RC1
+Change: CEGUIFramework now forces parser to use ExpatParser under Windows as TinyXML isn't built by default
+Change: QuickGui needed adjustment to support QueueStarted (etc) API changes
+Change: Hydrax also changed due to QueueStarted (etc) API changes
+Change: Improvements to Ogre Portal SceneManager wrapper
+Change: to CEGUI_framework.py to force loading of CEGUIBase lib in the correct mode under Linux - means we don't need to patch the CEGUI source...
+Change: Cleaned up code generation by moving standard 'properties' to common code - means all modules have a standard set of variables
+Change: Removed 'warning' changes from __init__ code as no longer needed as fixed in Py++
+Change: Particle Universe media
+Change: Navi has been depreciated until someone (please help) builds the support libraries with MSVC 9.
+Add: FMOD and OAL sound modules to Theora to get sound working
+Add: CEGUI::Tree to handmadewrapper (Thanks Dermont)
+Add: ReportVersion.py to system to report on modules and their versions etc
+Add: hiraki to the modules - not yet completed as changes will be needed as demo is written
+Add: Hydrax Demo V1.0 
+Fix: OgreAL Demo fixed as it wasn't setting up sound source correctly
+Fix: PCZ demo bug where I wasn't init'ing a Vector3 correctly
+Fix: ET demo to use std::Vector<float> from Ogre library
+Fix: bug in installer script with mutliple installed versions of Python
+Fix: OgreODE demo working again
+
+June 20 2008: Release 1.2 RC2
+============================='
+OK, so it's been a while -- what can I say, I have to live in the real world as well as the opensource one :)
+There are some significant changes -- almost should be a 1.3 Rc1 release, however we'll stick with 1.2
+
+One major issue to be aware of -- the binaries for Windows are based upon the latest SVN versions
+of the underlying libraries - if you want Ogre 1.4 support you will need to build it yourself from the PythonOgre SVN.
+So - while the PythonOgre SVN will continue to automatically support 'stable/released' versions of libraries I personally
+am not going to make builds for these (as it doesn't keep my interest).  Instead where possible everything will be based
+on the latest and greatest underlying library code.
+
+***** ISSUES *****
+Some API's have changed -- Have a look at the Demo_Grass for one example (search for PythonOgreVersion). The
+changes relate to where the underlying C++ function takes 'address references' as arguments and expects to modify
+the variables at these locations. ie:
+    bool suggestTangentVectorBuildParams(VertexElementSemantic targetSemantic,
+			unsigned short& outSourceCoordSet, unsigned short& outIndex);
+modifies inplace outSourceCoorSet and outIndex.  This is something we fix when wrapping the library so you get a tupple
+as a return from the function:
+	ret, src, dest = m.suggestTangentVectorBuildParams(ogre.VES_TANGENT,1,1)
+In previous versions of PythonOgre you didn't need the 'dummy' arguments (in this example the '1,1') - however that meant
+that some overloaded functions we not accesable, so now you have to obey the full C++ calling format.
+
+There are also some properties that are no longer exposed as they were breaking the wrappers in certain areas.  These
+were all 'additions' to the C++ library calls anyway so when in doubt look at the underlying library documentation..
+An example is 
+    SceneManager.rootSceneNode.createChildSceneNode() will not longer work, 
+instead it has to read
+    SceneManager.getRootSceneNode().createChildSceneNode()
+   
+***** Libraries Wrapped *****
+ * OGRE 1.7 - SVN R7604
+ * OIS 1.6
+ * ODE 0.9
+ * Physx (NVIDIA) 2.8.1
+ * Bullet 2.69
+ * QuickGGUI SVN R350
+ 
+
+ and more :)
+
+
+Feb 19 2008: Release 1.2 RC1
+======================
+ISSUES:
+This is an "Release Candiate 1"  release so there are some things that are not completed:
+    NAVI -- Doesn't work
+    NxOgre -- Bleeding -- not yet wrapped
+    NxOgre_09 -- Wrapper improvements, not yet completed
+    QuickGUI - Demo needs to be rewritten
+    
+Code Generation:
+* Fix to the Automatic Function transformation code as it wasn't picking up constant void pointers. 
+       This fixes PixelUtil::unpackColour and a number of other functions       
+* Fix to addPoly function in OgreNewt (takes an array of vertices)
+* Fix to OgreForests as the API had changed in base C++ library
+* Fix to Py++ to remove reference when building wrapper code in "transformers.py" - bug showed in renderQueueListener 
+* Fix to BuildModule.py to only set the environment once (-C now works for compiling everything)
+* Fix to ComonUtils/__init__.py - Free Functions wheren't being handled by Futional Transformation or Return Pointer fixing
+* Enhancements to MemoryDataStream to make it simplier to use (can be used for any 'DataStream' requirements)
+
+Updates and General Library Improvements to:
+* NxOgre_09
+* QuickGui, Caelum, OgreForests
+* Particle Universe 0.6
+* Bullet 2.66
+* Caelum Rev 127 and updated media.
+* Physx - free functions are now exposed so should work as an independ library
+* Ogrevideoffmpeg - updated to latest ffmpeg
+
+No New Modules in this release -- however looking at...
+* Hydrax 0.1
+* opensteer 
+
+Janurary 08 2008: Snapshot
+==========================
+New Modules:
+* calunetree -- generates cool trees
+* particleuniverse -- very cool particle system
+
+Updates:
+* Quickgui, Caelum, ogreforests
+* NxOgre -- using bleeding from the SVN
+
+Removals:
+* dshow no longer complies due to changes in DirectX -- use Theora or ffmpeg for video display
+
+December 02 2007: SVN Update
+=============================
+* Full support for gccxml 0.9 (requires the latest gccxml and Py++) -- main change is in simplification of generated
+  template code and changes to noncopyable logic which has required tweaks to the generate_code in a number of libraries
+* Changes to use precompiled headers (Ogre and OIS at moment) which improves compile time significantly
+* Tweaked scons to put it's database file in each library source directory as the single one was getting huge
+* Automatic function added to common_utilites (Auto_Functional_Transformation) to handle function transformation 
+  of common cases where a function takes a non mutable variable (int etc) as a reference instead of passing by value. 
+  This does have potential minior API impacts as functions aren't hand wrapped anymore. 
+  Only implemented for Ogre at moment
+
+Module Specifics:
+* betagui -- now using version 2.x of the source code
+* bullet -- Updated to version 2.64
+* caleum -- SVN version r112 - small change to hanve noncopyable changes
+* cegui -- still using 0.5.0, small changes to generator for noncopyable classes
+* et -- no changes - built on 2.2 source
+* navi -- not part of this build due to errors
+* noise -- no changes
+* nxogre -- no changes, still using SVN r
+* ODE -- Updated to version 0.9 with changes due to noncopyable classes
+* ofusion -- no changes
+* ogre -- lots of changes to code generation due to new gccxml.  
+   New helper functions for bone and sceneNode to return them as nodes ( .castAsNode() ).  
+   Changes due to using precompiled headers -- python_ogre_precompiled.h is now the primary header which includes 
+   boost and python_ogre_masterlist.  The masterlist now uses Ogre.h and OgreStableHeaders.h to 
+   include most of the headers, so the missing list is smaller and easier to manage
+   There is a newer patch file for the Ogre C++ library that changes certain functions from 'Pure virtual' to 'virtual' as this is required to allow function transformations to work (RenderQueueListener::RenderQueueStarted etc)
+* ogreal -- updated to SVN r90
+* ogrebulletc and ogrebulletd -- updated to latest CVS and using bullet 2.64
+* ogredshow -- Not part of this release as not compatible with latest DirectX SDK (I think..)
+* ogreforests -- update to latest CVS
+* ogrenewt -- no changes
+* ogreode -- small change to remove list<Ogre::plane> from generated code as it's part of the ogre module
+* ogrerefapp -- no changes
+* ogrevideoffmpeg -- no changes
+* ois -- no change to source (1.0RC1) however full cleanup to code generator ready to move to SVN verison of OIS
+* opcode -- no change
+* physx -- update to SDK 2.7.3
+* plib -- no change
+* QuickGui -- Update: Svn r272
+* theora -- no change
+* watermesh -- no change
+
+
+
+October 20 2007: Version 1.1.b  SnapShot
+========================================
+* Fixed Caelum demo
+
+October 19 2007: Version 1.1.a  SnapShot
+========================================
+* Significant fixes to Bullet and OgreBullet modules
+* Added Caelum - "Sky" module
+* Updated QuickGui
+* Additions to Ogre Wrapper
+    setOptions and getOptions work
+
+
+October 05 2007: Version 1.1 Release
+====================================
+* Built with Ogre 1.4.4+
+* Added Theora module for video playback
+* Added Plib support - Sound and Networking + subset of ssg 
+* Added OgreForests -- a paging landscape manager
+* Added Editable Terrain (Thanks Dermont)
+* Added OgreBullet Support -- sperate modules for collission and dynamics
+* Added Navi gui support - This REALLY needs Python built with VC8 and so IS BUGGY
+    all current python binaries for Windows are built with VC7 with an older MSVC runtime library that conflicts
+    with the javascript interpreter thats part of the Mozilla libraries
+* Code generated with updated Py++ that fixes 'already exposed' issues with multiple modules
+* Updated QuickGui - SVN 
+* Updated NxOgre using version 0.9-38
+* updated NxOgre config and framework (bug fixes)
+* Bug fix to OgreAL to fix ogg playback and general stability
+* Ogre code generation improvements - Ctype support for 'void const *' (changed to unsigned int)
+        previous version only modified 'void *' (missed the const variables)
+        Fixed cases where multiple void *'s in argument list - only first one was being fixed
+        Moved common functions into common_utils so single place to fix -- need to implement for other modules
+        Created VARNAME_Copy helper functions for readonly variables, incase you want a copy for your own use
+* added helper function for PixelBox ("getData") to give access to the data variable
+* updated the vcredist files to the current version
+* demos/media is now the standard OgreSDK media directory
+    where necessary each demo directory has a ./media directory for additional 'demo' media
+
+August 10 2007: Version 1.0 - Release
+============================================
+* Added NxOgre Wrapper -- single demo with Cakewalk
+* Added PhysX Wrapper -- required for NxOgre -- you need to install the PhysX library
+* Added OgreDshow wrapper -- play videos (with sound) on textures using DirectShow
+* Added OgreVideoFfmpeg wrapper (thanks Dermont) -- plays video (without sound) vis ffmpeg
+* Added BetaGUI wrapper -- needed for the NxOgre Cakewalk conversion
+* Updated to QuickGui 0.9.5 -- using SVN version
+* Added common_utils function to remove duplicate Properties which happened when there was a getXXX AND a hasXXX implemented
+        in the C++ code -- now we filter these are give the getXXX priority
+* Implemented support for Ogre compiled with THREADS enabled - need to set value to True in ogre/generate_code.py
+* Change implemented in Py++ to expose missing 'setters'
+* Added castAsOverlayContainer function to Ogre -- needed for 'add2D' functionality
+* Added bullet physics to the library - no testing as of yet -- probably doesn't work
+* Fixed issue where we were exposing constructors with arguments that were pointers to fundemental types (int * etc)
+        could cause a crash if passing invalid parameters (None) to these constructors
+* OIS compile has changed to use the static library instead of the dll
+* Updated Windows Help documentation
+* SVN and Tickets have been moved to SourceForge
+* Using "touch" on the release files to get some consistancy in the release
+
+June 10 2007: Version 1.0 RC2(c) -- Release
+============================================
+* Goes without saying that something would be wrong.. The VC8 Redistributables I shipped appear to be old and 
+  fail on some machines -- newer one included
+
+June 09 2007: Version 1.0 RC2(b) -- Release
+============================================
+* cleaned up demos and media files to match my working environment
+* fixed a problem in Demo_CEGUI_Gui related to creating text list items
+* get/setUint32 added as utility functions - getUint16 bug fixed
+* Demo_GetVerticies added into demo/ogre/tests dir to support extracting verticies and indicies from submeshes
+* Updated QuickGui to 0.9.4 (was SimpleGUI)
+* CEGUI String.assign( xx ) now takes a python string (as xx) which can be utf8 encoded
+* fix in Py++ to expose correct class when there are multiple override options
+* GPU Parameter programming now possible -- see Demo_Compositor for code examples
+* CEGUI fixes for Window/MouseCursor/System/Renderering were missing an event subscription type
+* LOTS (?) of new functions exposed as we no longer filter protected non virtual functions from the generated source
+* added a Patch directory to the SVN to allow automated download and build of 3rd party libraries
+* removed OptimisedUtil and PlatformInformation from the Ogre master include list due to compile issues
+* lots of updates for the linux build (in the SVN)
+* as always, built against an updated Ogre 1.4 CVS
+
+May 13 2007:  Version 1.0 RC2(a) -- SnapShot
+============================================
+* Installer prompts to run dxwebsetup as people WILL need the latest DirectX drivers
+* Installer automatically runs vcredist_x86.exe for the shared C++ libraries needed for VC8
+* Built with latest CVS/SVN versions of supporting Libraries
+* Built with latest DirectX drivers (April 2007)
+* Included SimpleGUI
+* Exposed SharedPtr's for various ShadowCameras
+* Fixed to renderQueueStarted and renderQueueEnded (return True or False)
+* Further fixes to remove ugly function names (PixelUtil..)
+* changed return value policy on "clone" calls as we need to manage the object
+* switched to VC8 -- fingers crossed :)
+* getCustomAttributeUnsignedLong added and sf-OIS.py changed to use this for 64bit compatibility
+
+April 15 2007: Version 1.0 RC1 (c) Release
+==========================================
+Turned out that there were some old media files in the release so I've decided to quickly put out a snapshot
+release .
+* removed old media from media/materials/programs - caused ATI graphics cards to crash
+* fixed wrappers for Node.getChild/removeChild etc as I'd incorrectly wrapped them :(
+* added build date and time to module doc  ie. print ogre._ogre_.__doc__ 
+
+April 14 2007: Version 1.0 RC1 Release
+======================================
+* Reverse order of entries in ChangeLog :)
+* exception handling matches the changes in Ogre 1.4 (and works)
+* _ConfigOption name changed to ConfigOption
+* << Operators in base source now exposed as __str__ -- makes "print xxx" work well
+* Couple of FactoryObj aliases added to clean up names
+* Radian/Degree constructor fix added to __init__.py file
+* Auto Quaternion conversion (to and from Tuple/list)
+* Auto Matrix3 conversion to and from Tuple/list
+* Extended setter properties - functions that take colour/vectors can now be properties taking tuples/lists
+   ie. light.colour=0,0,1 || [0,0,1] || (0,0,1) || Ogre.ColourValue(0,0,1)  now work
+* Fixed Quaternion multiplication by a float
+* Remove auto converstions in _ogre_main so hopefully don't get strange obj to obj conversions
+* Added Hinge etc callbacks to OgreNewt (missing) via hand wrappers
+* Removed Math::Abs overloads so only the (::Ogre::Real) on is left, otherwise it always picked the Radian one
+* Excluded StringConverter class - not really needed in Python and has reg order issues in 'tostring'
+   
+20 Feb 2007:  Version 0.9 Release
+=================================
+* Python style iterator access to all Map and Vector iterators 
+  (you can still access the iterators using the C++ methods)
+  So now a "for r in fm.getResourceIterator():" is valid
+* getByName and getByHandle methods of ResourceManager (and it's subclasses)
+  now automatically returns the correct Object type - previously it returned
+  a 'Resource' (which is how the C++ library works) - now it will return a 
+  Texture/Font/Mesh as appropiate
+* Documentation has been improved - all "Special Funtions/modifications" 
+  have pydoc strings that start with "Python-Ogre...."
+* New return policies have allowed us to exposed 'Image::getData', 
+  MemoryDataStream::getPtr' etc
+* Factory classes have been included (again) in the build - there was 
+  dicusssion as to how useful they might be but there isn't any harm...
+* OgreOde demos included in the release
+* Matrix3[0..2] returns a tuple holding the matrix row
+* Minor improvements in tuple handling, multiplication of Quats etc works again
+* Built with the CVS version of Ogre 1.4RC1..
+* Getmultimapsettings helper function removed as multimaps now fully supported..
+    ### settings_tuples = config.getMultiMapSettings(settings)
+    ##for resource_type, resource in settings_tuples:
+    ##    self.rgm.addResourceLocation(resource, resource_type, section_name)
+    for item in settings:
+        self.rgm.addResourceLocation(item.value, item.key, section_name)            
+* _ConfigOption and other structures exposed correctly and now work
+              
+04 feb 2007:  Version 0.8 Release
+=================================
+* Number of minor tweaks to Ogre, some classes corrected to match the Ogre Library better:
+   (NamedValuePairList is now NameValuePairList, FloatController... are now Controller...Float)
+* Most calls automatically convert from tuples (or lists) to colourvalues or vectors. So instead of
+   having to do an ogre.ColourValue(1,1,1) you can do (1,1,1) 
+* CEGUI has been updated a little, more from an internal code creation perspective (less classes unexposed)
+* Used the Scons build system for everything 
+* OgreAl has been added - we now have simple sound for the library
+* ODE and OgreOde have been added for a new physics library - DEMOS have not been completed - expect problems:)
+* FMOD has been included for fun, a VERY limited support at present, but will be improved:)  
+                            
+09 jan 2007:  SNAPSHOT
+======================
+              Changes to demo01 in OgreNewt showing how to do debug lines
+              MANY changes to code generation (with Py++) enhancements - fixing many container classes that wrap pointers
+              Demo_renderCreate to show how to create your own render window and uses previously broken wrappers
+02 Jan 2007:  Version 0.70 Windows Release
+                Lots of improvements - should have removed all 'No to Python' converter errors in Ogre
+                Everything that is 'exposable' should be there
+                Documentation strings (pulled from the C++ source) now in the Python Doc Strings..
+                Use PyDoc etc against the modules for accurate doc imformation
+                Added leading lower case property names (in addition to the typicaly leading Upper case from Ogre)
+                Strict testing for property names - only add those that don't confict with Ogre function names 
+                which means a number of older properties have been removed - see Pydoc etc..
+                New Demos (Demo-Grass etc) showing low level Ogre access (creating raw Vertic buffers etc)
+                Fixed many functions that Boost doesn't like by default
+                Remove need for path variable to be set - modules do this automajically
+                Renamed and cleaned up the demos and their file naming..
+                Fixed Demo06 in CEGUI
+26 Nov 2006:  Version 0.65 Windows Release
+              Series of minor fixes - added support for MovableObjects in Ogre
+              Call backs in OgreNewt now work - or seem too :)  Demos 0-6 working well
+              Known problems in a couple of the OgreNewt demos 7 and 8..
+18 Nov 2006:  Version 0.6 Windows release.
+              Built against the CVS version of Ogre, hence dlls included as part of this release
+              CEGUI/OIS/OgreNewt (Newton Physics)/OgreRefApp (ODE Physics) part of the release
+              Media is now a seperate download as expected to change (can be cleaned up and shrunk)
+15 Oct 2006:  Andy - initial release of the binary for windows 0.5/ 0.51 release
+29 Sept 2006: Andy - Update to support both the Ogre CVS and Ogre 1.2.3 code bases.  
+              PYPOS project added as a sub driectory (initially)
+15 Aug 2006:  Andy - addition to Ogre_Generate_code.py to expose additional template classes (initially Controller<float>)
+              Fixed ParticleSystem class to remove CmdXXXX functions
+              Update to Ogre_Customization_data.py as some mappings had been lost :)
+----          Significant improvements to both Py++ and the Ogre wrappers make code generation far simpler
+13 Aug 2006:  Roman - fix to Ogre_Generate_code.py to simplify build process (removed 'non exposed'? ENUMS)
+                    * Needed to remove cmdXXXX functions etc from ParticleSystem in order to compile correctly
+              Change to Ogre_Customization_data.py to add 'NamedValuePairList' mapping
+13 Aug 2006:  Initial Version from Andy
+Jul -Aug 2006:  All the base work done by Larkin and Roman
+
+
+              

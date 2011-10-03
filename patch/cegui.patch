@@ -1,0 +1,11 @@
+Index: RendererModules/directfbRenderer/directfb-renderer.h
+===================================================================
+--- RendererModules/directfbRenderer/directfb-renderer.h    2009-02-07 15:49:23.000000000 +0100
++++ RendererModules/directfbRenderer/directfb-renderer.h 2009-02-07 15:49:51.000000000 +0100
+@@ -28,6 +28,7 @@
+ #include "CEGUIBase.h"
+ #include <directfb.h>
+ 
++#include <algorithm>
+ #include <vector>
+ #include <list>

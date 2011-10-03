@@ -1,0 +1,14 @@
+sampler2D Texture0; //First texture sampler
+sampler2D Texture1; // Second texture sampler
+float fBlend; // Blend factor, float range [0.0, 1.0]
+float4 ps_main(float2 TexCoord0 : TEXCOORD0, float2 TexCoord1 : TEXCOORD1) : COLOR0
+{   
+   // Get the two colors from the textures
+   float4 tex0 = tex2D(Texture0, TexCoord0);
+   float4 tex1 = tex2D(Texture1,TexCoord1);
+   
+   // Return the linear interpolated value, based on the Blend factor
+   // i.e. if fBlend is 0.6, it returns 60% tex0, 40% tex1 (think that's right - might be reverse)
+   return( lerp(tex0, tex1, fBlend) );
+   
+}

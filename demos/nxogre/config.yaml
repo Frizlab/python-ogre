@@ -1,0 +1,10 @@
+# Graphics
+device:directx
+width:640
+height:480
+depth:32
+aa:0
+vsync:No
+fullscreen:No
+pluginspath:../../plugins
+#pluginspath:../../../root/usr/lib/OGRE

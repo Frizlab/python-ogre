@@ -1,0 +1,431 @@
+Index: include/OgreOdeGeometry.h
+===================================================================
+--- include/OgreOdeGeometry.h	(revision 2757)
++++ include/OgreOdeGeometry.h	(working copy)
+@@ -18,7 +18,7 @@
+         Note that this class does not override the UserDefinedObject's getTypeId method 
+         because this class is abstract.
+     */  
+-    class _OgreOdeExport Geometry : public Ogre::UserDefinedObject, public Ogre::MovableObject
++    class _OgreOdeExport Geometry : public Ogre::MovableObject
+ 	{
+ 		friend class Space;
+         friend class World;
+@@ -81,13 +81,9 @@
+ 		void                                setUserData(size_t user_data){_user_data = user_data;}
+ 		size_t								getUserData() const {return _user_data;}
+ 
+-		void                                setUserObject(UserDefinedObject* object){_user_object = object;}
+-		UserDefinedObject*                  getUserObject(){return _user_object;}
+-
+ 		virtual size_t						 getID() const ;
+ 		virtual void                        notify(Body* body);
+ 
+-
+         virtual void                        setDebug(const bool debug);
+         virtual void                        createDebugObject();
+         virtual void                        destroyDebugObject();
+@@ -174,7 +170,6 @@
+ 
+ 		static int                          _geometry_count;
+ 		size_t								_user_data;
+-		UserDefinedObject*                  _user_object;
+         World                               *_world;
+ 
+ 	};
+Index: include/OgreOdeBody.h
+===================================================================
+--- include/OgreOdeBody.h	(revision 2757)
++++ include/OgreOdeBody.h	(working copy)
+@@ -138,7 +138,7 @@
+         It extends the OGRE UserDefinedObject to allow reverse links from Ogre::Entity.
+         It extends the OGRE MovableObject to allow scene node attachment.
+     */  
+-	class _OgreOdeExport Body : public Ogre::MovableObject, public Ogre::UserDefinedObject
++	class _OgreOdeExport Body : public Ogre::MovableObject
+     {
+ 		friend class Joint;
+ 		friend class World;
+Index: include/OgreOdeEntityInformer.h
+===================================================================
+--- include/OgreOdeEntityInformer.h	(revision 2757)
++++ include/OgreOdeEntityInformer.h	(working copy)
+@@ -36,7 +36,7 @@
+ 		const TriangleIndex* getIndices();
+ 		unsigned int getIndexCount();
+ 
+-	protected:
++//	protected:
+         void addVertexData(const Ogre::VertexData *vertex_data, 
+             const Ogre::VertexData *blended_data = 0, 
+             const Ogre::Mesh::IndexMap *indexMap = 0);
+Index: src/OgreOdeSpace.cpp
+===================================================================
+--- src/OgreOdeSpace.cpp	(revision 2757)
++++ src/OgreOdeSpace.cpp	(working copy)
+@@ -225,9 +225,16 @@
+ {
+     _intersection_query = _scn_mgr->createIntersectionQuery();
+ 
++#if (OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR < 6 )
+     const std::set<Ogre::SceneQuery::WorldFragmentType> *supportedQueryTypes = _intersection_query->getSupportedWorldFragmentTypes();
+     std::set<Ogre::SceneQuery::WorldFragmentType>::const_iterator it = 
+         supportedQueryTypes->find (Ogre::SceneQuery::WFT_PLANE_BOUNDED_REGION);
++#else
++   const set<Ogre::SceneQuery::WorldFragmentType>::type *supportedQueryTypes = _intersection_query->getSupportedWorldFragmentTypes();
++   set<Ogre::SceneQuery::WorldFragmentType>::type::const_iterator it = 
++        supportedQueryTypes->find (Ogre::SceneQuery::WFT_PLANE_BOUNDED_REGION);
++#endif
++        
+     if (it != supportedQueryTypes->end())
+     {
+         _intersection_query->setWorldFragmentType(Ogre::SceneQuery::WFT_PLANE_BOUNDED_REGION);
+@@ -270,7 +277,7 @@
+ 
+         Body *body1, *body2;
+         Geometry *geom;
+-        Ogre::UserDefinedObject *uo1, *uo2;
++        Ogre::Any uo1, uo2;
+ 
+         // Movables to Movables
+         Ogre::SceneQueryMovableIntersectionList::iterator it, itend;
+@@ -284,26 +291,26 @@
+             */
+ 
+             // Get user defined objects (generic in OGRE)
+-            uo1 = it->first->getUserObject();
+-            uo2 = it->second->getUserObject();
++            uo1 = it->first->getUserAny();
++            uo2 = it->second->getUserAny();
+ 
+             // Only perform collision if we have UserDefinedObject links
+-            if (uo1 && uo2)
++            if (!uo1.isEmpty() && !uo2.isEmpty())
+             {
+                 bool isBody1 = false;
+-                if (uo1->getTypeName () == "Body")
++                if (uo1.getType () == typeid(Body))
+                     isBody1 = true;
+ 
+                 bool isBody2 = false;
+-                if (uo2->getTypeName () == "Body")
++                if (uo2.getType () == typeid(Body))
+                     isBody2 = true;
+                 if (isBody1 || isBody2)
+                 {
+                     if (isBody2 && isBody1)
+                     {
+                         // Both are dynamic object
+-                       body1 = static_cast<Body*>(uo1);
+-                       body2 = static_cast<Body*>(uo2);
++                       body1 = any_cast<Body*>(uo1);
++                       body2 = any_cast<Body*>(uo2);
+ 
+                         // Do detailed collision test
+                         body1->collide (data, body2);
+@@ -313,13 +320,13 @@
+                         // Both are dynamic object
+                         if (isBody1)
+                         {
+-                            body1 = static_cast<Body*>     (uo1);
+-                            geom  = static_cast<Geometry*> (uo2);
++                            body1 = any_cast<Body*>     (uo1);
++                            geom  = any_cast<Geometry*> (uo2);
+                         }
+                         else
+                         {
+-                            geom  = static_cast<Geometry*> (uo1);
+-                            body1 = static_cast<Body*>     (uo2);
++                            body1 = any_cast<Body*>     (uo1);
++                            geom  = any_cast<Geometry*> (uo2);
+                         }
+ 
+                         // Do detailed collision test
+@@ -343,15 +350,15 @@
+                 wf = wit->second;
+ 
+                 // Get user defined objects (generic in OGRE)
+-                uo1 = mo->getUserObject();
++                uo1 = mo->getUserAny();
+                 // Only perform collision if we have UserDefinedObject link
+                 // otherwise ...
+-                if (uo1)
++                if (!uo1.isEmpty())
+                 {
+                     // Cast to ApplicationObject
+-                    if (uo1->getTypeName () == "Body")
++                    if (uo1.getType () == typeid(Body))
+                     {
+-                        body1 = static_cast<Body*>(uo1);
++                        body1 = any_cast<Body*>(uo1);
+                         body1->collidePlaneBounds(data, wf);
+                     }
+ //                     else // static objects don't collide against Scene Geometry
+Index: src/OgreOdeGeometry.cpp
+===================================================================
+--- src/OgreOdeGeometry.cpp	(revision 2757)
++++ src/OgreOdeGeometry.cpp	(working copy)
+@@ -18,7 +18,6 @@
+ 
+ //------------------------------------------------------------------------------------------------
+ Geometry::Geometry(World *world, Space* space):
+-    UserDefinedObject(),
+ 	_contact_high_water_mark (0),
+     _last_contact_num(0),
+ 	_max_contacts (32),
+@@ -28,7 +27,6 @@
+ 	_debug_obj (0),
+ 	_debug_node (0),
+ 	_user_data (0),
+-	_user_object (0),
+ 	_geom (0),
+     _world(world)
+ {
+Index: src/OgreOdeBody.cpp
+===================================================================
+--- src/OgreOdeBody.cpp	(revision 2757)
++++ src/OgreOdeBody.cpp	(working copy)
+@@ -113,7 +113,7 @@
+     _historyResize(_world->getHistorySize());
+     // Tie the physical body to the movable
+     // used when getting physical out of Movables. 
+-    this->setUserObject (this);
++    this->setUserAny(Ogre::Any(this));
+ 
+ }
+ //-----------------------------------------------------------------------
+@@ -806,7 +806,11 @@
+     GeometryArray::const_iterator proxy, proxyend;
+     proxyend = _geometries.end();
+ 
+-    std::list<Ogre::Plane>::const_iterator pi, piend;
++    #if (OGRE_VERSION_MAJOR == 1 && OGRE_VERSION_MINOR < 6 )
++        std::list<Ogre::Plane>::const_iterator pi, piend;
++    #else 
++        list<Ogre::Plane>::type::const_iterator pi, piend;
++    #endif
+     piend = wf->planes->end();
+ 
+     //CollisionInfo collInfo;
+Index: src/OgreOdeDebugObject.cpp
+===================================================================
+--- src/OgreOdeDebugObject.cpp	(revision 2757)
++++ src/OgreOdeDebugObject.cpp	(working copy)
+@@ -16,6 +16,7 @@
+ 
+ 	if (!_materials_created)
+ 	{
++        Ogre::ResourceGroupManager::getSingletonPtr()->createResourceGroup("OgreOde");
+ 		MaterialPtr red = MaterialManager::getSingleton().create("OgreOdeDebugLines/Disabled","OgreOde");
+ 		MaterialPtr green = MaterialManager::getSingleton().create("OgreOdeDebugLines/Enabled","OgreOde");
+ 		MaterialPtr blue = MaterialManager::getSingleton().create("OgreOdeDebugLines/Static","OgreOde");
+Index: src/OgreOdeEntityInformer.cpp
+===================================================================
+--- src/OgreOdeEntityInformer.cpp	(revision 2757)
++++ src/OgreOdeEntityInformer.cpp	(working copy)
+@@ -291,7 +291,7 @@
+ 	if (_radius == (-1))
+ 	{
+ 		getSize();
+-		_radius = (std::max(_size.x,std::max(_size.y,_size.z)) * 0.5);
++		_radius = (Real)(std::max(_size.x,std::max(_size.y,_size.z)) * 0.5);
+ 	}
+ 	return _radius;
+ }
+@@ -322,9 +322,9 @@
+ 		_size.y = vmax.y - vmin.y;
+ 		_size.z = vmax.z - vmin.z;
+ 
+-		_center.x = vmin.x + _size.x * 0.5;
+-		_center.y = vmin.y + _size.y * 0.5;
+-		_center.z = vmin.z + _size.z * 0.5;
++		_center.x = (Real) (vmin.x + _size.x * 0.5);
++		_center.y = (Real) (vmin.y + _size.y * 0.5);
++		_center.z = (Real) (vmin.z + _size.z * 0.5);
+ 
+ 	}
+ 
+@@ -470,9 +470,9 @@
+     const Ogre::Vector3 maxMinusMin(max_vec - min_vec);
+     BoxGeometry* box = new BoxGeometry(maxMinusMin, world, space);
+ 
+-    const Ogre::Vector3 pos(min_vec.x + (maxMinusMin.x * 0.5),
+-                      min_vec.y + (maxMinusMin.y * 0.5),
+-                      min_vec.z + (maxMinusMin.z * 0.5));
++    const Ogre::Vector3 pos((Real)(min_vec.x + (maxMinusMin.x * 0.5)),
++                      (Real)(min_vec.y + (maxMinusMin.y * 0.5)),
++                      (Real)(min_vec.z + (maxMinusMin.z * 0.5)));
+ 
+ 	box->setPosition(pos);
+ 
+@@ -497,7 +497,7 @@
+ 
+ 	//   EigenSolver::GaussPointsFit (vertex_count-1, &vertices[1], box_kCenter, box_akAxis, box_afExtent);
+ 
+-	Ogre::Real invVertexCount=1.0/(Ogre::Real)vertex_count;
++	Ogre::Real invVertexCount= (Real) (1.0/(Ogre::Real)vertex_count);
+ 	for(size_t c=0;c<vertex_count;c++)
+ 	{
+ 		box_kCenter+=vertices[c];
+@@ -548,13 +548,13 @@
+ 	box_afExtent[1] = ((Real)0.5)*(fY1Max - fY1Min);
+ 	box_afExtent[2] = ((Real)0.5)*(fY2Max - fY2Min);
+ 
+-	box_kCenter += (0.5*(fY0Max+fY0Min))*box_akAxis[0] +
+-		(0.5*(fY1Max+fY1Min))*box_akAxis[1] +
+-		(0.5*(fY2Max+fY2Min))*box_akAxis[2];
++	box_kCenter += (((Real)(0.5*(fY0Max+fY0Min)))*box_akAxis[0] +
++		((Real)(0.5*(fY1Max+fY1Min)))*box_akAxis[1] +
++		((Real)(0.5*(fY2Max+fY2Min)))*box_akAxis[2]);
+ 
+-	BoxGeometry *geom = new BoxGeometry(Vector3(box_afExtent[0] * 2.0,
+-		box_afExtent[1] * 2.0,
+-		box_afExtent[2] * 2.0),
++	BoxGeometry *geom = new BoxGeometry(Vector3((Real)(box_afExtent[0] * 2.0),
++		(Real)(box_afExtent[1] * 2.0),
++		(Real)(box_afExtent[2] * 2.0)),
+ 		world, space);
+ 	geom->setOrientation(Quaternion(box_akAxis[0],box_akAxis[1],box_akAxis[2]));
+ 	geom->setPosition(box_kCenter);
+@@ -700,7 +700,7 @@
+ 
+         geom = new CapsuleGeometry(cap_rad, cap_dirLength, world, space);
+         geom->setOrientation(orient);
+-        geom->setPosition(cap_orig + (reqd_axis * (cap_dirLength * 0.5)));
++        geom->setPosition(cap_orig + (reqd_axis * (Real)(cap_dirLength * 0.5)));
+     }
+ 	return geom;
+ }
+Index: prefab/include/OgreOdePrefabObject.h
+===================================================================
+--- prefab/include/OgreOdePrefabObject.h	(revision 2757)
++++ prefab/include/OgreOdePrefabObject.h	(working copy)
+@@ -6,7 +6,7 @@
+ namespace OgreOde_Prefab 
+ {
+ 
+-	class _OgreOdeExport_Prefab Object : public Ogre::UserDefinedObject
++	class _OgreOdeExport_Prefab Object 
+     {
+ 	public:
+         Object(ObjectType type, OgreOde::World *world):
+Index: prefab/src/OgreOdeVehicle.cpp
+===================================================================
+--- prefab/src/OgreOdeVehicle.cpp	(revision 2757)
++++ prefab/src/OgreOdeVehicle.cpp	(working copy)
+@@ -42,7 +42,7 @@
+ 
+ 	_geometry = new SphereGeometry(_radius, _world, space);
+ 	_geometry->setBody(_body);
+-	_geometry->setUserObject(this);
++	_geometry->setUserAny(Ogre::Any(this));
+ 
+ 	_joint = new SuspensionJoint(_world);
+ 	_joint->attach(vehicle->getBody(),_body);
+@@ -251,7 +251,7 @@
+ 		_geometry = new BoxGeometry(box, _world, space ? space : _world->getDefaultSpace());
+ 	else 
+ 		_geometry = geometry;
+-	_geometry->setUserObject(this);
++	_geometry->setUserAny(Ogre::Any(this));
+ 
+ 	_transform = new TransformGeometry(_world, _space);
+ 	_transform->setEncapsulatedGeometry(_geometry);
+@@ -292,7 +292,7 @@
+ 	_node->attachObject(_body);
+ 
+ 	if (_geometry) 
+-		_geometry->setUserObject(this);
++		_geometry->setUserAny(Ogre::Any(this));
+ 	
+ }
+ //------------------------------------------------------------------------------------------------
+@@ -637,21 +637,21 @@
+ bool Vehicle::handleTyreCollision(OgreOde::Contact* contact)
+ {
+ 	Geometry *geom = contact->getFirstGeometry();
+-
+-	Object* pObject = (Object*) geom->getUserObject();
+-	if (pObject && 
+-		(pObject->getObjectType() == OgreOde_Prefab::ObjectType_Wheel))
++	Ogre::Any pObject = geom->getUserAny();
++	if (!pObject.isEmpty() && 
++		(pObject.getType() == typeid(OgreOde_Prefab::Vehicle::Wheel*)) )
+ 	{
+-		((OgreOde_Prefab::Vehicle::Wheel*)(pObject))->setupTyreContact(contact);
++		any_cast<OgreOde_Prefab::Vehicle::Wheel*>(pObject)->setupTyreContact(contact);
+ 		return true;
+ 	}
+ 	else
+ 	{
+ 		geom = contact->getSecondGeometry();
+-		pObject = (Object*) geom->getUserObject();
+-		if (pObject && (pObject->getObjectType() == OgreOde_Prefab::ObjectType_Wheel))
++		pObject = geom->getUserAny();
++		if (!pObject.isEmpty() && 
++			(pObject.getType() == typeid(OgreOde_Prefab::Vehicle::Wheel*)))
+ 		{
+-			((OgreOde_Prefab::Vehicle::Wheel*)pObject)->setupTyreContact(contact);
++			any_cast<OgreOde_Prefab::Vehicle::Wheel*>(pObject)->setupTyreContact(contact);
+ 			return true;
+ 		}
+ 	}
+Index: prefab/src/OgreOdeRagdoll.cpp
+===================================================================
+--- prefab/src/OgreOdeRagdoll.cpp	(revision 2757)
++++ prefab/src/OgreOdeRagdoll.cpp	(working copy)
+@@ -331,7 +331,7 @@
+ 		if (physical_bone->_geometry)
+ 		{
+ 			physical_bone->_geometry->setBody(physical_bone->_body);
+-			physical_bone->_geometry->setUserObject(this);
++			physical_bone->_geometry->setUserAny(Ogre::Any(this));
+ 		}
+ 
+ 		if (physical_bone->_body)
+Index: loader/include/OgreOdeDotLoader.h
+===================================================================
+--- loader/include/OgreOdeDotLoader.h	(revision 2757)
++++ loader/include/OgreOdeDotLoader.h	(working copy)
+@@ -15,8 +15,8 @@
+         DotLoader(OgreOde::World * world = 0, OgreOde::Space * space = 0);
+ 		~DotLoader(){};
+ 
+-        void setWorld(OgreOde::World * world)  {_world = world;};
+-        void setSpace(OgreOde::Space * space)  {_space = space;};
++        void setWorld(OgreOde::World * world);//  {_world = world;};
++        void setSpace(OgreOde::Space * space);//  {_space = space;};
+ 
+         ObjectList  *load(const Ogre::String &filename, const Ogre::StringVector &objects_names, const Ogre::StringVector &instance_names);
+         void         save(const Ogre::String &filename, const Ogre::StringVector &objects_names, ObjectList  *objects);
+Index: loader/src/OgreOdeDotLoader.cpp
+===================================================================
+--- loader/src/OgreOdeDotLoader.cpp	(revision 2757)
++++ loader/src/OgreOdeDotLoader.cpp	(working copy)
+@@ -37,6 +37,17 @@
+ {
+ 
+ }
++
++void DotLoader::setWorld(OgreOde::World * world)
++{
++_world = world;
++}
++
++void DotLoader::setSpace(OgreOde::Space * space)
++{
++_space = space;
++}
++
+ //------------------------------------------------------------------------------------------------
+ void DotLoader::saveObject(const String &filename, const String &object_name, Object  *object)
+ {
+@@ -206,7 +217,7 @@
+ 							
+ 							vGeom->setPosition(boxCenter);
+ 							vehicle->setGeometry(vGeom);							
+-							vGeom->setUserObject(vehicle);						
++							vGeom->setUserAny(Ogre::Any(vehicle));						
+ 						}
+ 						vehicle->setTransformGeometry(new TransformGeometry(_world, vehicle->getSpace()));
+ 						vehicle->getTransformGeometry()->setEncapsulatedGeometry(vehicle->getGeometry());

@@ -1,0 +1,59 @@
+python-ogre (1.6.0-3) unstable; urgency=low
+
+  * Lots of small updates.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Sun, 17 May 2009 20:29:00 +1100
+python-ogre (1.6.0-2) unstable; urgency=low
+
+  * Moving to Boost 1.38.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Sat, 11 Apr 2009 13:48:00 +1100
+python-ogre (1.6.0-1) unstable; urgency=low
+
+  * Initial version of Python-Ogre 1.6.0
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Mon, 08 Dec 2008 17:53:00 +1000
+python-ogre (0.0.0-7) unstable; urgency=low
+
+  * Lots of small updates.
+  * Add verbose output.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Tue, 02 Sep 2008 17:53:00 +1000
+python-ogre (0.0.0-6) unstable; urgency=low
+
+  * Fixed the build for AMD64 machines.
+  * Try to create proper dbg packages.
+  * Lots of other small bugfixes.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Thu, 21 Aug 2008 12:05:51 +1000
+python-ogre (0.0.0-5) unstable; urgency=low
+
+  * Fixed the ffmpeg package.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Wed, 23 Jul 2008 22:06:51 +1000
+python-ogre (0.0.0-4) unstable; urgency=low
+
+  * Fixed ogreal to link against boost_python_index.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Wed, 23 Jul 2008 16:13:51 +1000
+python-ogre (0.0.0-3) unstable; urgency=low
+
+  * Really fixed the CEGUI.loadWindowLayout method (now with defaults!).
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Wed, 16 Jul 2008 18:19:51 +1000
+python-ogre (0.0.0-2) unstable; urgency=low
+
+  * Fixed the CEGUI.loadWindowLayout method.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Tue, 15 Jul 2008 19:47:51 +1000
+python-ogre (0.0.0-1) unstable; urgency=low
+
+  * Added support for ogreal.
+  * Fixed the CEGUI import.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Mon, 14 Jul 2008 11:13:51 +1000
+python-ogre (0.0.0-0) unstable; urgency=low
+
+  * First testing version.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Sun, 13 Jul 2008 13:27:51 +1000

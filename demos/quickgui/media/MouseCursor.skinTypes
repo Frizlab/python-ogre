@@ -1,0 +1,108 @@
+SkinClass MouseCursor
+{ 
+    SkinType default 
+    { 
+        SkinElement texture
+        { 
+            Border_Bottom 0 
+            Border_Left 0 
+            Border_Right 0 
+            Border_Top 0 
+            Texture qgui.cursor.png
+            TileBackground false 
+            TileBorders false
+        } 
+
+    } 
+
+    SkinType hresize
+    { 
+        SkinElement texture
+        { 
+            Border_Bottom 0 
+            Border_Left 0 
+            Border_Right 0 
+            Border_Top 0 
+            Texture qgui.cursor.resize.leftright.png
+            TileBackground false 
+            TileBorders false
+        } 
+
+    } 
+
+    SkinType vresize
+    { 
+        SkinElement texture
+        { 
+            Border_Bottom 0 
+            Border_Left 0 
+            Border_Right 0 
+            Border_Top 0 
+            Texture qgui.cursor.resize.updown.png
+            TileBackground false 
+            TileBorders false
+        } 
+
+    } 
+
+    SkinType diag1resize
+    { 
+        SkinElement texture
+        { 
+            Border_Bottom 0 
+            Border_Left 0 
+            Border_Right 0 
+            Border_Top 0 
+            Texture qgui.cursor.resize.diagonal1.png
+            TileBackground false 
+            TileBorders false
+        } 
+
+    } 
+
+    SkinType diag2resize
+    { 
+        SkinElement texture
+        { 
+            Border_Bottom 0 
+            Border_Left 0 
+            Border_Right 0 
+            Border_Top 0 
+            Texture qgui.cursor.resize.diagonal2.png
+            TileBackground false 
+            TileBorders false
+        } 
+
+    } 
+
+    SkinType grabable
+    { 
+        SkinElement texture
+        { 
+            Border_Bottom 0 
+            Border_Left 0 
+            Border_Right 0 
+            Border_Top 0 
+            Texture qgui.cursor.grabable.png
+            TileBackground false 
+            TileBorders false
+        } 
+
+    } 
+
+    SkinType grabbed
+    { 
+        SkinElement texture
+        { 
+            Border_Bottom 0 
+            Border_Left 0 
+            Border_Right 0 
+            Border_Top 0 
+            Texture qgui.cursor.grabbed.png
+            TileBackground false 
+            TileBorders false
+        } 
+
+    } 
+
+}

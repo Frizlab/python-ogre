@@ -1,0 +1,47 @@
+<?xml version="1.0" ?>
+<GUILayout>
+		<Window Type="Marti/FrameWindow" Name="LoadTerrainWindowFrame">
+			<Property Name="AbsoluteRect" Value="l:45.000000 t:43.000000 r:254.000000 b:258.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="Text" Value="Load terrain..." />
+			<Property Name="AlwaysOnTop" Value="true" />
+			<Property Name="SizingEnabled" Value="False" />
+			<Property Name="CloseButtonEnabled" Value="false" />
+
+			<Window Type="Marti/StaticText" Name="LoadTerrainCfgStaticText">
+				<Property Name="AbsoluteRect" Value="l:10.000000 t:40.000000 r:140.000000 b:65.000000" />
+				<Property Name="FrameEnabled" Value="False" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Load a .cfg file: " />
+				</Window>
+			<Window Type="Marti/StaticText" Name="LoadTerrainRawStaticText">
+				<Property Name="AbsoluteRect" Value="l:10.000000 t:106.000000 r:140.000000 b:131.000000" />
+				<Property Name="FrameEnabled" Value="False" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Load a 16bit .Raw file:" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="LoadTerrainCfgEditbox">
+				<Property Name="AbsoluteRect" Value="l:10.000000 t:72.000000 r:140.000000 b:97.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="LoadTerrainRawEditbox">
+				<Property Name="AbsoluteRect" Value="l:10.000000 t:136.000000 r:138.000000 b:161.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Button" Name="LoadTerrainCfgOkButton">
+				<Property Name="AbsoluteRect" Value="l:146.000000 t:72.000000 r:196.000000 b:97.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Load" />
+				</Window>
+			<Window Type="Marti/Button" Name="LoadTerrainRawOkButton">
+				<Property Name="AbsoluteRect" Value="l:146.000000 t:136.000000 r:196.000000 b:161.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Load" />
+				</Window>
+			<Window Type="Marti/Button" Name="LoadTerrainCloseButton">
+				<Property Name="AbsoluteRect" Value="l:70.000000 t:174.000000 r:140.000000 b:199.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Close" />
+				</Window>
+			</Window>
+</GUILayout>

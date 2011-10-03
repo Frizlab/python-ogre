@@ -1,0 +1,10 @@
+python-ogre-demos (0.0.0-2) unstable; urgency=low
+
+  * Remove the non-compiling demos.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Wed, 10 Sep 2008 22:00:00 +1000
+python-ogre-demos (0.0.0-1) unstable; urgency=low
+
+  * First attempt at packaging the demos.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  Wed, 03 Sep 2008 22:02:00 +1000

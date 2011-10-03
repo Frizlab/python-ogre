@@ -1,0 +1,89 @@
+material gui_options
+{
+
+	technique
+	{
+		
+		pass
+		{
+			scene_blend alpha_blend
+			
+			texture_unit
+			{
+				texture gui_options.png
+			}
+		}
+	}
+}
+
+material gui_options_selected
+{
+
+	technique
+	{
+		
+		pass
+		{
+			scene_blend alpha_blend
+			
+			texture_unit
+			{
+				texture gui_options_selected.png
+			}
+		}
+	}
+}
+
+material gui_loading
+{
+
+	technique
+	{
+		
+		pass
+		{
+			scene_blend alpha_blend
+			
+			texture_unit
+			{
+				texture gui_loading_notice.png
+			}
+		}
+	}
+}
+
+material gui_pause
+{
+
+	technique
+	{
+		
+		pass
+		{
+			scene_blend alpha_blend
+			
+			texture_unit
+			{
+				texture gui_pause.png
+			}
+		}
+	}
+}
+
+material gui_slowfast
+{
+
+	technique
+	{
+		
+		pass
+		{
+			scene_blend alpha_blend
+			
+			texture_unit
+			{
+				texture gui_slowfast.png
+			}
+		}
+	}
+}

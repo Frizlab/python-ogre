@@ -1,0 +1,51 @@
+vertex_program exampleVP cg
+{
+	source shadowed.cg
+	entry_point VS_Main
+	profiles vs_2_0 arbvp1 vp20
+	default_params
+	{
+		param_named_auto worldViewProj	worldviewproj_matrix
+		param_named_auto shadow		texture_viewproj_matrix 0
+		param_named_auto shadow1	texture_viewproj_matrix 1
+		param_named_auto shadow2	texture_viewproj_matrix 2
+	}
+}
+
+fragment_program exampleFP cg
+{
+	source shadowed.cg
+	entry_point PS_Main
+}
+
+material shadowed_base
+{
+	technique 1
+	{
+		pass
+		{
+			vertex_program_ref exampleVP 
+			{
+			}
+			fragment_program_ref exampleFP
+			{
+			}
+			texture_unit 0
+			{
+				tex_coord_set 0
+			}
+			texture_unit 1
+			{
+				content_type shadow
+			}
+			texture_unit 2
+			{
+				content_type shadow
+			}
+			texture_unit 3
+			{
+				content_type shadow
+			}
+		}
+	}
+}

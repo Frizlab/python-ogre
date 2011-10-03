@@ -1,0 +1,31 @@
+SkinClass TextCursor
+{ 
+    SkinType default 
+    { 
+        SkinElement background
+        { 
+            Border_Bottom 0 
+            Border_Left 0 
+            Border_Right 0 
+            Border_Top 0 
+            Texture qgui.cursor.textselect.png
+            TileBackground false 
+            TileBorders false 
+        } 
+    } 
+
+    SkinType test
+    { 
+        SkinElement background
+        { 
+            Border_Bottom 0 
+            Border_Left 0 
+            Border_Right 0 
+            Border_Top 0 
+            Texture qgui.cursor.textselect2.png
+            TileBackground false 
+            TileBorders false 
+        } 
+    } 
+
+}

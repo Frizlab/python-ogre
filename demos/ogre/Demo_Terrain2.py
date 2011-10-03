@@ -1,0 +1,97 @@
+# This code is in the Public Domain
+# -----------------------------------------------------------------------------
+# This source file is part of Python-Ogre
+# For the latest info, see http://python-ogre.org/
+#
+# It is likely based on original code from OGRE and/or PyOgre
+# For the latest info, see http://www.ogre3d.org/
+#
+# You may use this sample code for anything you like, it is not covered by the
+# LGPL.
+# -----------------------------------------------------------------------------
+import sys
+sys.path.insert(0,'..')
+import PythonOgreConfig
+
+import ogre.renderer.OGRE as ogre
+import SampleFramework as sf
+
+class TerrainApplication(sf.Application):
+    def _chooseSceneManager(self):
+        # self.sceneManager = self.root.createSceneManager("TerrainSceneManager")
+        self.sceneManager = self.root.createSceneManager(ogre.ST_GENERIC)
+        self.sceneManager = self.root.createSceneManager(ogre.ST_EXTERIOR_CLOSE)
+
+
+    def _createScene(self):
+        sceneManager = self.sceneManager
+        camera = self.camera
+ 
+        sceneManager.AmbientLight = 0.5, 0.5, 0.5
+        
+        # Create a light
+        l = sceneManager.createLight("MainLight")
+        # Accept default settings: point light, white diffuse, just set position
+        # NB I could attach the light to a SceneNode if I wanted it to move automatically with
+        #  other objects, but I don't
+        l.setPosition(20,80,50)
+        
+        # Fog
+        # NB it's VERY important to set this before calling setWorldGeometry 
+        # because the vertex program picked will be different
+        fadeColour = (0.93, 0.86, 0.76)
+        sceneManager.setFog(ogre.FOG_LINEAR, fadeColour, 0.001, 500.0, 1000.0)
+        self.renderWindow.getViewport(0).BackgroundColour = fadeColour
+
+        sceneManager.setWorldGeometry('terrain.cfg')
+
+        if (self.root.getRenderSystem().getCapabilities().hasCapability(ogre.RSC_INFINITE_FAR_PLANE)):
+            camera.setFarClipDistance(0)
+
+        # setup the sky plane
+        plane = ogre.Plane()
+        # 5000 world units from the camera
+        plane.d = 5000
+        # Above the camera, facing down
+        plane.normal = -ogre.Vector3().UNIT_Y
+
+        ## Setup a nice starting position for the camera
+        camera.setPosition(707,2500,528)
+        camera.setOrientation(ogre.Quaternion(-0.3486, 0.0122, 0.9365, 0.0329))
+        camera.orientation = ogre.Quaternion(-0.3486, 0.0122, 0.9365, 0.0329)
+        camera.orientation = -0.3486, 0.0122, 0.9365, 0.0329
+
+    def _createFrameListener(self):
+        self.frameListener = TerrainListener(self.renderWindow, self.camera, self.sceneManager)
+        self.root.addFrameListener(self.frameListener)
+
+class TerrainListener(sf.FrameListener):
+    def __init__(self, renderWindow, camera, sceneManager):
+        sf.FrameListener.__init__(self, renderWindow, camera)
+        self.sceneManager = sceneManager
+        self.moveSpeed = 50.0
+        self.raySceneQuery = sceneManager.createRayQuery(ogre.Ray(camera.getPosition(),
+                                                                    ogre.Vector3().NEGATIVE_UNIT_Y))
+        self.camera = camera
+        #self.camera.setPosition (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))
+
+    def frameStarted(self, frameEvent):
+        # clamp to terrain
+        updateRay = ogre.Ray()
+        updateRay.setOrigin (self.camera.getPosition() + ogre.Vector3(0.0, 10.0, 0.0))
+        updateRay.setDirection (ogre.Vector3().NEGATIVE_UNIT_Y)
+        self.raySceneQuery.Ray = updateRay
+        for queryResult in self.raySceneQuery.execute():
+            if queryResult.worldFragment is not None:
+                pos = self.camera.getPosition()
+                self.camera.setPosition (pos.x, pos.y - queryResult.distance + 15.0, pos.z)
+                break
+
+        return sf.FrameListener.frameStarted(self, frameEvent)
+
+if __name__ == '__main__':
+    try:
+        application = TerrainApplication()
+        application.go()
+    except ogre.OgreException, e:
+        print e

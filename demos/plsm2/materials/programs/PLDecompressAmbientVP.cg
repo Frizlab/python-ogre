@@ -1,0 +1,28 @@
+void main
+(
+  float4 iPosition : POSITION,
+  float2 iTexCoord0 : TEXCOORD0,
+    float2               iLodpos             : BLENDWEIGHT,
+  
+  out float4 oPosition : POSITION,
+  out float2 oTexCoord0 : TEXCOORD0,
+  out float4 oColor : COLOR,
+
+  uniform float4x4 worldViewProj,
+  uniform float4 globalAmbient,
+  uniform float4 matAmbient,
+  uniform float4 matEmissive,
+  uniform float4 compressionSettings
+)
+{
+  
+  // Calculate the output position and texture coordinates using textures coordinates input.
+  float height = ((iPosition.x + 32768) + (iLodpos.x - iPosition.x) * compressionSettings[3]) * compressionSettings[1];
+  oPosition = float4(iTexCoord0.x * compressionSettings[0], height, iTexCoord0.y * compressionSettings[2], 1.0f);
+
+  // transform position to projection space
+  oPosition = mul(worldViewProj, oPosition);
+    
+  oTexCoord0 = iTexCoord0;
+  oColor = (globalAmbient * matAmbient) + matEmissive;
+}

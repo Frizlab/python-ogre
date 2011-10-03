@@ -1,0 +1,42 @@
+ 
+vertex_program DecompressVertex/VP cg
+{
+	source DecompressVertex.cg
+	entry_point main_vp
+	profiles vs_1_1 arbvp1
+}
+
+
+vertex_program DecompressVertexLighted/VP cg
+{
+	source DecompressVertex.cg
+	entry_point main_vp_lighted
+	profiles vs_1_1 arbvp1
+}
+
+vertex_program DecompressVertexOnly/VP cg
+{
+	source DecompressVertex.cg
+	entry_point main_vp_only
+	profiles vs_1_1 arbvp1
+}
+
+fragment_program DecompressVertex/FP cg
+{
+	source DecompressVertex.cg
+	entry_point main_fp
+	profiles ps_1_1 arbfp1 
+}
+
+fragment_program DecompressVertexLighted/FP cg
+{
+	source DecompressVertex.cg
+	entry_point main_fp_lighted
+	profiles ps_1_1 arbfp1 
+}
+fragment_program DecompressVertexShadowed/FP cg
+{
+	source DecompressVertex.cg
+	entry_point main_fp_shadowed
+	profiles ps_1_1 arbfp1 
+}

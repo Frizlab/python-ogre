@@ -1,0 +1,167 @@
+Only in \development\Particle Universe V0.8\Plugins\ParticleUniverse\Docs: desktop.ini
+Only in \development\Particle Universe V0.8\Plugins\ParticleUniverse\Docs\html: class_particle_universe_1_1_align_affector_tokens_1_1_resize_token-members.html
+Only in \development\Particle Universe V0.8\Plugins\ParticleUniverse\Docs\manual\files\images: Thumbs.db
+Only in \development\Particle Universe V0.8\Plugins\ParticleUniverse\Docs: Thumbs.db
+diff -r -U 3 .\include\ParticleUniverseHook.h \development\Particle Universe V0.8\Plugins\ParticleUniverse\include\ParticleUniverseHook.h
+--- .\include\ParticleUniverseHook.h	Mon Aug 18 14:57:32 2008
++++ \development\Particle Universe V0.8\Plugins\ParticleUniverse\include\ParticleUniverseHook.h	Fri Jun 13 09:31:50 2008
+@@ -36,8 +36,8 @@
+ 				if (list->empty())
+ 					return;
+ 
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
+ 				for (it = list->begin(); it != itEnd; ++it)
+ 				{
+ 					(*it)->_prepare(technique);
+@@ -51,8 +51,8 @@
+ 				if (list->empty())
+ 					return;
+ 
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
+ 				for (it = list->begin(); it != itEnd; ++it)
+ 				{
+ 					(*it)->_notifyStart();
+@@ -66,8 +66,8 @@
+ 				if (list->empty())
+ 					return;
+ 
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
+ 				for (it = list->begin(); it != itEnd; ++it)
+ 				{
+ 					(*it)->_notifyStop();
+@@ -83,8 +83,8 @@
+ 				if (list->empty())
+ 					return;
+ 
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
+ 				for (it = list->begin(); it != itEnd; ++it)
+ 				{
+ 					(*it)->_preProcessParticles(technique, timeElapsed);
+@@ -102,8 +102,8 @@
+ 				if (list->empty())
+ 					return;
+ 
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
+ 				for (it = list->begin(); it != itEnd; ++it)
+ 				{
+ 					(*it)->_processParticle(particleTechnique, particle, timeElapsed, firstParticle);
+@@ -119,8 +119,8 @@
+ 				if (list->empty())
+ 					return;
+ 
+-				std::vector<T*>::iterator it;
+-				std::vector<T*>::iterator itEnd = list->end();
++				typename std::vector<T*>::iterator it;
++				typename std::vector<T*>::iterator itEnd = list->end();
+ 				for (it = list->begin(); it != itEnd; ++it)
+ 				{
+ 					(*it)->_postProcessParticles(technique, timeElapsed);
+diff -r -U 3 .\include\ParticleUniverseSpatialHashTable.h \development\Particle Universe V0.8\Plugins\ParticleUniverse\include\ParticleUniverseSpatialHashTable.h
+--- .\include\ParticleUniverseSpatialHashTable.h	Mon Aug 18 14:59:01 2008
++++ \development\Particle Universe V0.8\Plugins\ParticleUniverse\include\ParticleUniverseSpatialHashTable.h	Fri Jun 13 09:31:51 2008
+@@ -35,7 +35,7 @@
+ 			SpatialHashTable(void) :
+ 				mTableSize(50),
+ 				mCellDimension(15),
+-				mCellOverlap(5),
++				mCellOverlap(5)
+ 			{
+ 				_initialise();
+ 			};
+Only in \development\Particle Universe V0.8\Plugins\ParticleUniverse\misc: Thumbs.db
+Only in .: obj
+Only in .\scripts: ParticleUniverse.vcproj.JNPR.amiller.user
+diff -r -U 3 .\src\Externs\ParticleUniverseBoxColliderExtern.cpp \development\Particle Universe V0.8\Plugins\ParticleUniverse\src\Externs\ParticleUniverseBoxColliderExtern.cpp
+--- .\src\Externs\ParticleUniverseBoxColliderExtern.cpp	Mon Aug 18 15:02:13 2008
++++ \development\Particle Universe V0.8\Plugins\ParticleUniverse\src\Externs\ParticleUniverseBoxColliderExtern.cpp	Fri Jun 13 09:31:51 2008
+@@ -29,7 +29,7 @@
+ 		if (isAttached())
+ 		{
+ 			// Use the position of the parent node in this case.
+-			position = getParentNode()->getWorldPosition();
++			position = getParentNode()->getPosition();
+ 			mDerivedPosition = position;
+ 			populateAlignedBox(mBox, mDerivedPosition, mWidth, mHeight, mDepth);
+ 			_calculateBounds();
+diff -r -U 3 .\src\Externs\ParticleUniverseGravityExtern.cpp \development\Particle Universe V0.8\Plugins\ParticleUniverse\src\Externs\ParticleUniverseGravityExtern.cpp
+--- .\src\Externs\ParticleUniverseGravityExtern.cpp	Mon Aug 18 15:02:15 2008
++++ \development\Particle Universe V0.8\Plugins\ParticleUniverse\src\Externs\ParticleUniverseGravityExtern.cpp	Fri Jun 13 09:31:51 2008
+@@ -29,7 +29,7 @@
+ 		// Use the position of the parent node in this case.
+ 		if (isAttached())
+ 		{
+-			position = getParentNode()->getWorldPosition();
++			position = getParentNode()->getPosition();
+ 			mDerivedPosition = position;
+ 		}
+ 	}
+diff -r -U 3 .\src\Externs\ParticleUniverseSphereColliderExtern.cpp \development\Particle Universe V0.8\Plugins\ParticleUniverse\src\Externs\ParticleUniverseSphereColliderExtern.cpp
+--- .\src\Externs\ParticleUniverseSphereColliderExtern.cpp	Mon Aug 18 15:02:16 2008
++++ \development\Particle Universe V0.8\Plugins\ParticleUniverse\src\Externs\ParticleUniverseSphereColliderExtern.cpp	Fri Jun 13 09:31:51 2008
+@@ -29,7 +29,7 @@
+ 		if (isAttached())
+ 		{
+ 			// Use the position of the parent node in this case.
+-			position = getParentNode()->getWorldPosition();
++			position = getParentNode()->getPosition();
+ 			mDerivedPosition = position;
+ 			mSphere.setCenter(mDerivedPosition);
+ 		}
+diff -r -U 3 .\src\Externs\ParticleUniverseVortexExtern.cpp \development\Particle Universe V0.8\Plugins\ParticleUniverse\src\Externs\ParticleUniverseVortexExtern.cpp
+--- .\src\Externs\ParticleUniverseVortexExtern.cpp	Mon Aug 18 15:02:16 2008
++++ \development\Particle Universe V0.8\Plugins\ParticleUniverse\src\Externs\ParticleUniverseVortexExtern.cpp	Fri Jun 13 09:31:51 2008
+@@ -28,7 +28,7 @@
+ 	{
+ 		if (isAttached())
+ 		{
+-			position = getParentNode()->getWorldPosition();
++			position = getParentNode()->getPosition();
+ 			mDerivedPosition = position;
+ 		}
+ 	}
+diff -r -U 3 .\src\ParticleUniverseSystem.cpp \development\Particle Universe V0.8\Plugins\ParticleUniverse\src\ParticleUniverseSystem.cpp
+--- .\src\ParticleUniverseSystem.cpp	Mon Aug 18 15:17:00 2008
++++ \development\Particle Universe V0.8\Plugins\ParticleUniverse\src\ParticleUniverseSystem.cpp	Fri Jun 13 09:32:00 2008
+@@ -392,7 +392,7 @@
+ 			if (!mTimeController)
+ 			{
+ 				mTimeSinceLastVisible = 0;
+-				mLastVisibleFrame = Ogre::Root::getSingleton().getCurrentFrameNumber();
++				mLastVisibleFrame = Ogre::Root::getSingleton().getNextFrameNumber();
+ 				Ogre::ControllerManager& controllerManager = Ogre::ControllerManager::getSingleton(); 
+ 				Ogre::ControllerValueRealPtr particleSystemUpdateValue(new ParticleSystemUpdateValue(this));
+ 				mTimeController = controllerManager.createFrameTimePassthroughController(particleSystemUpdateValue);
+@@ -409,7 +409,7 @@
+ 	void ParticleSystem::_notifyCurrentCamera(Ogre::Camera* cam)
+ 	{
+ 		Ogre::MovableObject::_notifyCurrentCamera(cam);
+-		mLastVisibleFrame = Ogre::Root::getSingleton().getCurrentFrameNumber();
++		mLastVisibleFrame = Ogre::Root::getSingleton().getNextFrameNumber();
+ 		mTimeSinceLastVisible = 0.0f;
+ 
+ 		// Notify all techniques
+@@ -500,7 +500,7 @@
+ 		{
+ 			if (mNonvisibleUpdateTimeoutSet)
+ 			{
+-				long frameDiff = Ogre::Root::getSingleton().getCurrentFrameNumber() - mLastVisibleFrame;
++				long frameDiff = Ogre::Root::getSingleton().getNextFrameNumber() - mLastVisibleFrame;
+ 				if (frameDiff > 1 || frameDiff < 0)
+ 				{
+ 					mTimeSinceLastVisible += timeElapsed;
+Only in \development\Particle Universe V0.8\Plugins\ParticleUniverse: Thumbs.db

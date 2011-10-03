@@ -1,0 +1,10 @@
+Format: 1.0
+Source: boost-python%%VERSION%%-index
+Binary: libboost-python%%VERSION%%-index-dev, libboost-python%%VERSION%%-index
+Architecture: any
+Version: 0.0.0-1
+Maintainer: Tim 'Mithro' Ansell <mithro@mithis.com>
+Standards-Version: 3.7.2
+%%BUILDDEPS%%
+Files: 
+ %%MD5SUM%% %%SIZE%%

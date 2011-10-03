@@ -1,0 +1,1405 @@
+Sheet DefaultSheet
+{
+    BrushFilterMode BRUSHFILTER_LINEAR
+    ConsumeKeyboardEvents false
+    Dimensions 0 0 800 600
+    DisabledSkinType 
+    Dragable false
+    Enabled true
+    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT_RIGHT
+    HorzBarScrollPercent 0.2
+    HorzButtonScrollPercent 0.1
+    HoverTime 3
+    MaxSize 0 0
+    MinSize 0 0
+    Resizable false
+    ScrollBarThickness 15
+    Scrollable true
+    SkinType default
+    SupportScrolling false
+    TransparencyPicking true
+    VertBarScrollPercent 0.2
+    VertButtonScrollPercent 0.1
+    VerticalAnchor ANCHOR_VERTICAL_TOP_BOTTOM
+    Visible true
+    XScrollOffset 0
+    YScrollOffset 0
+
+    Child Windows
+    {
+        Window Window1
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ConsumeKeyboardEvents false
+            Dimensions 550 50 225 200
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+            HorzBarScrollPercent 0.2
+            HorzButtonScrollPercent 0.1
+            HoverTime 3
+            MaxSize 300 300
+            MinSize 50 50
+            Resizable true
+            ScrollBarThickness 15
+            Scrollable true
+            SkinType default
+            SupportScrolling true
+            TextBrushFilterMode BRUSHFILTER_LINEAR
+            TitleBar true
+            TitleBarCloseButton true
+            TitleBarCloseButtonPadding 2
+            TitleBarDragable true
+            TitleBarSkinType default
+            TitlebarVerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+            TransparencyPicking true
+            VertBarScrollPercent 0.2
+            VertButtonScrollPercent 0.1
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            VerticalLineSpacing 2
+            Visible true
+            XScrollOffset 0
+            YScrollOffset 0
+
+            Child widgets
+            {
+                HScrollBar TestHSD1
+                {
+                    BarScrollPercent 0.2
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ButtonScrollPercent 0.1
+                    ConsumeKeyboardEvents false
+                    Dimensions 50 160 100 15
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HoverTime 3
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarButtonLayout HSCROLL_BAR_BUTTON_LAYOUT_OPPOSITE
+                    Scrollable true
+                    SkinType default
+                    SliderPercentage 0
+                    SliderWidth 15
+                    TransparencyPicking true
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    Visible true
+                }
+
+                VScrollBar TestVSD1
+                {
+                    BarScrollPercent 0.2
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ButtonScrollPercent 0.1
+                    ConsumeKeyboardEvents false
+                    Dimensions 50 50 15 100
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HoverTime 3
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarButtonLayout VSCROLL_BAR_BUTTON_LAYOUT_OPPOSITE
+                    Scrollable true
+                    SkinType default
+                    SliderHeight 15
+                    SliderPercentage 0
+                    TransparencyPicking true
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    Visible true
+                }
+
+                VScrollBar TestVSD2
+                {
+                    BarScrollPercent 0.2
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ButtonScrollPercent 0.1
+                    ConsumeKeyboardEvents false
+                    Dimensions 70 50 15 100
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HoverTime 3
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarButtonLayout VSCROLL_BAR_BUTTON_LAYOUT_ADJACENT_UP
+                    Scrollable true
+                    SkinType default
+                    SliderHeight 15
+                    SliderPercentage 0
+                    TransparencyPicking true
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    Visible true
+                }
+
+                VScrollBar TestVSD3
+                {
+                    BarScrollPercent 0.2
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ButtonScrollPercent 0.1
+                    ConsumeKeyboardEvents false
+                    Dimensions 90 50 15 100
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HoverTime 3
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarButtonLayout VSCROLL_BAR_BUTTON_LAYOUT_ADJACENT_DOWN
+                    Scrollable true
+                    SkinType default
+                    SliderHeight 15
+                    SliderPercentage 0
+                    TransparencyPicking true
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    Visible true
+                }
+
+                VScrollBar TestVSD4
+                {
+                    BarScrollPercent 0.2
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ButtonScrollPercent 0.1
+                    ConsumeKeyboardEvents false
+                    Dimensions 110 50 15 100
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HoverTime 3
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarButtonLayout VSCROLL_BAR_BUTTON_LAYOUT_MULTIPLE_BOTH
+                    Scrollable true
+                    SkinType default
+                    SliderHeight 15
+                    SliderPercentage 0
+                    TransparencyPicking true
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    Visible true
+                }
+
+                VScrollBar TestVSD5
+                {
+                    BarScrollPercent 0.2
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ButtonScrollPercent 0.1
+                    ConsumeKeyboardEvents false
+                    Dimensions 130 50 15 100
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HoverTime 3
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarButtonLayout VSCROLL_BAR_BUTTON_LAYOUT_MULTIPLE_DOWN
+                    Scrollable true
+                    SkinType default
+                    SliderHeight 15
+                    SliderPercentage 0
+                    TransparencyPicking true
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    Visible true
+                }
+
+                VScrollBar TestVSD6
+                {
+                    BarScrollPercent 0.2
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ButtonScrollPercent 0.1
+                    ConsumeKeyboardEvents false
+                    Dimensions 150 50 15 100
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HoverTime 3
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarButtonLayout VSCROLL_BAR_BUTTON_LAYOUT_MULTIPLE_UP
+                    Scrollable true
+                    SkinType default
+                    SliderHeight 15
+                    SliderPercentage 0
+                    TransparencyPicking true
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    Visible true
+                }
+
+                VScrollBar TestVSD7
+                {
+                    BarScrollPercent 0.2
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ButtonScrollPercent 0.1
+                    ConsumeKeyboardEvents false
+                    Dimensions 170 50 15 100
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HoverTime 3
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarButtonLayout VSCROLL_BAR_BUTTON_LAYOUT_NONE
+                    Scrollable true
+                    SkinType default
+                    SliderHeight 15
+                    SliderPercentage 0
+                    TransparencyPicking true
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    Visible true
+                }
+
+            }
+
+            Text segments
+            {
+                Segment0 micross.12 1 1 0 0 Test
+            }
+
+        }
+
+    }
+
+    Child widgets
+    {
+        Button Minus
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ConsumeKeyboardEvents false
+            Dimensions 100 440 100 35
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+            HoverTime 3
+            MaxSize 0 0
+            MinSize 0 0
+            Resizable false
+            Scrollable true
+            SkinType default
+            TextBrushFilterMode BRUSHFILTER_LINEAR
+            TransparencyPicking true
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            VerticalLineSpacing 2
+            VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+            Visible true
+
+            Text segments
+            {
+                Segment0 micross.12 1 0 1 0 Minus
+            }
+
+        }
+
+        Button Plus
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ConsumeKeyboardEvents false
+            Dimensions 200 440 100 35
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+            HoverTime 3
+            MaxSize 0 0
+            MinSize 0 0
+            Resizable false
+            Scrollable true
+            SkinType default
+            TextBrushFilterMode BRUSHFILTER_LINEAR
+            TransparencyPicking true
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            VerticalLineSpacing 2
+            VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+            Visible true
+
+            Text segments
+            {
+                Segment0 micross.12 1 0 1 0 Plus
+            }
+
+        }
+
+        CheckBox TestCheckBox
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            Checked false
+            ConsumeKeyboardEvents false
+            Dimensions 50 550 25 25
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HoverTime 3
+            MaxSize 0 0
+            MinSize 0 0
+            Resizable false
+            Scrollable true
+            SkinType default
+            TransparencyPicking true
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            Visible true
+        }
+
+        ComboBox ComboBox96
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ConsumeKeyboardEvents false
+            Dimensions 400 100 125 20
+            DisabledSkinType 
+            Dragable false
+            DropDownButton true
+            DropDownMaxHeight 60
+            DropDownWidth 125
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+            HorzBarScrollPercent 0.2
+            HorzButtonScrollPercent 0.1
+            HoverTime 3
+            ItemHeight 25
+            MaxSize 0 0
+            MinSize 0 0
+            Resizable false
+            ScrollBarThickness 15
+            Scrollable true
+            SkinType default
+            SupportScrolling false
+            TextBrushFilterMode BRUSHFILTER_LINEAR
+            TransparencyPicking true
+            VertBarScrollPercent 0.2
+            VertButtonScrollPercent 0.1
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            VerticalLineSpacing 2
+            VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+            Visible true
+            XScrollOffset 0
+            YScrollOffset 0
+
+            Child widgets
+            {
+                ListTextItem ComboBox960
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 0 0 106 25
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    Index 0
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    Selected false
+                    SkinType default
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking false
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 1 1 1 CB Item 1
+                    }
+
+                }
+
+                ListTextItem ComboBox961
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 0 25 106 25
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    Index 1
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    Selected false
+                    SkinType default
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking false
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 1 1 1 CB Item 2
+                    }
+
+                }
+
+                ListTextItem ComboBox962
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 0 50 106 25
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    Index 2
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    Selected false
+                    SkinType default
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking false
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 1 1 1 CB Item 3
+                    }
+
+                }
+
+            }
+
+            Text segments
+            {
+                Segment0 micross.12 0 0 0 0 
+            }
+
+        }
+
+        List TestList
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ConsumeKeyboardEvents false
+            Dimensions 375 500 200 100
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HorzBarScrollPercent 0.2
+            HorzButtonScrollPercent 0.1
+            HoverTime 3
+            ListItemHeight 20
+            MaxSize 0 0
+            MinSize 0 0
+            MultiSelect true
+            Resizable false
+            ScrollBarThickness 15
+            Scrollable true
+            SkinType default
+            SupportScrolling true
+            TransparencyPicking true
+            VertBarScrollPercent 0.2
+            VertButtonScrollPercent 0.1
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            Visible true
+            XScrollOffset 0
+            YScrollOffset 0
+
+            Child widgets
+            {
+                ListTextItem TestList0
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 0 0 165 20
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT_RIGHT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    Index 0
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    Selected false
+                    SkinType default
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking false
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 1 1 1 Item 1
+                    }
+
+                }
+
+                ListTextItem TestList1
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 0 20 165 20
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT_RIGHT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    Index 1
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    Selected false
+                    SkinType default
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking false
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 0 1 0 Item 2
+                    }
+
+                }
+
+                ListTextItem TestList2
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 0 40 165 20
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT_RIGHT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    Index 2
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    Selected false
+                    SkinType default
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking false
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 0 0 1 Item 3
+                    }
+
+                }
+
+                ListTextItem TestList3
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 0 60 165 20
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT_RIGHT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    Index 3
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    Selected false
+                    SkinType default
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking false
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 1 0 0 Item 4
+                    }
+
+                }
+
+                ListTextItem TestList4
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 0 80 165 20
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT_RIGHT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    Index 4
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    Selected false
+                    SkinType default
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking false
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 0 0 0 Item 5
+                    }
+
+                }
+
+            }
+
+        }
+
+        Panel MainPanel
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ConsumeKeyboardEvents false
+            Dimensions 225 75 150 217
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HorzBarScrollPercent 0.2
+            HorzButtonScrollPercent 0.1
+            HoverTime 3
+            MaxSize 0 0
+            MinSize 0 0
+            Resizable true
+            ScrollBarThickness 15
+            Scrollable true
+            SkinType default
+            SupportScrolling true
+            TransparencyPicking true
+            VertBarScrollPercent 0.2
+            VertButtonScrollPercent 0.1
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            Visible true
+            XScrollOffset 0
+            YScrollOffset 0
+
+            Child widgets
+            {
+                Button ScrollButton
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 400 250 75 23
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+                    HoverTime 3
+                    MaxSize 0 0
+                    MinSize 0 0
+                    Resizable false
+                    Scrollable true
+                    SkinType default
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking true
+                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+
+                    Text segments
+                    {
+                    }
+
+                }
+
+            }
+
+        }
+
+        ProgressBar Prog
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ClippingEdge PROGRESSBAR_CLIP_RIGHT_TOP
+            ConsumeKeyboardEvents false
+            Dimensions 100 400 200 35
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            FillDirection PROGRESSBAR_FILLS_POSITIVE_TO_NEGATIVE
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_CENTER
+            HoverTime 3
+            Layout PROGRESSBAR_LAYOUT_VERTICAL
+            MaxSize 0 0
+            MinSize 0 0
+            Progress 100
+            Resizable false
+            Scrollable true
+            SkinType default
+            TextBrushFilterMode BRUSHFILTER_LINEAR
+            TransparencyPicking true
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            VerticalLineSpacing 2
+            VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+            Visible true
+
+            Text segments
+            {
+                Segment0 micross.12 1 1 1 1 Progress Bar
+            }
+
+        }
+
+        TextArea TestArea1
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ConsumeKeyboardEvents true
+            CursorBlinkTime 0.5
+            DefaultColor 1 1 1 1
+            DefaultFontName micross.16
+            Dimensions 575 300 200 200
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+            HoverTime 3
+            KeyDownTime 0.6
+            KeyRepeatTime 0.04
+            MaxCharacters 255
+            MaxSize 0 0
+            MinSize 0 0
+            Resizable false
+            Scrollable true
+            SkinType default
+            TextBrushFilterMode BRUSHFILTER_LINEAR
+            TextCursorDefaultSkinTypeName default
+            TransparencyPicking true
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            VerticalLineSpacing 2
+            Visible true
+
+            Child widgets
+            {
+            }
+
+            Text segments
+            {
+                Segment0 micross.12 0 0 0 0 
+            }
+
+        }
+
+        TextBox TestTextBox
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ConsumeKeyboardEvents true
+            CursorBlinkTime 0.5
+            DefaultColor 1 1 1 1
+            DefaultFontName micross.12
+            Dimensions 150 500 100 20
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+            HoverTime 3
+            KeyDownTime 0.6
+            KeyRepeatTime 0.04
+            MaskSymbol 42
+            MaskText true
+            MaxCharacters 255
+            MaxSize 0 0
+            MinSize 0 0
+            Resizable false
+            Scrollable true
+            SkinType default
+            TBHorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+            TextBrushFilterMode BRUSHFILTER_LINEAR
+            TextCursorDefaultSkinTypeName default
+            TextPosition 0 0
+            TransparencyPicking true
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            VerticalLineSpacing 2
+            VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+            Visible true
+
+            Text segments
+            {
+                Segment0 micross.12 0 0 0 0 
+            }
+
+        }
+
+        ToolBar TestToolBar
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ConsumeKeyboardEvents false
+            Dimensions 0 0 800 20
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT_RIGHT
+            HorzBarScrollPercent 0.2
+            HorzButtonScrollPercent 0.1
+            HoverTime 3
+            ItemLayout TOOLBAR_ITEM_LAYOUT_NEGATIVE_TO_POSITIVE
+            MaxSize 0 0
+            MinSize 0 0
+            Resizable false
+            ScrollBarThickness 15
+            Scrollable true
+            SkinType default
+            SupportScrolling false
+            TransparencyPicking true
+            VertBarScrollPercent 0.2
+            VertButtonScrollPercent 0.1
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            Visible true
+            XScrollOffset 0
+            YScrollOffset 0
+
+            Child widgets
+            {
+                Menu Edit
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 24 0 25 20
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    ItemHeight 25
+                    Length 50
+                    MaxMenuHeight 0
+                    MaxSize 0 0
+                    MenuWidth 100
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    SkinType default
+                    SubMenuOverlap 2
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking true
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP_BOTTOM
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 0 0 0 Edit
+                    }
+
+                }
+
+                Menu File
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 0 0 24 20
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    ItemHeight 25
+                    Length 50
+                    MaxMenuHeight 0
+                    MaxSize 0 0
+                    MenuWidth 100
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    SkinType default
+                    SubMenuOverlap 2
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking true
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP_BOTTOM
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 0 0 0 File
+                    }
+
+                }
+
+                Menu Format
+                {
+                    BrushFilterMode BRUSHFILTER_LINEAR
+                    ConsumeKeyboardEvents false
+                    Dimensions 49 0 43 20
+                    DisabledSkinType 
+                    Dragable false
+                    Enabled true
+                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+                    HorzBarScrollPercent 0.2
+                    HorzButtonScrollPercent 0.1
+                    HoverTime 3
+                    ItemHeight 25
+                    Length 50
+                    MaxMenuHeight 0
+                    MaxSize 0 0
+                    MenuWidth 100
+                    MinSize 0 0
+                    Resizable false
+                    ScrollBarThickness 15
+                    Scrollable true
+                    SkinType default
+                    SubMenuOverlap 2
+                    SupportScrolling false
+                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                    TransparencyPicking true
+                    VertBarScrollPercent 0.2
+                    VertButtonScrollPercent 0.1
+                    VerticalAnchor ANCHOR_VERTICAL_TOP_BOTTOM
+                    VerticalLineSpacing 2
+                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                    Visible true
+                    XScrollOffset 0
+                    YScrollOffset 0
+
+                    Child widgets
+                    {
+                        Menu WordWrap
+                        {
+                            BrushFilterMode BRUSHFILTER_LINEAR
+                            ConsumeKeyboardEvents false
+                            Dimensions 0 0 80 25
+                            DisabledSkinType 
+                            Dragable false
+                            Enabled true
+                            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                            HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+                            HorzBarScrollPercent 0.2
+                            HorzButtonScrollPercent 0.1
+                            HoverTime 3
+                            ItemHeight 25
+                            Length 50
+                            MaxMenuHeight 0
+                            MaxSize 0 0
+                            MenuWidth 100
+                            MinSize 0 0
+                            Resizable false
+                            ScrollBarThickness 15
+                            Scrollable true
+                            SkinType default
+                            SubMenuOverlap 2
+                            SupportScrolling false
+                            TextBrushFilterMode BRUSHFILTER_LINEAR
+                            TransparencyPicking true
+                            VertBarScrollPercent 0.2
+                            VertButtonScrollPercent 0.1
+                            VerticalAnchor ANCHOR_VERTICAL_TOP
+                            VerticalLineSpacing 2
+                            VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                            Visible true
+                            XScrollOffset 0
+                            YScrollOffset 0
+
+                            Child widgets
+                            {
+                                Menu Item2
+                                {
+                                    BrushFilterMode BRUSHFILTER_LINEAR
+                                    ConsumeKeyboardEvents false
+                                    Dimensions 0 25 80 25
+                                    DisabledSkinType 
+                                    Dragable false
+                                    Enabled true
+                                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+                                    HorzBarScrollPercent 0.2
+                                    HorzButtonScrollPercent 0.1
+                                    HoverTime 3
+                                    ItemHeight 25
+                                    Length 50
+                                    MaxMenuHeight 0
+                                    MaxSize 0 0
+                                    MenuWidth 100
+                                    MinSize 0 0
+                                    Resizable false
+                                    ScrollBarThickness 15
+                                    Scrollable true
+                                    SkinType default
+                                    SubMenuOverlap 2
+                                    SupportScrolling false
+                                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                                    TransparencyPicking true
+                                    VertBarScrollPercent 0.2
+                                    VertButtonScrollPercent 0.1
+                                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                                    VerticalLineSpacing 2
+                                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                                    Visible true
+                                    XScrollOffset 0
+                                    YScrollOffset 0
+
+                                    Child widgets
+                                    {
+                                        MenuLabel Item2.1
+                                        {
+                                            BrushFilterMode BRUSHFILTER_LINEAR
+                                            ConsumeKeyboardEvents false
+                                            Dimensions 0 0 80 25
+                                            DisabledSkinType 
+                                            Dragable false
+                                            Enabled true
+                                            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                                            HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+                                            HorzBarScrollPercent 0.2
+                                            HorzButtonScrollPercent 0.1
+                                            HoverTime 3
+                                            Length 50
+                                            MaxSize 0 0
+                                            MinSize 0 0
+                                            Resizable false
+                                            ScrollBarThickness 15
+                                            Scrollable true
+                                            SkinType default
+                                            SupportScrolling false
+                                            TextBrushFilterMode BRUSHFILTER_LINEAR
+                                            TransparencyPicking true
+                                            VertBarScrollPercent 0.2
+                                            VertButtonScrollPercent 0.1
+                                            VerticalAnchor ANCHOR_VERTICAL_TOP
+                                            VerticalLineSpacing 2
+                                            VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                                            Visible true
+                                            XScrollOffset 0
+                                            YScrollOffset 0
+
+                                            Child widgets
+                                            {
+                                            }
+
+                                            Text segments
+                                            {
+                                                Segment0 micross.12 1 0 1 0 Item 2.1
+                                            }
+
+                                        }
+
+                                    }
+
+                                    Text segments
+                                    {
+                                        Segment0 micross.12 1 0 0 0 Item 2
+                                    }
+
+                                }
+
+                                MenuLabel Item1
+                                {
+                                    BrushFilterMode BRUSHFILTER_LINEAR
+                                    ConsumeKeyboardEvents false
+                                    Dimensions 0 0 80 25
+                                    DisabledSkinType 
+                                    Dragable false
+                                    Enabled true
+                                    HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                                    HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+                                    HorzBarScrollPercent 0.2
+                                    HorzButtonScrollPercent 0.1
+                                    HoverTime 3
+                                    Length 50
+                                    MaxSize 0 0
+                                    MinSize 0 0
+                                    Resizable false
+                                    ScrollBarThickness 15
+                                    Scrollable true
+                                    SkinType default
+                                    SupportScrolling false
+                                    TextBrushFilterMode BRUSHFILTER_LINEAR
+                                    TransparencyPicking true
+                                    VertBarScrollPercent 0.2
+                                    VertButtonScrollPercent 0.1
+                                    VerticalAnchor ANCHOR_VERTICAL_TOP
+                                    VerticalLineSpacing 2
+                                    VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                                    Visible true
+                                    XScrollOffset 0
+                                    YScrollOffset 0
+
+                                    Child widgets
+                                    {
+                                    }
+
+                                    Text segments
+                                    {
+                                        Segment0 micross.12 1 0 0 0 Item 1
+                                    }
+
+                                }
+
+                            }
+
+                            Text segments
+                            {
+                                Segment0 micross.12 1 0 0 0 Word Wrap
+                            }
+
+                        }
+
+                        MenuLabel Font
+                        {
+                            BrushFilterMode BRUSHFILTER_LINEAR
+                            ConsumeKeyboardEvents false
+                            Dimensions 0 25 80 25
+                            DisabledSkinType 
+                            Dragable false
+                            Enabled true
+                            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+                            HorizontalTextAlignment TEXT_ALIGNMENT_HORIZONTAL_LEFT
+                            HorzBarScrollPercent 0.2
+                            HorzButtonScrollPercent 0.1
+                            HoverTime 3
+                            Length 50
+                            MaxSize 0 0
+                            MinSize 0 0
+                            Resizable false
+                            ScrollBarThickness 15
+                            Scrollable true
+                            SkinType default
+                            SupportScrolling false
+                            TextBrushFilterMode BRUSHFILTER_LINEAR
+                            TransparencyPicking true
+                            VertBarScrollPercent 0.2
+                            VertButtonScrollPercent 0.1
+                            VerticalAnchor ANCHOR_VERTICAL_TOP
+                            VerticalLineSpacing 2
+                            VerticalTextAlignment TEXT_ALIGNMENT_VERTICAL_CENTER
+                            Visible true
+                            XScrollOffset 0
+                            YScrollOffset 0
+
+                            Child widgets
+                            {
+                            }
+
+                            Text segments
+                            {
+                                Segment0 micross.12 1 0 0 0 Font...
+                            }
+
+                        }
+
+                    }
+
+                    Text segments
+                    {
+                        Segment0 micross.12 1 0 0 0 Format
+                    }
+
+                }
+
+            }
+
+        }
+
+        TreeView TestTreeView
+        {
+            BrushFilterMode BRUSHFILTER_LINEAR
+            ConsumeKeyboardEvents false
+            Dimensions 0 75 200 300
+            DisabledSkinType 
+            Dragable false
+            Enabled true
+            HorizontalAnchor ANCHOR_HORIZONTAL_LEFT
+            HorzBarScrollPercent 0.2
+            HorzButtonScrollPercent 0.1
+            HoverTime 3
+            MaxSize 0 0
+            MinSize 0 0
+            Resizable false
+            ScrollBarThickness 15
+            Scrollable true
+            SkinType default
+            SupportScrolling true
+            TransparencyPicking true
+            VertBarScrollPercent 0.2
+            VertButtonScrollPercent 0.1
+            VerticalAnchor ANCHOR_VERTICAL_TOP
+            Visible true
+            XScrollOffset 0
+            YScrollOffset 0
+
+            Child widgets
+            {
+            }
+
+        }
+
+    }
+
+}

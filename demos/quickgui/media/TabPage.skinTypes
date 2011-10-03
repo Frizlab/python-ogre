@@ -1,0 +1,36 @@
+SkinClass TabPage
+{ 
+    SkinType default 
+    { 
+        ComponentType tab
+        {
+            ClassName Tab
+            SkinType default
+        }
+
+        ComponentType tab_disabled
+        {
+            ClassName Tab
+            SkinType default
+        }
+
+        ComponentType tab_over
+        {
+            ClassName Tab
+            SkinType default
+        }
+
+        ComponentType tab_selected
+        {
+            ClassName Tab
+            SkinType default
+        }
+
+        ComponentType page
+        {
+            ClassName Panel
+            SkinType default
+        }
+    } 
+
+}

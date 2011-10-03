@@ -1,0 +1,33 @@
+vertex_program LOTTreeLeavesNoBonesVP cg
+{
+	source LOTTreeLeaves.cg
+	entry_point LOTTreeLeavesNoBones_vp
+	profiles vs_1_1 arbvp1
+}
+
+material LOTTreeLeavesNoBones
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			vertex_program_ref LOTTreeLeavesNoBonesVP
+			{
+				param_named_auto worldViewProj worldviewproj_matrix
+				param_named_auto preRotatedQuad[0] custom 1
+				param_named_auto preRotatedQuad[1] custom 2
+				param_named_auto preRotatedQuad[2] custom 3
+				param_named_auto preRotatedQuad[3] custom 4
+			}
+			alpha_rejection greater_equal 84
+			texture_unit
+			{
+				
+				texture Leaf1.tga 
+			}
+		}
+	}	
+}
+
+

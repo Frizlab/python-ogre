@@ -1,0 +1,115 @@
+buttonGUI  v1.0
+THINGS TO KNOW:
+
+buttonGUI  is designed on the premise that there are no widgets - everything is a button. (NOTE:  textAreas and buttonMeshes are button attributes,  not buttons themselves.)
+one of the goals of buttonGUI is to be able to simply drop in buttonGUI.h and buttonGUI.cpp into your project and get started with a relatively robust GUI system in just a few minutes.
+
+Every button can be configured to report any combination of 4 events (aka enum buttonAction):
+	- onClick
+	- onRelease
+	- mouseOver
+	- mouseOff
+
+Every 'button'  can have 4 types of children:
+	- other buttons
+	- textAreas*
+	- buttonMeshes*
+	- textInputAreas (a special type of button that can send more than the basic 4 events)
+	
+			* these do not send buttonEvents and are generally handled as attributes of buttons.
+
+	
+Buttons use regular ogre materials.   Simply make .material files inside a resource directory like you would for a mesh.
+When a material is assigned to a button,  the button will search for materials named:  givenMaterial.onClick  givenMaterial.onRelease  givenMaterial.mouseOver  givenMaterial.mouseOff 
+If they exist they will be applied and used accordingly,  using the original material name as a fallback if they don't exist.
+	
+a button can be set to be movable,  which allows the button to be dragged around by the user.
+a button can be set to be non-active,  in which case it acts as a background image which can not be directly altered by the user nor does it report events.
+a button can be set to be invisible by setting its material to "BLANK"
+a button can be faded or set to x opacity (as an optimization, this is only done to the current material on the button,  so it is recommended to setActive(false)  when you do this.)
+a parent button will drag child buttons with it.
+textInputAreas can have max character limit set
+textInputAreas can have a separate material set for onClick/onRelease/mouseOver/mouseOff applied when they are  'focused'  by the user.
+
+If you are using button fade feature:
+	- your button materials can have several passes and several texture units, but each one is forced to be blend_alpha when fading or changing opacity.
+	- if you want to do complex button materials ,  you should use the following material as a base,  as this is what buttonMgr will force upon the materials it uses so that it can fade them properly:
+	- multiple techniques are not supported (only the first technique will fade)
+	- multiple passes are supported (but are forced to use blend_alpha)
+	- multiple texture_unit are supported (but will all forced to use alpha_op_ex as shown below)
+		
+material myButtonMaterial
+{
+	technique 
+	{
+		pass 
+		{
+			depth_check off
+			scene_blend alpha_blend
+
+			texture_unit
+			{
+				alpha_op_ex modulate src_texture src_manual 1	//the "1"  is adjusted in every texture_unit in the material during fading
+				texture myButtonTexture.tga				//highly recommended to use textures with alpha channels
+			}
+		}
+	}
+}
+
+A big thanks to ajs/Adam J. Simmons ...  this GUI uses chunks of Navi all over the place.  (plus buttonGUI demo is mostly a modification of the Navi demo)
+
+
+
+
+USAGE INSTRUCTIONS:
+
+// you must set this on your camera,  or any changes to the resolution or fov will mess up the alignment of any buttonMeshes.
+camera->setAutoAspectRatio(true);
+
+
+//create a text scheme
+textScheme myTextScheme("myFont",20, 0,1,0,1);
+
+//instance the buttonManager
+buttonMgr = new buttonGUI::buttonManager("myTextAreaMaterial",myTextScheme, sceneMgr,"MainCam");
+
+//create a button
+buttonMgr->createButton("building", "buildingMat", buttonPosition(TOP_RIGHT, 300,300), 64,64);
+
+//in your update loop call getEvent() until it returns NULL
+Update()
+{
+	buttonEvent * e = buttonMgr->getEvent();			//THE FOLLOWING LOOP IS HOW TO GET EVENTS FROM buttonGUI
+	while(e)
+	{
+		handleButtonEvent(e);
+		e = buttonMgr->getEvent();			
+	}	
+	buttonMgr->update();
+}
+
+//do something with the event
+void handleButtonEvent(buttonEvent * e)
+{
+	std::string name;
+	if (e->actionButton)
+		name = *(e->actionButton->getName()) ;  //store the name of the main button.
+
+	if ((e->action == ONCLICK)&&(name == "building"))
+	{
+			//do stuff...
+	}
+}
+
+//call this if your resolution ever changes to realign all the buttonMeshes to proper locations.
+buttonMgr->resetScreenResolution();
+
+
+//when you are done.
+if (buttonMgr)
+{
+	buttonMgr->shutdown();
+	delete buttonMgr;
+	buttonMgr = NULL;
+}
+

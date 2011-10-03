@@ -1,0 +1,27 @@
+<?xml version="1.0" ?>
+<GUILayout>
+<Window Type="DefaultGUISheet" Name="ActionBar">
+    <Window Type="Marti/StaticImage" Name="Background">
+		<Property Name="Position" Value="x:0 y:0" />
+		<Property Name="AbsoluteSize" Value="w:1280 h:30" />
+		<Property Name="Image" Value="set:Marti image:ListboxSelectionBrush" />
+		<Property Name="ImageColours" Value="tl:0 tr:0 bl:0 br:0" />
+
+	    <Window Type="Marti/Button" Name="NewButton">
+                    <Property Name="AbsolutePosition" Value="x:5 y:5" />
+                    <Property Name="AbsoluteSize" Value="w:20 h:20" />
+                    <Property Name="Text" Value="N" />
+          </Window>
+          <Window Type="Marti/Button" Name="LoadButton">
+                    <Property Name="AbsolutePosition" Value="x:30 y:5" />
+                    <Property Name="AbsoluteSize" Value="w:20 h:20" />
+                    <Property Name="Text" Value="L" />
+          </Window>
+	    <Window Type="Marti/Button" Name="QuitButton">
+                    <Property Name="AbsolutePosition" Value="x:55 y:5" />
+                    <Property Name="AbsoluteSize" Value="w:20 h:20" />
+                    <Property Name="Text" Value="Q" />
+          </Window>
+  </Window>
+</Window>
+</GUILayout>

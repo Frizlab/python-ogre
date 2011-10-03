@@ -1,0 +1,182 @@
+
+vertex_program PLSM2/VSSplat cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_vs
+  profiles vs_2_0 arbvp1
+}
+
+vertex_program PLSM2/VSSplatIntShad cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_vsIntShadow
+  profiles vs_1_1 arbvp1
+}
+
+fragment_program Normal cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_Normal
+  profiles ps_2_0 fp40
+}
+
+
+
+
+fragment_program PSSplat_1Cov1N cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_1Cov1N
+  profiles ps_2_0 fp40
+    default_params
+    {
+        param_named_auto lightPosition light_position_object_space 0 
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+fragment_program PSSplat_1Cov2N cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_1Cov2N
+  profiles ps_2_0 fp40
+    default_params
+    {
+        param_named_auto lightPosition light_position_object_space 0 
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+fragment_program PSSplat_1Cov3N cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_1Cov3N
+  profiles ps_2_0 fp40
+  
+    default_params
+    {
+        param_named_auto lightPosition light_position_object_space 0 
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+
+
+
+
+fragment_program PSSplat_1Cov1 cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_1Cov1
+  profiles ps_2_0 fp40
+  
+    default_params
+    {
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+
+
+fragment_program PSSplat_1Cov2 cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_1Cov2
+  profiles ps_2_0 fp40
+  
+    default_params
+    {
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+
+fragment_program PSSplat_1Cov3 cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_1Cov3
+  profiles ps_2_0 fp40
+  
+    default_params
+    {
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+fragment_program PLSM2/PSSplat_1Cov4 cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_1Cov4
+  profiles ps_2_0 fp40
+  
+    default_params
+    {
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+
+fragment_program PLSM2/PSSplat_1Cov3 cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_1Cov3
+  profiles ps_2_0 fp40
+  
+    default_params
+    {
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+
+fragment_program PLSM2/PSSplat_1Cov2 cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_1Cov2
+  profiles ps_2_0 fp40
+  
+    default_params
+    {
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+
+fragment_program PLSM2/PSSplat_1Cov1 cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_1Cov1
+  profiles ps_2_0 fp40
+  
+    default_params
+    {
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+
+fragment_program PLSM2/PSSplat_2Cov3 cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_2Cov3
+  profiles ps_2_0 fp40
+  
+    default_params
+    {
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}
+
+fragment_program PLSM2/PSSplat_2Cov4 cg
+{
+  source SplattingShaderCov.cg
+  entry_point main_fp_2Cov4
+  profiles ps_2_0 fp40
+  
+    default_params
+    {
+        //param_named_auto lightDiffuse light_diffuse_colour 0 
+        param_named splatScale float 20
+    }
+}

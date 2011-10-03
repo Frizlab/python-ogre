@@ -1,0 +1,23 @@
+SkinClass TextBox
+{ 
+    SkinType default 
+    { 
+
+        SkinElement background
+        { 
+            Border_Bottom 3 
+            Border_Left 3 
+            Border_Right 3 
+            Border_Top 3 
+            Texture qgui.textbox.png
+            TileBackground true 
+            TileBorders false 
+        } 
+
+	SkinElement textoverlay
+        {
+        } 
+
+    } 
+
+}

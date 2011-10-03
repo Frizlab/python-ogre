@@ -1,0 +1,105 @@
+Index: CEGUI_TheoraDemo/include/SoundManager.h
+===================================================================
+--- CEGUI_TheoraDemo/include/SoundManager.h	(revision 2450)
++++ CEGUI_TheoraDemo/include/SoundManager.h	(working copy)
+@@ -16,14 +16,10 @@
+ 
+ #include "TheoraAudioDriver.h"
+ 
+-namespace CEGUI
+-{
+-	class ProgressBar;
+-}
+ 
+ namespace Ogre
+ {
+-	class SoundManager
++	class _OgreTheoraExport SoundManager
+ 	{
+ 	protected:
+ 		SoundManager() {}
+Index: CEGUI_TheoraDemo/src/SoundModules/OpenALSoundIO.cpp
+===================================================================
+--- CEGUI_TheoraDemo/src/SoundModules/OpenALSoundIO.cpp	(revision 2450)
++++ CEGUI_TheoraDemo/src/SoundModules/OpenALSoundIO.cpp	(working copy)
+@@ -3,7 +3,7 @@
+ #include "OgreRoot.h"
+ #include "OgreTimer.h"
+ #include "OgreLogManager.h"
+-#include "OgrePlatformManager.h"
++//#include "OgrePlatformManager.h"
+ #include "OgreRoot.h"
+ 
+ using namespace Ogre;
+@@ -39,7 +39,7 @@
+ //-----------------------------------------------------------------------//
+ void OpenALSoundManager::start()
+ {
+-	mSoundDevice = alcOpenDevice((ALCubyte*)"DirectSound3D");
++	mSoundDevice = alcOpenDevice((ALCchar*)"DirectSound3D");
+ 	mSoundContext = alcCreateContext(mSoundDevice, NULL);
+ 	alcMakeContextCurrent( mSoundContext );
+ }
+@@ -59,14 +59,14 @@
+ 	pauseTimeAdjustmentStop = 0;
+ 	pauseTimeAdjustmentTotal = 0;
+ 
+-	mTimer = Ogre::PlatformManager::getSingleton().createTimer();
++	mTimer = new Ogre::Timer();
+ }
+ 
+ 
+ //-----------------------------------------------------------------------//
+ AudioClip::~AudioClip()
+ {
+-	Ogre::PlatformManager::getSingleton().destroyTimer( mTimer );
++	delete mTimer;
+ 	delete [] mAudioBuffer;
+ }
+ 
+Index: CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.cpp
+===================================================================
+--- CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.cpp	(revision 2450)
++++ CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.cpp	(working copy)
+@@ -1,10 +1,11 @@
+ #include "OgrePrerequisites.h"
+ #include "FmodSoundModule.h"
++#include "fmoddyn.h"
+ 
+ #include "OgreTimer.h"
+ #include "OgreLogManager.h"
+ #include "OgreStringConverter.h"
+-#include "OgrePlatformManager.h"
++//#include "OgrePlatformManager.h"
+ #include "OgreException.h"
+ 
+ #include <sstream>
+@@ -25,13 +26,13 @@
+ 		pauseTimeAdjustmentStop = 0;
+ 		pauseTimeAdjustmentTotal = 0;
+ 
+-		mTimer = mTimer = PlatformManager::getSingleton().createTimer();
++		mTimer = new Ogre::Timer();
+ 	}
+ 
+ 	//---------------------------------------------------------------//
+ 	AudioClip::~AudioClip()
+ 	{
+-		PlatformManager::getSingleton().destroyTimer( mTimer );
++		delete ( mTimer );
+ 	}
+ 
+ 	//---------------------------------------------------------------//
+Index: CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.h
+===================================================================
+--- CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.h	(revision 2450)
++++ CEGUI_TheoraDemo/src/SoundModules/FmodSoundModule.h	(working copy)
+@@ -13,7 +13,7 @@
+ LGPL like the rest of the engine.
+ -----------------------------------------------------------------------------
+ */
+-#include "fmoddyn.h"
++#include "fmod.h"
+ #include "SoundManager.h"
+ 
+ #if defined(_WINDOWS) || defined(WIN32)

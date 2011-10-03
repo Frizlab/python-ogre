@@ -1,0 +1,48 @@
+Source: python-ogre
+Section: python
+XS-Python-Version: >=2.4
+Priority: optional
+Maintainer: Tim 'Mithro' Ansell <mithro@mithis.com>
+Build-Depends-Indep: python-central (>= 0.5.6), python-setuptools (>= 0.6b3-1)
+Build-Depends: debhelper (>= 5.0.38),
+	g++-4.2,
+	cmake (>= 2.4.0), scons, pkg-config,
+	zziplib-bin,
+	libboost1.41-dev,
+	libboost-python1.41-dev,
+	libfreeimage-dev,
+	libois-dev,
+	libogre-dev (>= 1.6),
+	libcegui-dev (>= 0.6.1) | libcegui-mk2-dev (>= 0.6.1),
+	libogg-dev, libvorbis-dev,
+	libavformat-dev, libavcodec-dev,
+	gccxml (>=0.9.0),
+	pygccxml, pyplusplus,
+	libgtk2.0-dev
+Standards-Version: 3.7.2
+
+Package: python-ogre
+Architecture: any
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, libcegui-dev | libcegui-mk2-dev | libcegui-mk2-links, nvidia-cg-toolkit
+XB-Python-Version: ${python:Versions}
+Recommends: libcegui-mk2-links
+Description: Python bindings for Ogre 3d engine and a number of other graphic
+ and game libraries.
+ .
+ Python-Ogre is a free open source Python interface to a wide range of C++
+ libraries. Focused primarly on supporting the Ogre 3D graphics library and
+ other Graphics and Gaming libraries. Python-Ogre allows developers to focus
+ on their 'application', taking advantage of the simplicity of Python with 
+ the performance and functionality of the underlying libraries.
+
+Package: python-ogre-dbg
+Architecture: any
+Depends: ${python:Depends}, ${shlibs:Depends}, ${misc:Depends}, python-ogre (= ${Source-Version})
+XB-Python-Version: ${python:Versions}
+Description: Debug symbols for the python-ogre package.
+ .
+ Python-Ogre is a free open source Python interface to a wide range of C++
+ libraries. Focused primarly on supporting the Ogre 3D graphics library and
+ other Graphics and Gaming libraries. Python-Ogre allows developers to focus
+ on their 'application', taking advantage of the simplicity of Python with 
+ the performance and functionality of the underlying libraries.

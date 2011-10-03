@@ -1,0 +1,88 @@
+<?xml version="1.0" ?>
+<GUILayout>
+	<Window Type="Marti/FrameWindow" Name="Dialog">
+			<Property Name="AbsoluteRect" Value="l:131.000000 t:125.000000 r:431.000000 b:375.000000" />
+			<Property Name="MetricsMode" Value="Absolute" />
+			<Property Name="SizingEnabled" Value="False" />
+			<Property Name="Text" Value="Fog settings..." />
+			<Property Name="CloseButtonEnabled" Value="false" />
+			<Property Name="AlwaysOnTop" Value="true" />
+
+			<Window Type="Marti/StaticText" Name="TypeOfFogStaticText">
+				<Property Name="AbsoluteRect" Value="l:10.000000 t:25.000000 r:80.000000 b:55.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Type of fog:" />
+				<Property Name="FrameEnabled" Value="False" />
+				</Window>
+			<Window Type="Marti/Combobox" Name="TypeOfFogDropdownMenu">
+				<Property Name="AbsoluteRect" Value="l:83.000000 t:29.000000 r:283.000000 b:109.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Make your selection..." />
+				<Property Name="ReadOnly" Value="true" />
+				</Window>
+			<Window Type="Marti/StaticImage" Name="FogColorStaticImage">
+				<Property Name="AbsoluteRect" Value="l:10.000000 t:60.000000 r:60.000000 b:110.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Image" Value="set:Marti image:ListboxSelectionBrush" />
+				<Property Name="ImageColours" Value="tl:0 tr:0 bl:0 br:0" />
+				<Property Name="FrameEnabled" Value="False" />
+				</Window>
+			<Window Type="Marti/HorizontalScrollbar" Name="RedSlider">
+				<Property Name="AbsoluteRect" Value="l:66.000000 t:62.000000 r:286.000000 b:72.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="DocumentSize" Value="255" />
+				<Property Name="PageSize" Value="16" />
+				<Property Name="StepSize" Value="1" />
+				<Property Name="OverlapSize" Value="1" />
+				</Window>
+			<Window Type="Marti/HorizontalScrollbar" Name="GreenSlider">
+				<Property Name="AbsoluteRect" Value="l:66.000000 t:80.000000 r:286.000000 b:90.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="DocumentSize" Value="255" />
+				<Property Name="PageSize" Value="16" />
+				<Property Name="StepSize" Value="1" />
+				<Property Name="OverlapSize" Value="1" />
+				</Window>
+			<Window Type="Marti/HorizontalScrollbar" Name="BlueSlider">
+				<Property Name="AbsoluteRect" Value="l:66.000000 t:97.000000 r:286.000000 b:107.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="DocumentSize" Value="255" />
+				<Property Name="PageSize" Value="16" />
+				<Property Name="StepSize" Value="1" />
+				<Property Name="OverlapSize" Value="1" />
+				</Window>
+			<Window Type="Marti/StaticText" Name="FogDescStaticText">
+				<Property Name="AbsoluteRect" Value="l:10.000000 t:129.000000 r:170.000000 b:159.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Density --v   Start --v    End --v" />
+				<Property Name="FrameEnabled" Value="False" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="DensityEditbox">
+				<Property Name="AbsoluteRect" Value="l:15.000000 t:167.000000 r:55.000000 b:197.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="StartEditbox">
+				<Property Name="AbsoluteRect" Value="l:70.000000 t:167.000000 r:110.000000 b:197.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Editbox" Name="EndEditbox">
+				<Property Name="AbsoluteRect" Value="l:125.000000 t:167.000000 r:165.000000 b:197.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				</Window>
+			<Window Type="Marti/Checkbox" Name="EnableFogCheckbox">
+				<Property Name="AbsoluteRect" Value="l:15.000000 t:210.000000 r:115.000000 b:240.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Enable fog" />
+				</Window>
+			<Window Type="Marti/Button" Name="FogOkButton">
+				<Property Name="AbsoluteRect" Value="l:110.000000 t:210.000000 r:190.000000 b:240.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Ok" />
+				</Window>
+			<Window Type="Marti/Button" Name="FogCancelButton">
+				<Property Name="AbsoluteRect" Value="l:200.000000 t:210.000000 r:280.000000 b:240.000000" />
+				<Property Name="MetricsMode" Value="Absolute" />
+				<Property Name="Text" Value="Cancel" />
+				</Window>
+			</Window>
+</GUILayout>

@@ -1,0 +1,39 @@
+gccxml (0.9.0+cvs%%SHORTDATE%%-1) unstable; urgency=low
+
+  * New cvs snapshot.
+
+ -- Tim 'Mithro' Ansell <mithro@mithis.com>  %%LONGDATE%%
+
+gccxml (0.7.0+cvs20070318-1) unstable; urgency=low
+
+  * New cvs snapshot.
+  
+  * debian/control: Update Standards-Version to 3.7.2.2 (no changes
+    required).
+  
+  * GCC/config.guess:
+  * GCC/config.sub: Replace with current version from package
+    autotools-dev.  Closes: #370294.
+
+ -- Steve M. Robbins <smr@debian.org>  Sun, 18 Mar 2007 22:33:51 -0500
+
+gccxml (0.7.0+cvs20060311-2) unstable; urgency=low
+
+  * GCC/config_cmake/gcc_platform.sh: quote value of ${target_cpu_default}
+  as it may contain parentheses.  Closes: #358467.
+
+ -- Steve M. Robbins <smr@debian.org>  Tue, 28 Mar 2006 23:13:09 -0500
+
+gccxml (0.7.0+cvs20060311-1) unstable; urgency=low
+
+  * Initial upload.  Closes: #189927.
+  
+  * Build from CVS (snapshot as of 2006-03-11) for GCC 4 support;
+    c.f. http://public.kitware.com/pipermail/gccxml/2005-October/000681.html
+
+  * Source in .orig.tar.gz is modified from upstream: removed file
+  GCC/libiberty/xatexit.c and directory GCC_XML/Support/Borland as 
+  there is no clear permission to distribute all these files.
+
+ -- Steve M. Robbins <smr@debian.org>  Sun, 12 Mar 2006 17:01:48 -0500
+

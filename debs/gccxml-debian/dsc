@@ -1,0 +1,10 @@
+Format: 1.0
+Source: gccxml
+Binary: gccxml
+Architecture: any
+Version: 0.7.0+cvs20080711-0
+Maintainer: Steve M. Robbins <smr@debian.org>
+Standards-Version: 3.7.2.2
+%%BUILDDEPS%%
+Files: 
+ %%MD5SUM%% %%SIZE%%

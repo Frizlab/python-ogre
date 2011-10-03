@@ -1,0 +1,336 @@
+SkinClass Button 
+{ 
+    SkinType default 
+    { 
+        SkinElement default 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.button.png 
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.button.down.png 
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.button.over.png 
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+    SkinType default.close
+    { 
+        SkinElement default 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.window.titlebar.close.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.window.titlebar.close.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.window.titlebar.close.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+    SkinType default.vscrollup
+    { 
+        SkinElement default 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.vertical.top.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.vertical.top.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.vertical.top.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+    SkinType default.vscrolldown
+    { 
+        SkinElement default 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.vertical.bottom.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.vertical.bottom.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.vertical.bottom.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+    SkinType default.vslider
+    { 
+        SkinElement default 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.vertical.slider.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.vertical.slider.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.vertical.slider.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+    SkinType default.hscrollleft
+    { 
+        SkinElement default 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.horizontal.left.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.horizontal.left.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.horizontal.left.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+    SkinType default.hscrollright
+    { 
+        SkinElement default 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.horizontal.right.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.horizontal.right.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.horizontal.right.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+    SkinType default.hslider
+    { 
+        SkinElement default 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.horizontal.slider.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.horizontal.slider.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.scrollbar.horizontal.slider.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+    SkinType default.comboboxdropdown
+    { 
+        SkinElement default 
+        { 
+            Border_Bottom 1
+            Border_Left 1
+            Border_Right 1
+            Border_Top 1
+            Texture qgui.combobox.button.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement down 
+        { 
+            Border_Bottom 1
+            Border_Left 1
+            Border_Right 1
+            Border_Top 1
+            Texture qgui.combobox.button.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement over 
+        { 
+            Border_Bottom 1
+            Border_Left 1
+            Border_Right 1
+            Border_Top 1
+            Texture qgui.combobox.button.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+    } 
+
+}

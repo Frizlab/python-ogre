@@ -1,0 +1,72 @@
+SkinClass CheckBox
+{ 
+    SkinType default 
+    { 
+        SkinElement checked
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.checkbox.x-ed.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement checked_down
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.checkbox.x-ed.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement checked_over
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.checkbox.x-ed.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement unchecked
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.checkbox.unchecked.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement unchecked_down
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.checkbox.unchecked.down.png
+            TileBackground false 
+            TileBorders true 
+        } 
+
+        SkinElement unchecked_over
+        { 
+            Border_Bottom 2 
+            Border_Left 2 
+            Border_Right 2 
+            Border_Top 2 
+            Texture qgui.checkbox.unchecked.over.png
+            TileBackground false 
+            TileBorders true 
+        } 
+    } 
+
+}

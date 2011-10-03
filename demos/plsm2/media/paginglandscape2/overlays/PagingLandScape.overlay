@@ -1,0 +1,141 @@
+// Ogre overlay scripts
+PagingLandScape/DebugOverlay
+{
+	zorder 500
+	// Stats block
+	container BorderPanel(PagingLandScape/StatPanel)
+	{
+		metrics_mode pixels
+		vert_align top
+		left 5
+		top 5
+		width 480
+		height 117
+		material Core/StatsBlockCenter
+        	border_size 1 1 1 1
+        	border_material Core/StatsBlockBorder
+        	border_topleft_uv     0.0000 1.0000 0.0039 0.9961
+	    		border_top_uv         0.0039 1.0000 0.9961 0.9961
+	    		border_topright_uv    0.9961 1.0000 1.0000 0.9961
+	    		border_left_uv        0.0000 0.9961 0.0039 0.0039
+	    		border_right_uv       0.9961 0.9961 1.0000 0.0039
+	    		border_bottomleft_uv  0.0000 0.0039 0.0039 0.0000
+        	border_bottom_uv      0.0039 0.0039 0.9961 0.0000
+	    		border_bottomright_uv 0.9961 0.0039 1.0000 0.0000
+
+		container Panel(PagingLandScape/BreakPanel)
+		{
+			metrics_mode pixels
+			left 5
+			top 22
+			width 310
+			height 1
+			material Core/StatsBreak
+		}
+
+		element TextArea(PagingLandScape/Title)
+		{
+			metrics_mode pixels
+			left 5
+			top 5
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 19
+			caption LandScape Plug-in:
+			colour_top 0.7 1 0.7
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape/Page)
+		{
+			metrics_mode pixels
+			left 5
+			top 25
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Tile (X,Z): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape/Queue)
+		{
+			metrics_mode pixels
+			left 5
+			top 40
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Queue (Merges, Splits, Morphs): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape/FreeTiles)
+		{
+			metrics_mode pixels
+			left 5
+			top 55
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Tiles (Used, Free): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape/FreeRenderables)
+		{
+			metrics_mode pixels
+			left 5
+			top 70
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Renderables (Used, Free): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape/Player)
+		{
+			metrics_mode pixels
+			left 5
+			top 85
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Player (X, Y, Z): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape/MainQueue)
+		{
+			metrics_mode pixels
+			left 5
+			top 100
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Queues (PreLoad, Load, Unload, PostUnload): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+		element TextArea(PagingLandScape/Impact)
+		{
+			metrics_mode pixels
+			left 5
+			top 100
+			width 90
+			height 30
+			font_name BlueHighway
+			char_height 16
+			caption Impact (X, Y, Z, TileX, TileZ, PageX, PageZ): (
+			colour_top 0.5 0.7 0.5
+			colour_bottom 0.3 0.5 0.3
+		}
+	}
+}
