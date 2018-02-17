@@ -16,11 +16,13 @@ If the author of the post read this, or if anybody has more information, you're 
 the situation :)
 
 ## What is PyOgre?
-As stated [here](http://www.ogre3d.org/tikiwiki/PyOgre), PyOgre is a Python interface on Ogre, which
-directly calls the C++ implementation.
+As stated [here](http://www.ogre3d.org/tikiwiki/PyOgre) ([archived version](http://web.archive.org/web/20180217212734/http://wiki.ogre3d.org/PyOgre)),
+PyOgre is a Python interface on Ogre, which directly calls the C++ implementation.
 
 ## What is Ogre?
-[OGRE (**O**bject-oriented **G**raphics **R**endering **E**ngine) is an open-source graphics rendering engine that is written and maintained by a small core team, and contributed to by its ever growing community.](http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Getting+Started)
+[OGRE (**O**bject-oriented **G**raphics **R**endering **E**ngine) is an open-source graphics rendering engine that is
+written and maintained by a small core team, and contributed to by its ever growing community.](http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Getting+Started)  
+([Archived version](http://web.archive.org/web/20180217213006/http://wiki.ogre3d.org/tiki-index.php?page=Getting+Started))
 
 ## Building PyOgre
 I tried. It just does not work, at least not on Sierra. Pretty much all the dependencies are either obsolete or old, and making them compile is usually very tricky. After a while, I just gave up :)
