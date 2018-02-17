@@ -2,14 +2,15 @@
 **Warning**: This repository is not a rebirth of PyOgre. PyOgre is dead (AFAI can tell), and I think a
 _tremendous_ amount of work would be needed to raise it from its ashes.
 
-**Note**: Official(?) statement from the (at least at the time) official python-ogre.org website, from December 2016:
+**Note**: Official(?) statement from the (formerly official) python-ogre.org website, from December 2016
+([archived version](http://web.archive.org/web/20170725202607/http://www.python-ogre.org/)):
 
     This blog has been dead for quite some time; but rest assured Python Ogre is still being updated – just check github.
 
-I have no idea whether this statement comes from the actual maintainer of Python-Ogre, or even if this project
-is still maintained. Seems to me it is not though I hope it is!
-
 I did check GitHub, but did not find any information on PyOgre…
+
+I have no idea whether this statement comes from the actual maintainer of Python-Ogre. Even if it did, the project is
+now clearly dead: the python-ogre.org domain has been bought and is no longer related to the project.
 
 If the author of the post read this, or if anybody has more information, you're welcome to open an issue and clarify
 the situation :)
